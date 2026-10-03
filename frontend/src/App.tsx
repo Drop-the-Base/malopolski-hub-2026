@@ -14,6 +14,7 @@ import { TesterView } from './views/TesterView';
 import { CommunicationView } from './views/CommunicationView';
 import { AdminDashboardView } from './views/AdminDashboardView';
 import { ProblemsRegistryView } from './views/ProblemsRegistryView';
+import { RequireLogin } from './components/auth/RequireLogin';
 import { FiszkaStatusView } from './views/FiszkaStatusView';
 import { AccessibilityStatementView } from './views/AccessibilityStatementView';
 import { NotFoundView } from './views/NotFoundView';
@@ -71,7 +72,17 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomeView />} />
             <Route path="/matchmaking" element={<MatchmakingView />} />
-            <Route path="/problemy" element={<ProblemsRegistryView />} />
+            <Route
+              path="/problemy"
+              element={
+                <RequireLogin
+                  title="Panel Urzędnika JST – Rejestr Wyzwań"
+                  description="Rejestr wyzwań gmin, przypisywanie innowacji i raporty diagnostyczne są dostępne dla zalogowanych urzędników JST i koordynatorów ROPS. Mieszkańcy zgłaszają problemy w module Kojarzenie potrzeb."
+                >
+                  <ProblemsRegistryView />
+                </RequireLogin>
+              }
+            />
             <Route path="/baza-wiedzy" element={<KnowledgeView />} />
             <Route path="/baza-wiedzy/:innovationId" element={<KnowledgeView />} />
             <Route path="/kreator-pomyslow" element={<IdeaCreatorView />} />

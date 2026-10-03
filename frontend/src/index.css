@@ -163,10 +163,10 @@ html.font-huge {
 }
 
 /* Tryb prostego języka (ETR): większe odstępy i krótsze linie ułatwiają czytanie */
-body.etr-mode main p,
-body.etr-mode main li:not(.row-full) {
+/* Tylko akapity tekstu – ograniczanie szerokości elementów list psuło układ kart (np. wnioski w Panelu ROPS) */
+body.etr-mode main p {
   line-height: 1.8;
-  max-width: 70ch;
+  max-width: 75ch;
 }
 
 @media (prefers-reduced-motion: reduce) {

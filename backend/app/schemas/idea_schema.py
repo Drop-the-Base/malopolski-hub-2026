@@ -17,7 +17,7 @@ FISZKA_STATUSES = {
     "in_review": "W weryfikacji ROPS",
     "in_testing": "W fazie testów i głosowania",
     "needs_changes": "Do uzupełnienia",
-    "approved": "Zaakceptowana – mentor przydzielony",
+    "approved": "Zaakceptowana",
     "rejected": "Odrzucona",
 }
 

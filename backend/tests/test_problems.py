@@ -5,6 +5,11 @@ from app.main import app
 @pytest.mark.asyncio
 async def test_problems_lifecycle():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # Rejestr wyzwań jest dostępny tylko po zalogowaniu urzędnika / koordynatora
+        assert (await ac.get("/api/v1/problems")).status_code == 401
+        login = await ac.post("/api/v1/auth/login", json={"password": "rops-demo-2026"})
+        ac.headers["Authorization"] = f"Bearer {login.json()['access_token']}"
+
         # 1. Pobranie listy problemów
         res = await ac.get("/api/v1/problems")
         assert res.status_code == 200

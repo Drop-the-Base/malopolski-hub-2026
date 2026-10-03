@@ -47,11 +47,11 @@
 | VI. Panel ROPS | `POST` 🔒 | `/admin/notifications/mark-read` | Oznaczenie powiadomień panelu jako przeczytanych |
 | VII. Middleman | `POST` | `/middleman/adapt` | Projekt pakietu wdrożeniowego i uchwały dla gminy (404 dla nieznanej innowacji) |
 | VII. Middleman | `POST` | `/middleman/chat` | Czat z doradcą wdrożeniowym (LLM, odpowiedź zapasowa bez klucza) |
-| Rejestr Wyzwań JST | `GET` | `/problems` | Rejestr wyzwań; anonimowe zapytania Matchmakingu ukryte (`?include_matchmaking=true`) |
-| Rejestr Wyzwań JST | `POST` | `/problems` | Zgłoszenie wyzwania; krytyczne → powiadomienie ROPS |
-| Rejestr Wyzwań JST | `GET` / `PATCH` | `/problems/{id}` | Szczegóły / aktualizacja statusu i pilności |
-| Rejestr Wyzwań JST | `POST` | `/problems/{id}/assign-innovation` | Przypisanie innowacji (422 dla nieznanej) |
-| Rejestr Wyzwań JST | `GET` | `/problems/summary/regional?powiat=` | Raport diagnostyczny powiatu z rekomendacjami z dopasowań |
+| Rejestr Wyzwań JST | `GET` 🔒 | `/problems` | Rejestr wyzwań; anonimowe zapytania Matchmakingu ukryte (`?include_matchmaking=true`) |
+| Rejestr Wyzwań JST | `POST` 🔒 | `/problems` | Zgłoszenie wyzwania; krytyczne → powiadomienie ROPS |
+| Rejestr Wyzwań JST | `GET` / `PATCH` 🔒 | `/problems/{id}` | Szczegóły / aktualizacja statusu i pilności |
+| Rejestr Wyzwań JST | `POST` 🔒 | `/problems/{id}/assign-innovation` | Przypisanie innowacji (422 dla nieznanej) |
+| Rejestr Wyzwań JST | `GET` 🔒 | `/problems/summary/regional?powiat=` | Raport diagnostyczny powiatu z rekomendacjami z dopasowań |
 | Narzędzia | `POST` | `/tools/etr-simplify` | Uproszczenie tekstu do formatu ETR |
 
 ---

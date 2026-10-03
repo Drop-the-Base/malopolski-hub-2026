@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAccessibility } from '../store/useAccessibilityStore';
+import { LoginForm } from '../components/auth/LoginForm';
 import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDateTime, powiatLabel } from '../constants/domain';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -52,126 +53,6 @@ const EMPTY_INNOVATION: InnovationUpsert = {
   etr_summary: '',
   origin_poviat: '',
   is_published: true
-};
-
-const LoginForm: React.FC<{ onLoggedIn: () => void }> = ({ onLoggedIn }) => {
-  const [username, setUsername] = useState('sedzia.hackyeah@malopolska.pl');
-  const [password, setPassword] = useState('rops-demo-2026');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const doLogin = async (usr: string, pwd: string) => {
-    setBusy(true);
-    setError('');
-    try {
-      await api.login(pwd, usr);
-      onLoggedIn();
-    } catch (err) {
-      setError(apiErrorMessage(err, 'Nie udało się zalogować.'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleClear = () => {
-    setUsername('');
-    setPassword('');
-    setError('');
-  };
-
-  return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-slate-200 shadow-md">
-      <div className="flex items-center gap-2 mb-2">
-        <Lock className="w-5 h-5 text-slate-800" aria-hidden="true" />
-        <h1 className="text-xl font-black text-slate-900">Dla Urzędnika – Panel ROPS</h1>
-      </div>
-      <p className="text-sm text-slate-600 mb-4">
-        Dostęp chroniony do bazy wniosków, grupowania, moderacji i wydruków urzędowych.
-      </p>
-
-      {/* Baner szybkiego dostępu dla Sędziego */}
-      <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 mb-5 space-y-2">
-        <div className="flex items-center gap-2 text-xs font-black text-amber-900 ">
-          <Zap className="w-3.5 h-3.5 text-amber-600" />
-          <span>Tryb Jury / Sędziego (Dane Wstępnie Wypełnione)</span>
-        </div>
-        <p className="text-xs text-amber-950 leading-relaxed">
-          Dla potrzeb sprawnej weryfikacji konkursowej login i hasło zostały uzupełnione automatycznie. Kliknij przycisk poniżej, aby od razu wejść do panelu:
-        </p>
-        <button
-          type="button"
-          onClick={() => doLogin('sedzia.hackyeah@malopolska.pl', 'rops-demo-2026')}
-          disabled={busy}
-          className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-black py-2 px-3 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-1.5"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          {busy ? 'Logowanie…' : 'Zaloguj natychmiast jako Sędzia (1-klik)'}
-        </button>
-      </div>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          doLogin(username, password);
-        }}
-        className="space-y-4 pt-2 border-t border-slate-100"
-      >
-        <div>
-          <label htmlFor="admin-username" className="block text-xs font-bold text-slate-800 mb-1">
-            Identyfikator / Login urzędnika
-          </label>
-          <input
-            id="admin-username"
-            type="text"
-            required
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full text-sm p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="admin-password" className="block text-xs font-bold text-slate-800 mb-1">
-            Hasło służbowe
-          </label>
-          <input
-            id="admin-password"
-            type="password"
-            required
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full text-sm p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600"
-          />
-        </div>
-
-        {error && (
-          <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
-            {error}
-          </p>
-        )}
-
-        <div className="space-y-2 pt-1">
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-sm disabled:opacity-60 transition-colors shadow"
-          >
-            {busy ? 'Logowanie…' : 'Zaloguj do Panelu Urzędnika'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleClear}
-            className="w-full text-xs text-slate-500 hover:text-slate-800 py-1 font-semibold"
-          >
-            Wyczyść dane (ręczne logowanie pracownika ROPS)
-          </button>
-        </div>
-      </form>
-    </div>
-  );
 };
 
 export const AdminDashboardView: React.FC = () => {
@@ -503,7 +384,7 @@ export const AdminDashboardView: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                     <h3 className="font-black text-slate-900 text-sm">{groupName}</h3>
                     <span className="text-xs bg-white text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-300">
-                      {items.length} {items.length === 1 ? 'wniosek' : 'wnioski'}
+                      {items.length} {items.length === 1 ? 'wniosek' : [2, 3, 4].includes(items.length % 10) && ![12, 13, 14].includes(items.length % 100) ? 'wnioski' : 'wniosków'}
                     </span>
                   </div>
                   <span className="text-xs text-slate-600">
@@ -624,7 +505,7 @@ export const AdminDashboardView: React.FC = () => {
                             value={f.cluster_group || ''}
                             onChange={(e) => handleAssignCluster(f, e.target.value)}
                             aria-label={`Przypisz klaster dla ${f.title}`}
-                            className="text-xs p-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-blue-600 max-w-[170px]"
+                            className="text-xs p-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-blue-600"
                           >
                             <option value="">— Klaster tematyczny —</option>
                             <option value="Pakiet Senioralny 2026">Pakiet Senioralny 2026</option>

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.problem_report import ProblemReport
 from app.models.innovation import Innovation
 from app.schemas.problem_schema import (
@@ -19,7 +20,7 @@ from app.services.matchmaking_service import populate_vector_store_if_needed, ra
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
 
-router = APIRouter(prefix="/problems", tags=["Moduł VIII: Rejestr Problemów i Panel Urzędnika JST"])
+router = APIRouter(prefix="/problems", tags=["Moduł VIII: Rejestr Problemów i Panel Urzędnika JST"], dependencies=[Depends(require_admin)])
 
 @router.get("", response_model=List[ProblemReportResponse])
 async def list_problems(

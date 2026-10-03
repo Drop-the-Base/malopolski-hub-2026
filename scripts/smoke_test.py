@@ -170,7 +170,8 @@ def run_smoke_tests():
         success_count += 1
 
     # 12. Moduł VIII: Rejestr Problemów i Panel Urzędnika JST
-    ok, prob_data = test_endpoint("Moduł VIII: Rejestr Problemów JST", "GET", "/problems")
+    ok, prob_data = test_endpoint("Moduł VIII: Rejestr Problemów JST", "GET", "/problems",
+                                  token=(login or {}).get("access_token"))
     if ok and prob_data is not None:
         print(f"       -> Zarejestrowanych problemów samorządowych: {len(prob_data)}")
         success_count += 1

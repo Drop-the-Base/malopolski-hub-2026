@@ -78,7 +78,7 @@ export const FISZKA_STATUSES: Record<string, string> = {
   submitted: 'Złożona',
   in_review: 'W weryfikacji ROPS',
   needs_changes: 'Do uzupełnienia',
-  approved: 'Zaakceptowana – mentor przydzielony',
+  approved: 'Zaakceptowana',
   rejected: 'Odrzucona'
 };
 

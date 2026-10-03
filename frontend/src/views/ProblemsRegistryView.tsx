@@ -199,8 +199,8 @@ export const ProblemsRegistryView: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Nagłówek Modułu */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm print:hidden">
-        <div className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+        <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
+          <AlertCircle className="w-3.5 h-3.5 text-blue-700" />
           <span>Moduł VIII: Rejestr Problemów Społecznych & Panel Urzędnika JST</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
@@ -218,7 +218,7 @@ export const ProblemsRegistryView: React.FC = () => {
             onClick={() => setActiveTab('registry')}
             className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
               activeTab === 'registry'
-                ? 'border-rose-600 text-rose-600'
+                ? 'border-blue-700 text-blue-700'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -229,7 +229,7 @@ export const ProblemsRegistryView: React.FC = () => {
             onClick={() => setActiveTab('create')}
             className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
               activeTab === 'create'
-                ? 'border-rose-600 text-rose-600'
+                ? 'border-blue-700 text-blue-700'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -240,7 +240,7 @@ export const ProblemsRegistryView: React.FC = () => {
             onClick={() => setActiveTab('report')}
             className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
               activeTab === 'report'
-                ? 'border-rose-600 text-rose-600'
+                ? 'border-blue-700 text-blue-700'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -267,12 +267,12 @@ export const ProblemsRegistryView: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-rose-200 shadow-xs flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
                 🚨
               </div>
               <div>
-                <span className="text-xl font-black text-rose-600">{criticalCount}</span>
+                <span className="text-xl font-black text-rose-700">{criticalCount}</span>
                 <span className="block text-xs text-slate-500 font-medium">Wyzwania o statusie krytycznym</span>
               </div>
             </div>
@@ -348,7 +348,7 @@ export const ProblemsRegistryView: React.FC = () => {
           {/* Lista Zgłoszeń */}
           {loading ? (
             <div className="text-center py-12 text-slate-500">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-rose-500" />
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
               <span>Ładowanie rejestru wyzwań społecznych...</span>
             </div>
           ) : problems.length === 0 ? (
@@ -363,7 +363,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   setSelectedUrgency('');
                   setSelectedStatus('');
                 }}
-                className="mt-3 text-xs text-rose-600 font-bold hover:underline"
+                className="mt-3 text-xs text-blue-700 font-bold hover:underline"
               >
                 Zresetuj filtry
               </button>
@@ -537,7 +537,7 @@ export const ProblemsRegistryView: React.FC = () => {
           {/* Szybkie Scenariusze dla Jury */}
           <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
             <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-700">
-              <Zap className="w-4 h-4 text-rose-600 fill-rose-500" />
+              <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
               <span>Szybkie scenariusze problemów samorządowych dla Jury (1 kliknięcie uzupełnia formularz):</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -546,7 +546,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   key={idx}
                   type="button"
                   onClick={() => handleApplyPreset(pr)}
-                  className="text-xs bg-white hover:bg-rose-50 hover:border-rose-400 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-all text-left"
+                  className="text-xs bg-white hover:bg-blue-50 hover:border-blue-400 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-all text-left"
                 >
                   {pr.label}
                 </button>
@@ -579,7 +579,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setSubmitSuccess(false)}
-                    className="text-xs font-bold text-rose-600 hover:underline"
+                    className="text-xs font-bold text-blue-700 hover:underline"
                   >
                     Zgłoś kolejne wyzwanie
                   </button>
@@ -598,7 +598,7 @@ export const ProblemsRegistryView: React.FC = () => {
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                     placeholder="np. Brak opieki wytchnieniowej dla 40 opiekunów osób niesamodzielnych"
-                    className="w-full text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-rose-500"
+                    className="w-full text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
 
@@ -613,7 +613,7 @@ export const ProblemsRegistryView: React.FC = () => {
                     value={form.raw_text}
                     onChange={(e) => setForm({ ...form, raw_text: e.target.value })}
                     placeholder="Opisz specyfikę sołectwa/gminy, dotychczasowe próby rozwiązania, zdiagnozowane braki kadrowe lub lokalowe..."
-                    className="w-full text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-rose-500 resize-y"
+                    className="w-full text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 resize-y"
                   />
                   <span className="text-[11px] text-slate-400 mt-1 block">
                     Dane osobowe w opisie (PESEL, telefony, e-maile, adresy, imiona i nazwiska) są automatycznie maskowane przed zapisem. Nie podawaj danych mieszkańców.
@@ -726,7 +726,7 @@ export const ProblemsRegistryView: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submitting ? (
                     <>
@@ -754,7 +754,7 @@ export const ProblemsRegistryView: React.FC = () => {
           {/* Kontrolki wyboru powiatu i druku */}
           <div className="bg-slate-900 text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
             <div className="flex items-center gap-3">
-              <Building2 className="w-6 h-6 text-rose-400" />
+              <Building2 className="w-6 h-6 text-amber-400" />
               <div>
                 <h3 className="text-sm font-bold text-white">Generator Raportu Diagnostycznego dla Samorządu</h3>
                 <p className="text-xs text-slate-300">Wybierz powiat, aby skompilować diagnozę potrzeb i rekomendacje ROPS.</p>
@@ -774,7 +774,7 @@ export const ProblemsRegistryView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Drukuj / Zapisz PDF</span>
@@ -785,7 +785,7 @@ export const ProblemsRegistryView: React.FC = () => {
           {/* Arkusz Raportu Diagnostycznego (A4 print layout) */}
           {summaryLoading ? (
             <div className="text-center py-12 text-slate-500">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-rose-500" />
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
               <span>Generowanie diagnozy regionalnej...</span>
             </div>
           ) : summaryData ? (
@@ -814,9 +814,9 @@ export const ProblemsRegistryView: React.FC = () => {
                   <span className="text-2xl font-black text-slate-900">{summaryData.total_challenges}</span>
                   <span className="block text-[11px] text-slate-600 font-medium mt-1">Zdiagnozowane wyzwania</span>
                 </div>
-                <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
-                  <span className="text-2xl font-black text-rose-600">{summaryData.critical_challenges}</span>
-                  <span className="block text-[11px] text-rose-800 font-medium mt-1">Sprawy krytyczne</span>
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-2xl font-black text-rose-700">{summaryData.critical_challenges}</span>
+                  <span className="block text-[11px] text-slate-700 font-medium mt-1">Sprawy krytyczne</span>
                 </div>
                 <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                   <span className="text-2xl font-black text-indigo-900">{summaryData.total_affected_residents}</span>
@@ -832,7 +832,7 @@ export const ProblemsRegistryView: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   {summaryData.recommended_innovations.map((inn) => (
                     <div key={inn.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                      <span className="text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">
+                      <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">
                         {categoryLabel(inn.category)}
                       </span>
                       <h4 className="font-bold text-slate-900">{inn.title}</h4>
