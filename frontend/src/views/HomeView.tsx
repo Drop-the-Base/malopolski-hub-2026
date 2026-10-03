@@ -227,7 +227,7 @@ export const HomeView: React.FC = () => {
           </div>
           <div>
             <div className="text-3xl font-black text-amber-700 mb-1">ok. 200 zł</div>
-            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Infrastruktura + API LLM / m-c (szacunek w Roadmapie)</div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Infrastruktura + API LLM / m-c (szacunek TCO)</div>
           </div>
         </div>
       </section>

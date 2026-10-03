@@ -6,7 +6,7 @@ export type FontSize = 'normal' | 'large' | 'huge';
 class AccessibilityStore {
   private contrastMode: ContrastMode = 'default';
   private fontSize: FontSize = 'normal';
-  private etrMode: boolean = false;
+  private etrMode: boolean = true;
   private listeners: Set<() => void> = new Set();
 
   constructor() {
@@ -14,11 +14,23 @@ class AccessibilityStore {
     if (typeof window !== 'undefined') {
       const savedContrast = localStorage.getItem('mhis_contrast') as ContrastMode;
       const savedFontSize = localStorage.getItem('mhis_font') as FontSize;
-      const savedEtr = localStorage.getItem('mhis_etr') === 'true';
+      const savedEtr = localStorage.getItem('mhis_etr');
 
       if (savedContrast) this.contrastMode = savedContrast;
       if (savedFontSize) this.fontSize = savedFontSize;
-      if (savedEtr !== undefined) this.etrMode = savedEtr;
+      
+      // Tryb prostego języka (ETR) jest domyślnie i stale włączony w całym serwisie
+      if (savedEtr === 'false') {
+        // Resetuj ewentualne stare ustawienie testowe do domyślnego włączonego standardu ETR
+        this.etrMode = true;
+        try {
+          localStorage.setItem('mhis_etr', 'true');
+        } catch {
+          /* ignore */
+        }
+      } else {
+        this.etrMode = true;
+      }
 
       this.applyDOMClasses();
     }
