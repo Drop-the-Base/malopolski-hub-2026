@@ -1,146 +1,103 @@
 # Modele Danych i Schematy Bazodanowe
 ## Małopolski Hub Innowacji Społecznych (MHIS)
 
-> **Zarządzanie Stanem**: SQLAlchemy ORM (Backend) + Pydantic v2 Schemas + TypeScript Interfaces (Frontend)
+> **Warstwy**: SQLAlchemy 2.0 (async, SQLite) → schematy Pydantic v2 (`backend/app/schemas/`) → interfejsy TypeScript (`frontend/src/types/index.ts`).
+> **Słowniki domenowe** (22 powiaty, 8 kategorii, formy w miejscowniku): `backend/app/core/constants.py` i `frontend/src/constants/domain.ts`.
 
 ---
 
-## 1. Diagram Relacji Encji (ERD)
+## 1. Diagram relacji
 
 ```mermaid
 erDiagram
-    INNOVATION ||--o{ TESTING_CAMPAIGN : "jest testowana w"
-    INNOVATION ||--o{ PROBLEM_REPORT : "rekomendowana dla"
-    INNOVATION ||--o{ SERVICE_BLUEPRINT : "adaptowana przez"
-    
-    IDEA_FISZKA ||--|| CANVAS_MODEL : "posiada model"
-    IDEA_FISZKA ||--o{ THREAD_MESSAGE : "dyskusje mentorskie"
-    
-    TESTING_CAMPAIGN ||--o{ TESTING_FEEDBACK : "zbiera ankiety"
-    
-    COMMUNICATION_THREAD ||--|{ THREAD_MESSAGE : "zawiera wpisy"
-    
-    REGIONAL_STAT ||--o{ PROBLEM_REPORT : "gromadzi problemy w"
+    INNOVATION ||--o{ TESTING_CAMPAIGN : "testowana w"
+    TESTING_CAMPAIGN ||--o{ TESTER_SIGNUP : "zapisy"
+    TESTING_CAMPAIGN ||--o{ TESTING_FEEDBACK : "ankiety SUS"
+    IDEA_FISZKA ||--o| CANVAS_MODEL : "model"
+    MENTOR ||--o{ MENTOR_BOOKING : "konsultacje"
+    MENTOR ||--o{ IDEA_FISZKA : "opiekuje się (assigned_mentor_id)"
+    COMMUNICATION_THREAD ||--|{ THREAD_MESSAGE : "wiadomości"
+    PROBLEM_REPORT }o--o{ INNOVATION : "matched_innovations (JSON)"
+    NOTIFICATION }o--o| IDEA_FISZKA : "related_id"
+    REGIONAL_STAT ||--o{ PROBLEM_REPORT : "powiat"
 ```
 
 ---
 
-## 2. Kluczowe Encje Bazy Danych
+## 2. Encje
 
-### 2.1. `Innovation` (Katalog Sprawdzonych Innowacji ROPS)
-```python
-class Innovation(Base):
-    __tablename__ = "innovations"
+### `innovations` – katalog innowacji
+| Pole | Typ | Uwagi |
+|---|---|---|
+| `id` | str PK | `rops-inn-NNN` (nowe ID nadaje API) |
+| `title`, `tagline`, `full_description` | str / text | |
+| `category` | str | jedna z 8 kategorii: `seniorzy`, `uslugi_opiekuncze`, `dostepnosc`, `zdrowie_psychiczne`, `wykluczenie_cyfrowe`, `edukacja`, `integracja`, `usamodzielnienie` |
+| `target_groups` | JSON list | |
+| `readiness_level`, `budget_bracket` | str | |
+| `video_url`, `handbook_url` | str? | tylko `https://`; puste, dopóki ROPS nie poda zweryfikowanych materiałów |
+| `etr_summary` | text? | wersja w tekście łatwym do czytania |
+| `origin_poviat` | str? | |
+| `is_published` | bool | `DELETE` w API ustawia `false` |
 
-    id: str = Column(String, primary_key=True)                 # np. 'rops-inn-001'
-    title: str = Column(String, nullable=False)               # np. 'Mobilny Doradca Seniora'
-    tagline: str = Column(String, nullable=False)             # Krótkie hasło wdrożeniowe
-    category: str = Column(String, index=True)                # 'seniorzy', 'zdrowie_psychiczne', 'ozn', 'integracja'
-    target_groups: list[str] = Column(JSON, default=list)     # ['seniorzy', 'opiekunowie', 'osoby_samotne']
-    full_description: str = Column(Text, nullable=False)      # Dokładny opis metodyki
-    readiness_level: str = Column(String)                     # 'Gotowa do skalowania', 'W fazie testów'
-    budget_bracket: str = Column(String)                      # 'Niski (<20k)', 'Średni (20-60k)', 'Wysoki (>60k)'
-    video_url: str = Column(String, nullable=True)            # Link do wideo prezentującego innowację
-    handbook_url: str = Column(String, nullable=True)         # Link do podręcznika dobrych praktyk
-    etr_summary: str = Column(Text, nullable=True)            # Wersja w prostym języku (ETR)
-    origin_poviat: str = Column(String, nullable=True)        # Powiat macierzysty innowacji
-    is_published: bool = Column(Boolean, default=True)
-    created_at: datetime = Column(DateTime, default=datetime.utcnow)
-```
+### `problem_reports` – zgłoszenia (Matchmaking i Rejestr Wyzwań JST)
+| Pole | Typ | Uwagi |
+|---|---|---|
+| `id` | str PK | `prob-xxxxxxxx` |
+| `title` | str? | z Matchmakingu: pierwsze 80 znaków opisu |
+| `raw_text`, `clean_text` | text | zapisywany jest wyłącznie tekst **po anonimizacji** |
+| `category`, `powiat`, `gmina` | str? | |
+| `reporter_type` | str | `urzednik_jst`, `pracownik_ops_cus`, `mieszkaniec`, `ngo` |
+| `reporter_name`, `reporter_role` | str? | tylko dla zgłoszeń urzędników |
+| `urgency` | str | `krytyczny`, `wysoki`, `standardowy` |
+| `affected_count` | int | |
+| `matched_innovations` | JSON list | wynik rankingu w momencie zgłoszenia |
+| `assigned_innovation_id`, `assigned_notes` | str? | |
+| `status` | str | `matched` (anonimowe zapytanie Matchmakingu – ukryte w rejestrze), `nowy`, `w_analizie`, `przypisana_innowacja`, `wdrazany`, `rozwiazany` |
 
-### 2.2. `ProblemReport` (Zgłoszenie Potrzeby Mieszkańca / JST)
-```python
-class ProblemReport(Base):
-    __tablename__ = "problem_reports"
+### `idea_fiszkas` – fiszki pomysłów
+| Pole | Typ | Uwagi |
+|---|---|---|
+| `id` | str PK | `fiszka-xxxxxxxx` – numer podawany autorowi |
+| `title`, `summary`, `target_audience`, `powiat` | | |
+| `implementation_stage` | str | `pomysl`, `prototyp`, `pilotaz`, `wdrozenie` |
+| `author_name`, `author_email`, `author_type` | | widoczne tylko w panelu ROPS (🔒) |
+| `status` | str | `submitted`, `in_review`, `needs_changes`, `approved`, `rejected` |
+| `admin_notes` | text? | komentarz koordynatora – trafia do autora |
+| `assigned_mentor_id` | str? | |
+| `rodo_consent_at` | datetime | moment udzielenia zgody |
+| `created_at`, `updated_at` | datetime | |
 
-    id: str = Column(String, primary_key=True)
-    raw_text: str = Column(Text, nullable=False)              # Zgłoszenie po filtracji PII
-    category: str = Column(String, index=True)
-    powiat: str = Column(String, index=True)                  # np. 'tarnowski', 'gorlicki'
-    gmina: str = Column(String, nullable=True)
-    reporter_type: str = Column(String)                       # 'mieszkaniec', 'ngo', 'jst'
-    matched_innovations: list[str] = Column(JSON)             # IDs powiązanych innowacji
-    status: str = Column(String, default="matched")           # 'matched', 'needs_idea', 'converted'
-    created_at: datetime = Column(DateTime, default=datetime.utcnow)
-```
+### `canvas_models` – 9 pól Canwy (tabela przygotowana pod zapis Canwy przy fiszce)
 
-### 2.3. `IdeaFiszka` & `CanvasModel` (Kreator Pomysłów)
-```python
-class IdeaFiszka(Base):
-    __tablename__ = "idea_fiszkas"
+### `testing_campaigns`, `tester_signups`, `testing_feedback` – Tester Innowacji
+- `testing_campaigns.status`: `open` → `full` (automatycznie po zapełnieniu) → `closed`. `slots_taken` nigdy nie przekracza `slots_total`.
+- `tester_signups`: `campaign_id`, `tester_name`, `tester_email` (unikalny w ramach kampanii, porównywany bez wielkości liter), `tester_role`, `motivation`, `guardian_consent` (wymagane dla roli `mlodziez`).
+- `testing_feedback`: `sus_answers` (JSON, 10 × 1–5), `sus_score` (float 0–100, liczony na serwerze), `usability_rating` (1–5), bariery i propozycje.
 
-    id: str = Column(String, primary_key=True)
-    title: str = Column(String, nullable=False)
-    summary: str = Column(Text, nullable=False)
-    target_audience: str = Column(String, nullable=False)
-    implementation_stage: str = Column(String)                # 'pomysl', 'prototyp', 'pilot'
-    author_name: str = Column(String, nullable=False)
-    author_email: str = Column(String, nullable=False)
-    author_type: str = Column(String)                         # 'indywidualny', 'ngo', 'grupa_nieformalna'
-    powiat: str = Column(String, nullable=False)
-    status: str = Column(String, default="submitted")         # 'draft', 'submitted', 'verified_by_rops'
-    admin_notes: str = Column(Text, nullable=True)
-    assigned_mentor_id: str = Column(String, nullable=True)
-    created_at: datetime = Column(DateTime, default=datetime.utcnow)
+### `communication_threads`, `thread_messages`, `mentors`, `mentor_bookings` – komunikacja
+- Kategorie wątków: `rops_qa`, `poszukiwanie_partnera`, `konsultacja_mentorska`; role: `mieszkaniec`, `ngo`, `jst`, `mentor`, `rops_ekspert`.
+- `mentors.available_hours` (np. „Środy 16:00 - 19:00”) jest parsowane na sloty 60-minutowe.
+- `mentor_bookings`: `mentor_id`, `slot_start` (czas lokalny), `requester_name`, `requester_email`, `topic`.
 
-class CanvasModel(Base):
-    __tablename__ = "canvas_models"
+### `notifications` – powiadomienia i skrzynka nadawcza
+| Pole | Typ | Uwagi |
+|---|---|---|
+| `recipient` | str | adres e-mail lub `rops_admin` |
+| `channel` | str | `panel` (koordynator ROPS) lub `email` |
+| `subject`, `body` | | |
+| `related_type`, `related_id` | str? | `fiszka`, `booking`, `campaign`, `problem` |
+| `delivery_status` | str | `in_app`, `queued` (brak SMTP), `sent`, `failed` |
+| `is_read` | bool | dotyczy powiadomień panelu |
 
-    id: str = Column(String, primary_key=True)
-    fiszka_id: str = Column(String, ForeignKey("idea_fiszkas.id"))
-    problem: str = Column(Text)
-    target_group: str = Column(Text)
-    value_proposition: str = Column(Text)
-    barriers: str = Column(Text)
-    resources: str = Column(Text)
-    partners: str = Column(Text)
-    testing_plan: str = Column(Text)
-    metrics: str = Column(Text)
-    scalability: str = Column(Text)
-    ai_audit_score: int = Column(Integer, default=0)
-    ai_audit_feedback: dict = Column(JSON, default=dict)
-```
+Zdarzenia tworzące powiadomienia: nowa fiszka, decyzja w sprawie fiszki, zapis na testy, komplet testerów, rezerwacja konsultacji, krytyczne wyzwanie w rejestrze.
 
-### 2.4. `TestingCampaign` & `TestingFeedback` (Tester Innowacji)
-```python
-class TestingCampaign(Base):
-    __tablename__ = "testing_campaigns"
+### `regional_stats` – 22 powiaty
+`powiat_code`, `powiat_name`, `population`, `senior_share_pct`, `youth_share_pct`, `demographic_trend`, `reported_problems_count` (dane bazowe z diagnozy), `active_innovations_count`, `key_social_challenge`.
 
-    id: str = Column(String, primary_key=True)
-    innovation_id: str = Column(String, ForeignKey("innovations.id"))
-    campaign_name: str = Column(String, nullable=False)
-    goal_description: str = Column(Text, nullable=False)
-    tester_profile_needed: str = Column(String)               # np. 'Seniorzy 70+ ze smartfonem'
-    slots_total: int = Column(Integer, default=20)
-    slots_taken: int = Column(Integer, default=0)
-    status: str = Column(String, default="open")              # 'open', 'ongoing', 'closed'
-    deadline: date = Column(Date)
+---
 
-class TestingFeedback(Base):
-    __tablename__ = "testing_feedback"
+## 3. Migracje i dane startowe
 
-    id: str = Column(String, primary_key=True)
-    campaign_id: str = Column(String, ForeignKey("testing_campaigns.id"))
-    tester_role: str = Column(String)                         # 'senior', 'opiekun', 'ekspert'
-    sus_score: int = Column(Integer)                          # 0 - 100 System Usability Scale
-    usability_rating: int = Column(Integer)                   # 1 - 5 gwiazdek
-    identified_barriers: str = Column(Text)
-    improvement_proposals: str = Column(Text)
-    created_at: datetime = Column(DateTime, default=datetime.utcnow)
-```
-
-### 2.5. `RegionalStat` (Wskaźniki 22 Powiatów Małopolski)
-```python
-class RegionalStat(Base):
-    __tablename__ = "regional_stats"
-
-    powiat_code: str = Column(String, primary_key=True)       # np. 'PL-1206' (gorlicki)
-    powiat_name: str = Column(String, nullable=False)
-    population: int = Column(Integer)
-    senior_share_pct: float = Column(Float)                   # % osób w wieku poprodukcyjnym
-    youth_share_pct: float = Column(Float)
-    demographic_trend: str = Column(String)                   # 'depopulacja', 'stabilny', 'wzrost'
-    reported_problems_count: int = Column(Integer, default=0)
-    active_innovations_count: int = Column(Integer, default=0)
-    key_social_challenge: str = Column(String)
-```
+- `create_all()` tworzy brakujące tabele, a funkcja `migrate_sqlite_columns` w `app/main.py` dodaje brakujące kolumny do istniejących tabel na podstawie modeli (rozwiązanie przejściowe – docelowo PostgreSQL + Alembic).
+- `GET /health` zwraca `schema_ok` i listę brakujących kolumn, a przy starcie wykonywany jest self-test Matchmakingu.
+- `seed_runner.run_seed()` wypełnia puste tabele z `app/seed/data/*.json`; `sync_reference_data()` przy każdym starcie koryguje istniejące bazy (usuwa placeholderowe linki wideo/PDF, zmienia domenę e-maili mentorów na `example.org`, zamyka przepełnione kampanie, usuwa wpisy testowe z prefiksem `TEST-QA` / `QA-TEST`).

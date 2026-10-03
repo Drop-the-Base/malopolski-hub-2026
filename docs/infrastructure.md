@@ -1,127 +1,85 @@
 # Infrastruktura, Konteneryzacja i Analiza TCO
 ## Małopolski Hub Innowacji Społecznych (MHIS)
 
-> **Autor**: DevOps & Cloud Infrastructure Lead  
-> **Status**: Ready for Deployment  
-> **Wymaganie hackathonowe**: Zero-friction setup, start jedną komendą: `docker compose up --build`.
+> **Start jedną komendą**: `docker compose up --build`
+> Pełna konfiguracja: `docker-compose.yml` i `.env.example` w katalogu głównym.
 
 ---
 
-## 1. Topologia Kontenerów Docker Compose
-
-System składa się z dwóch zoptymalizowanych usług działających w izolowanej sieci wirtualnej `mhis-network`:
+## 1. Topologia
 
 ```mermaid
 graph TB
-    subgraph Host ["Serwer / Maszyna Deweloperska (Port 80 / 3000)"]
-        Browser["Przeglądarka Sędziego / Użytkownika"]
+    Browser["Przeglądarka"] -->|HTTP :80 / :3000| Proxy
+
+    subgraph Net ["sieć mhis-network"]
+        subgraph FE ["mhis-frontend (Nginx)"]
+            Proxy["Nginx: SPA + proxy /api/"]
+        end
+        subgraph BE ["mhis-backend (Python 3.11, Uvicorn :8000)"]
+            API["FastAPI"]
+            Start["Start: create_all → migracja kolumn → seed → korekta danych → self-test"]
+        end
+        Vol[("wolumen mhis_data → /data/mhis.db")]
     end
 
-    subgraph DockerBridge ["Docker Bridge Network: mhis-network"]
-        subgraph WebService ["Usługa: mhis-frontend (Nginx)"]
-            Proxy["Reverse Proxy Nginx (Port 80)"]
-            SPA["React Static Bundle (SPA)"]
-        end
+    Proxy -->|/api/*| API
+    API --> Vol
+    API -.->|opcjonalnie| Groq["Groq API (LLM, Whisper)"]
+    API -.->|opcjonalnie| SMTP["SMTP"]
+```
 
-        subgraph APIService ["Usługa: mhis-backend (Python FastAPI)"]
-            FastAPI["Uvicorn ASGI Server (Port 8000)"]
-            SeedEngine["Automatyczny Seeder Danych ROPS"]
-            VectorRAG["Lokalna Baza Wektorowa"]
-        end
+- Frontend startuje dopiero, gdy backend przejdzie healthcheck (`GET /api/v1/health`).
+- Indeks wyszukiwania jest budowany w pamięci przy starcie i po każdej zmianie katalogu – nie wymaga osobnego wolumenu.
 
-        subgraph PersistentVolumes ["Wolumeny Trwałe"]
-            VolDB[("mhis_sqlite_data")]
-            VolVec[("mhis_vector_data")]
-        end
-    end
+---
 
-    Browser -->|HTTP :80| Proxy
-    Proxy -->|Zapytania statyczne /| SPA
-    Proxy -->|Zapytania API /api/*| FastAPI
-    FastAPI --> VolDB
-    FastAPI --> VolVec
-    SeedEngine -->|Inicjalizacja startowa| VolDB
+## 2. Zmienne środowiskowe (backend)
+
+| Zmienna | Domyślnie | Opis |
+|---|---|---|
+| `DATABASE_URL` | `sqlite+aiosqlite:////data/mhis.db` | baza danych |
+| `GROQ_API_KEY`, `GROQ_MODEL` | puste, `openai/gpt-oss-20b` | LLM i Whisper; bez klucza – tryb szablonów |
+| `SECRET_KEY` | wartość demo | klucz podpisu tokenów JWT – **zmień w produkcji** |
+| `ADMIN_PASSWORD` | `rops-demo-2026` | hasło Panelu ROPS – **zmień przed publicznym udostępnieniem** |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | puste, 587 | wysyłka e-maili; bez `SMTP_HOST` wiadomości trafiają do skrzynki nadawczej w panelu |
+| `CORS_ORIGINS` | localhost | dozwolone pochodzenia |
+
+Typowe operacje:
+```bash
+docker compose up -d --build          # budowa i start
+docker compose logs -f backend        # logi (migracje, self-test Matchmakingu)
+docker compose down -v                # usunięcie kontenerów i bazy demo (wolumen mhis_data)
+cd backend && python -m pytest -q     # testy backendu (osobna baza: ustaw DATABASE_URL)
 ```
 
 ---
 
-## 2. Plik Konfiguracji `docker-compose.yml` (Wzorzec)
+## 3. Szacunkowy koszt utrzymania (TCO)
 
-```yaml
-version: '3.8'
+Założenia: 5 000 zapytań Matchmakingu miesięcznie (~2 000 tokenów każde z uzasadnieniami), ~500 nagrań głosowych po 30 s. Ceny API wg cenników dostawców – do weryfikacji przy wdrożeniu.
 
-services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: mhis-backend
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_ENV=production
-      - PROJECT_NAME=Malopolski Hub Innowacji Spolecznych
-      - DATABASE_URL=sqlite+aiosqlite:////data/mhis.db
-      - VECTOR_STORE_DIR=/data/vector_store
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - CORS_ORIGINS=["http://localhost", "http://localhost:3000", "http://localhost:80"]
-    volumes:
-      - mhis_db_data:/data
-    networks:
-      - mhis-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+| Składnik | Założenie | Koszt / m-c |
+|---|---|---|
+| Serwer VPS (Docker) | 4 vCPU, 8 GB RAM, chmura krajowa | ok. 120 zł |
+| Kopie zapasowe, domena, certyfikat | backup dzienny, 30 dni | ok. 30 zł |
+| LLM (Groq, gpt-oss-20b) | ~10 mln tokenów | ok. 10–20 zł |
+| Transkrypcja mowy (Whisper) | ~4 h nagrań | < 5 zł |
+| Licencje | FastAPI, React, SQLite/PostgreSQL – open source | 0 zł |
+| **Infrastruktura i API razem** | | **ok. 170–200 zł** |
+| Utrzymanie techniczne | ok. 0,1 etatu programisty (aktualizacje, bezpieczeństwo) | ok. 1 500 zł |
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: mhis-frontend
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "3000:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - mhis-network
-
-networks:
-  mhis-network:
-    driver: bridge
-
-volumes:
-  mhis_db_data:
-    name: mhis_db_data
-```
+Warianty:
+- **On-premise ROPS / Urząd Marszałkowski** – koszt serwera pokryty istniejącą infrastrukturą; LLM można wyłączyć (tryb szablonów) lub zastąpić modelem lokalnym **[plan]**.
+- **Wysoka skala** – PostgreSQL + pgvector, 2 instancje backendu, CDN dla filmów Biblioteki Innowacji **[plan]**; szacunkowo kilkaset zł miesięcznie plus API proporcjonalnie do ruchu.
 
 ---
 
-## 3. Analiza Kosztów Utrzymania (TCO) dla ROPS Kraków (20% Oceny)
+## 4. Bezpieczeństwo i RODO
 
-Sędziowie ROPS Kraków oceniają opłacalność wdrożenia w administracji publicznej. Przedstawiamy 3 realistyczne warianty:
-
-| Wariant Wdrożenia | Opis Środowiska | Szacowany Koszt Miesięczny | Zalety dla ROPS |
-|---|---|---|---|
-| **Wariant A: Chmura Samorządowa (Rekomendowany)** | Maszyna wirtualna (VPS 2 vCPU, 4 GB RAM, 60 GB SSD NVMe) w polskim centrum danych (np. Chmura Krajowa / OVH Warszawa) + API Gemini Flash. | **ok. 95 PLN / mc** (~22 EUR) | Błyskawiczny start, brak kosztów zarządzania sprzętem, 99.9% uptime, suwerenność danych w UE/Polsce. |
-| **Wariant B: Infrastruktura On-Premise ROPS** | Serwer Urzędu Marszałkowskiego Województwa Małopolskiego, lokalny model LLM (Ollama / Mistral 7B) lub lokalne reguły RAG. | **0 PLN / mc** (wykorzystanie istniejącej infrastruktury IT) | 100% niezależności od zewnętrznych dostawców chmury, zero opłat abonamentowych, całkowita prywatność danych. |
-| **Wariant C: Wysoka Skala (Województwo Małopolskie)** | Kubernetes / Docker Swarm (2 instancje backendu, managed PostgreSQL + pgvector, CDN dla materiałów wideo biblioteki innowacji). | **ok. 320 PLN / mc** (~75 EUR) | Gotowość na obsługę 100 000+ zapytań mieszkańców miesięcznie podczas wojewódzkich kampanii społecznych. |
-
----
-
-## 4. Bezpieczeństwo i Zgodność z RODO
-
-1. **Zasada Zero Real PII**:
-   - Dane seedowe zawierają wyłącznie fikcyjne lub publicznie jawne podmioty (np. *"Stowarzyszenie Pomocy Seniorom 'Pogodne Dni'"*, fikcyjne nazwiska osób kontaktowych).
-2. **Kondycjonowanie Danych przed modelem AI**:
-   - Moduł `PIIFilter` w backendzie automatycznie usuwa numery PESEL, numery telefonów oraz adresy e-mail z tekstu problemu zgłaszanego przez mieszkańca przed przekazaniem do silnika RAG / LLM.
-3. **Izolacja Uprawnień w Kontenerach**:
-   - Kontenery backendu i frontendu działają jako użytkownicy bez uprawnień roota (`appuser:appgroup` o UID 10001).
-4. **Nagłówki Bezpieczeństwa w Nginx**:
-   - Skonfigurowane nagłówki: `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy` zoptymalizowany dla SPA.
+1. **Brak prawdziwych danych osobowych w demo** – osoby i organizacje są fikcyjne, e-maile w domenie `example.org`.
+2. **Anonimizacja** – `services/pii_filter.py` maskuje PESEL, telefony, e-maile, adresy, kody pocztowe oraz typowe imiona z nazwiskami przed zapisem zgłoszenia i przed wysłaniem tekstu do LLM. Filtr jest heurystyczny – nie zastępuje oceny inspektora ochrony danych.
+3. **Zgody** – fiszka, zapis na testy i rezerwacja konsultacji wymagają zgody RODO; moment zgody fiszki jest zapisywany (`rodo_consent_at`).
+4. **Dostęp** – dane kontaktowe autorów, radar trendów, powiadomienia i edycja katalogu wymagają tokenu koordynatora (`POST /auth/login`). Wersja produkcyjna: SSO z rolami **[plan]**.
+5. **Błędy** – odpowiedzi 500 nie zawierają SQL ani parametrów; szczegóły tylko w logach serwera.
+6. **Do zrobienia przed produkcją** – HTTPS, nagłówki bezpieczeństwa w Nginx (CSP, `X-Frame-Options`, `X-Content-Type-Options`), uruchamianie kontenerów jako użytkownik bez uprawnień root, limit zapytań (rate limiting) dla endpointów publicznych, zmiana `SECRET_KEY` i `ADMIN_PASSWORD`.

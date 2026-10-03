@@ -2,6 +2,7 @@ import sys
 import json
 import urllib.request
 import urllib.error
+import os
 
 # Zabezpieczenie przed błędem charmap w terminalu Windows
 if sys.platform == "win32":
@@ -9,13 +10,14 @@ if sys.platform == "win32":
 
 BASE_URL = "http://localhost:8000/api/v1"
 
-def test_endpoint(name: str, method: str, path: str, payload: dict = None):
+def test_endpoint(name: str, method: str, path: str, payload: dict = None, token: str = None):
     url = f"{BASE_URL}{path}"
     data = json.dumps(payload).encode("utf-8") if payload else None
     req = urllib.request.Request(
         url,
         data=data,
-        headers={"Content-Type": "application/json"} if payload else {},
+        headers={**({"Content-Type": "application/json"} if payload else {}),
+                 **({"Authorization": f"Bearer {token}"} if token else {})},
         method=method
     )
     try:
@@ -130,7 +132,11 @@ def run_smoke_tests():
     if ok: success_count += 1
 
     # 8. Moduł VI: Panel Admina & Radar Trendów
-    ok, _ = test_endpoint("Moduł VI: Radar Trendów ROPS", "GET", "/admin/trends")
+    # Panel ROPS wymaga logowania koordynatora (hasło z ADMIN_PASSWORD)
+    _, login = test_endpoint("Logowanie koordynatora ROPS", "POST", "/auth/login",
+                             {"password": os.environ.get("ADMIN_PASSWORD", "rops-demo-2026")})
+    ok, _ = test_endpoint("Moduł VI: Radar Trendów ROPS", "GET", "/admin/trends",
+                          token=(login or {}).get("access_token"))
     if ok: success_count += 1
 
     # 9. Asystent Głosowy Seniora (Groq Whisper)

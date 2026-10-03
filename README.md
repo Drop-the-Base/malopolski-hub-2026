@@ -1,5 +1,5 @@
 # Małopolski Hub Innowacji Społecznych (MHIS)
-### Inteligentna Platforma Wymiany Wiedzy, Matchmakingu i Adaptacji Innowacji dla Regionu Małopolski
+### Prototyp platformy wymiany wiedzy, matchmakingu i adaptacji innowacji społecznych dla Małopolski (HackYeah 2026)
 
 [![HackYeah 2026](https://img.shields.io/badge/Hackathon-HackYeah_2026-blue.svg)](https://hackyeah.pl)
 [![Partner](https://img.shields.io/badge/Partner-ROPS_Kraków-red.svg)](https://rops.krakow.pl)
@@ -19,27 +19,27 @@ Województwo Małopolskie stoi dziś przed fundamentalnymi wyzwaniami:
 - **Asymetria demograficzna**: dynamiczny wzrost liczby ludności w wianuszku krakowskim vs wyludnianie obszarów wiejskich.
 - **Bariera wdrożeniowa w samorządach**: gminy chcą pomagać mieszkańcom, ale nie potrafią zaadaptować innowacji do formy oficjalnej usługi publicznej.
 
-**Małopolski Hub Innowacji Społecznych (MHIS)** to cyfrowe serce ekosystemu – platforma napędzana sztuczną inteligencją, łącząca mieszkańców, organizacje pozarządowe, jednostki samorządu terytorialnego (JST/CUS) oraz ekspertów ROPS.
+**Małopolski Hub Innowacji Społecznych (MHIS)** to prototyp platformy łączącej mieszkańców, organizacje pozarządowe, jednostki samorządu terytorialnego (JST/CUS) i ekspertów ROPS – przygotowany na HackYeah 2026 jako koncepcja dla ROPS Kraków (nie jest oficjalnym serwisem ROPS).
 
 ---
 
-## 🌟 Kluczowe Funkcjonalności i Zgodność z Kryteriami Oceny
+## 🌟 Moduły i stan realizacji
 
-Projekt w 100% realizuje wymagania regulaminowe, dostarczając **wszystkie 7 modułów wyzwania** oraz unikalne funkcjonalności premiujące:
+Prototyp obejmuje wszystkie 7 modułów z opisu wyzwania oraz Rejestr Wyzwań JST. Stan po poprawkach z raportu QA: [`docs/QA_FIXES.md`](docs/QA_FIXES.md).
 
-| Moduł | Nazwa i Rola | Status | Punkty w Wyzwaniu |
-|---|---|---|---|
-| **I** | **Matchmaking Społeczny (RAG)** – Semantyczne kojarzenie problemów mieszkańców z bazą innowacji ROPS. | Zrealizowany | **10% (Obligatoryjny)** |
-| **II** | **Zasobnik Wiedzy & Mapa Wyzwań** – Biblioteka 200+ innowacji i interaktywna mapa 22 powiatów. | Zrealizowany | **+5%** |
-| **III** | **Kreator Pomysłów & Canwa Innowacji** – Fiszka 24/7, generator wniosków grantowych i audyt logiczny AI. | Zrealizowany | **+5%** |
-| **IV** | **Tester Innowacji** – Platforma testów prototypów z ankietami System Usability Scale (SUS). | Zrealizowany | **+5%** |
-| **V** | **Platforma Aktywnej Komunikacji** – Bezpośredni dialog z ROPS, sieć mentorów i giełda partnerstw. | Zrealizowany | **+5%** |
-| **VI** | **Panel Administratora & Radar Trendów** – Analityka potrzeb per powiat i moderacja fiszek dla ROPS. | Zrealizowany | **+5%** |
-| **VII**| **Middleman Innowacji (Killer Feature)** – Asystent AI generujący Service Blueprint i projekty uchwał dla gmin. | Zrealizowany | **+5%** |
-| **WCAG**| **Dostępność Cyfrowa WCAG 2.1 AA** – Wysoki kontrast, skalowanie fontów, czytnik mowy i **tryb ETR (Prosty Język)**. | Zrealizowany | **20% (Dostępność)** |
-| **TCO** | **Gotowość Wdrożeniowa i Niski Koszt** – Docker Compose, 100% open-source, koszt hostingu < 100 zł/mc. | Zrealizowany | **20% (Wdrożenie)** |
-| **PREM**| **Innowacyjność, Wizualizator AI, Jakość MVP** – Nowatorskie podejście GovTech i syntetyczne dane bez PII. | Zrealizowany | **20% (Premie i UX)** |
-| **SUMA**| **KOMPLETNA REALIZACJA WYMOGÓW REGULAMINOWYCH** | **100%** | **100 / 100 PKT** |
+| Moduł | Co działa w prototypie |
+|---|---|
+| **I. Matchmaking społeczny** (obligatoryjny) | Opis tekstem lub głosem (Whisper) → rozpoznanie potrzeb + TF-IDF → posortowane wyniki powyżej progu trafności, uzasadnienie LLM dla każdej innowacji, stan „brak dopasowania” z przekierowaniem do zgłoszenia problemu lub pomysłu. Dane osobowe maskowane przed analizą. |
+| **II. Zasobnik wiedzy** | Biblioteka innowacji (10 kart w wersji demo) z wyszukiwaniem bez względu na polskie znaki, karta innowacji pod własnym adresem, wersje ETR, wyzwania 22 powiatów, materiały. |
+| **III. Kreator pomysłów** | Fiszka 24/7 (etap realizacji, zgoda RODO) z numerem i stroną statusu, Canwa 9 pól z autouzupełnianiem LLM i automatyczną checklistą, szkic wniosku tylko dla otwartych naborów z wykazem braków, wydruk do PDF. |
+| **IV. Tester innowacji** | Kampanie testowe bez overbookingu i duplikatów, zgoda opiekuna dla niepełnoletnich, kwestionariusz SUS (10 pytań) z raportem kampanii. |
+| **V. Komunikacja** | Wątki Q&A i giełda partnerstw, oznaczenie nowych wiadomości, rezerwacja konsultacji z mentorem (potwierdzenie e-mail, plik `.ics`). |
+| **VI. Panel ROPS** | Logowanie, kolejka fiszek z decyzją i komentarzem do autora, przydział mentora, powiadomienia i skrzynka e-mail, radar trendów z danych platformy, edycja katalogu innowacji. |
+| **VII. Middleman dla JST** | Projekt pakietu wdrożeniowego dla gminy: kroki, kosztorys (uruchomienie, miesięcznie, rocznie, na odbiorcę), kadry, ryzyka, projekt uchwały do weryfikacji prawnej + czat z doradcą AI. |
+| **Rejestr wyzwań JST** | Zgłoszenia urzędników z automatycznym dopasowaniem innowacji, przypisanie innowacji, raport diagnostyczny powiatu. |
+| **Dostępność** | Dwa tryby wysokiego kontrastu, tekst 125%/150%, tryb ETR (domyślnie włączony), odczyt strony, etykiety pól, dostępne okna dialogowe, tytuły stron, deklaracja dostępności. Szczegóły: [`docs/wcag_compliance.md`](docs/wcag_compliance.md). |
+
+Szacunkowy koszt utrzymania: ok. 170–200 zł/m-c za infrastrukturę i API LLM (+ utrzymanie techniczne) – rozbicie w [`docs/infrastructure.md`](docs/infrastructure.md).
 
 ---
 
@@ -65,6 +65,7 @@ Aplikacja jest natychmiast dostępna:
 - **Interfejs Użytkownika (Frontend)**: [http://localhost](http://localhost) lub [http://localhost:3000](http://localhost:3000)
 - **Dokumentacja API (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Stan Zdrowia Systemu**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+- **Klucz LLM (opcjonalnie)**: ustaw `GROQ_API_KEY` w `.env` – bez niego aplikacja działa w trybie szablonów.
 - **Panel ROPS** (`/admin`): wymaga logowania – hasło demo `rops-demo-2026` (zmienna `ADMIN_PASSWORD`; zmień przed publicznym udostępnieniem).
 - **Status zgłoszonej fiszki**: `/status/<numer-fiszki>` (link otrzymuje autor w e-mailu potwierdzającym).
 - **Powiadomienia e-mail**: bez `SMTP_HOST` trafiają do skrzynki nadawczej widocznej w Panelu ROPS.
@@ -72,44 +73,39 @@ Aplikacja jest natychmiast dostępna:
 
 ---
 
-## 🏗️ Architektura Systemu i Stos Technologiczny
+## 🏗️ Architektura i struktura repozytorium
+
+Szczegóły: [`docs/architecture.md`](docs/architecture.md), API: [`docs/api_specification.md`](docs/api_specification.md), dane: [`docs/data_models.md`](docs/data_models.md).
 
 ```
 małopolska/
-├── backend/                  # Serwis REST API (Python 3.11 + FastAPI)
+├── backend/                  # Python 3.11 + FastAPI + SQLAlchemy 2.0 (async, SQLite)
 │   ├── app/
-│   │   ├── api/v1/           # Kontrolery modułów I-VII
-│   │   ├── core/             # Konfiguracja, asynchroniczna baza danych SQLite/PostgreSQL
-│   │   ├── models/           # Modele domenowe SQLAlchemy 2.0
-│   │   ├── schemas/          # Schematy walidacji Pydantic v2
-│   │   ├── services/         # Silniki AI, RAG Matchmaker, Middleman, ETR, Radar Trendów
-│   │   └── seed/             # Baza danych startowych ROPS Kraków (22 powiaty, 10 innowacji)
-│   ├── tests/                # Testy jednostkowe i integracyjne (Pytest)
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/                 # Interfejs SPA (React 18 + TypeScript + Vite + TailwindCSS)
-│   ├── src/
-│   │   ├── components/       # Pasek Dostępności WCAG, Canwa Innowacji, Mapa SVG Małopolski
-│   │   ├── views/            # Dedykowane ekrany dla mieszkańców, JST i pracowników ROPS
-│   │   ├── store/            # Zarządzanie stanem (Zustand: kontrast, powiększenie, tryb ETR)
-│   │   └── services/         # Klient API REST
-│   ├── Dockerfile
-│   └── nginx.conf            # Reverse proxy i optymalizacja serwowania SPA
-├── docs/                     # Kompletna dokumentacja projektowa i specyfikacje
-│   ├── requirements.md       # PRD i macierz śledzenia wymagań
-│   ├── winning_strategy.md   # Strategia zdobycia 100 pkt u sędziów i analiza kryteriów
-│   ├── architecture.md       # Architektura C4, rurociąg RAG, integracje AI
-│   ├── tech_stack.md         # Uzasadnienie doboru bibliotek i technologii
-│   ├── infrastructure.md     # Środowisko kontenerowe i kalkulacja TCO dla samorządu
-│   ├── api_specification.md  # Kontrakty REST API (OpenAPI 3.1)
-│   ├── data_models.md        # Schematy relacyjne i modele danych
-│   ├── wcag_compliance.md    # Instrukcja zgodności z WCAG 2.1 AA i standardem ETR
-│   ├── seed_data_spec.md     # Zbiory danych ROPS Kraków (innowacje, wyzwania powiatów)
-│   ├── agent_workflow.md     # Master guide dla zespołów i autonomicznych agentów AI
-│   └── tasks/                # 14 atomowych pakietów roboczych (.md) do realizacji
-├── docker-compose.yml        # Orkiestracja całego stosu
-├── .env.example              # Wzorzec konfiguracji środowiskowej
-└── README.md                 # Niniejszy plik
+│   │   ├── api/v1/           # endpointy modułów I–VII, auth, rejestr wyzwań
+│   │   ├── core/             # konfiguracja, baza, słowniki (powiaty, kategorie), JWT
+│   │   ├── models/           # modele ORM (w tym powiadomienia, zapisy testerów, rezerwacje)
+│   │   ├── schemas/          # walidacja Pydantic v2
+│   │   ├── services/         # matchmaking, filtr PII, Groq, powiadomienia, Middleman, SUS, trendy
+│   │   └── seed/             # dane demo (10 innowacji, 22 powiaty) i korekta istniejących baz
+│   └── tests/                # pytest (18 testów, w tym regresja raportu QA)
+├── frontend/                 # React 18 + TypeScript + Vite + Tailwind, serwowany przez Nginx
+│   └── src/
+│       ├── views/            # ekrany modułów, status fiszki, deklaracja dostępności, 404
+│       ├── components/       # pasek dostępności, nawigacja, pasek Jury, kafelki powiatów
+│       ├── constants/        # słowniki domenowe
+│       ├── hooks/            # useDialog – dostępne okna dialogowe
+│       ├── store/            # ustawienia dostępności
+│       └── services/         # klient API z tokenem koordynatora
+├── docs/                     # dokumentacja, raport QA i status poprawek, zadania
+├── scripts/smoke_test.py     # test dymny działającego stosu
+├── docker-compose.yml
+└── .env.example
+```
+
+Testy backendu:
+```bash
+cd backend
+DATABASE_URL=sqlite+aiosqlite:///./test.db python -m pytest -q
 ```
 
 ---
@@ -132,22 +128,32 @@ Każde zadanie zostało przygotowane w standardzie *Ready-to-Code* ze szczegół
 12. [`task_12_frontend_idea_wizard_and_middleman.md`](docs/tasks/task_12_frontend_idea_wizard_and_middleman.md): Interaktywna Canwa Innowacji 3x3 oraz generator wdrożenia dla samorządów (Middleman).
 13. [`task_13_frontend_admin_and_analytics.md`](docs/tasks/task_13_frontend_admin_and_analytics.md): Pulpit analityczny z wykresami Recharts, widok testów i panel komunikacji.
 14. [`task_14_docker_and_demo_seed.md`](docs/tasks/task_14_docker_and_demo_seed.md): Obrazy kontenerów Docker, auto-seeder danych demonstracyjnych i test dymny.
+15. [`task_15_ceneo_style_conversational_matchmaker.md`](docs/tasks/task_15_ceneo_style_conversational_matchmaker.md): Konwersacyjne podsumowanie wyników Matchmakingu.
+16. [`task_16_stepped_idea_creator_wizard_and_pdf.md`](docs/tasks/task_16_stepped_idea_creator_wizard_and_pdf.md): 3-krokowy kreator pomysłu i wydruk wniosku.
+17. [`task_17_middleman_ai_chat_consultant.md`](docs/tasks/task_17_middleman_ai_chat_consultant.md): Czat z doradcą wdrożeniowym dla JST.
+18. [`task_18_problems_registry_and_officer_module.md`](docs/tasks/task_18_problems_registry_and_officer_module.md): Rejestr wyzwań i moduł urzędnika JST.
 
 ---
 
-## ♿ Dostępność Cyfrowa (WCAG 2.1 AA) i Standard ETR
+## ♿ Dostępność (WCAG 2.1 AA – cel projektowy)
 
-W trosce o seniorów, osoby z niepełnosprawnościami oraz mieszkańców o zróżnicowanych kompetencjach cyfrowych, aplikacja posiada:
-- **Tryby Wysokiego Kontrastu**: Standardowy, Żółty na czarnym (kontrast 19.5:1), Czarny na białym (21:1).
-- **Skalowanie czcionki**: A (100%), A+ (125%), A++ (150%) z pełnym zachowaniem responsywności.
-- **Nawigacja klawiaturą**: Wyraźny wskaźnik fokusu (`focus-visible:ring-amber-500`) i Skip Links.
-- **Rewolucyjny Tryb ETR (Tekst Łatwy do Czytania)**: Zamienia skomplikowany język urzędowy w krótkie, zrozumiałe zdania z piktogramami.
+- **Wysoki kontrast**: żółty na czarnym (19,6:1) i czarny na białym (21:1) w całym interfejsie.
+- **Rozmiar tekstu**: 100% / 125% / 150%.
+- **Klawiatura i czytniki ekranu**: link do treści, widoczny fokus, etykiety wszystkich pól, okna dialogowe z obsługą Escape i pułapką fokusu, zakładki ARIA, komunikaty `aria-live`, tytuł każdej podstrony.
+- **Prosty język (ETR)**: streszczenia ETR innowacji, uproszczone nagłówki i opisy, narzędzie `/api/v1/tools/etr-simplify`.
+- **Mowa**: zgłaszanie problemu głosem i odczyt strony.
+
+Prototyp nie przeszedł audytu eksperckiego – znane ograniczenia opisuje [`docs/wcag_compliance.md`](docs/wcag_compliance.md) i strona `/deklaracja-dostepnosci`.
 
 ---
 
-## 🔒 Bezpieczeństwo i RODO (Zasada Zero Real PII)
+## 🔒 Bezpieczeństwo i RODO
 
-Zgodnie z wymogami konkursu ROPS Kraków, w projekcie **nie wykorzystuje się prawdziwych danych osobowych**. Wszystkie rekordy demonstracyjne (nazwiska innowatorów, dane kontaktowe organizacji) mają charakter wyłącznie syntetyczny. Przed wejściem do modeli sztucznej inteligencji zapytania mieszkańców przechodzą przez automatyczny filtr anonimizujący numery PESEL, numery telefonów oraz adresy e-mail.
+- Dane demonstracyjne są fikcyjne (e-maile w domenie `example.org`).
+- Teksty mieszkańców są anonimizowane (PESEL, telefony, e-maile, adresy, kody pocztowe, imiona z nazwiskami) przed zapisem i przed wysłaniem do LLM. Filtr jest heurystyczny.
+- Formularze z danymi kontaktowymi wymagają zgody RODO; dane autorów widzi tylko zalogowany koordynator.
+- Błędy serwera nie ujawniają SQL ani parametrów.
+- Przed udostępnieniem publicznym: zmień `SECRET_KEY` i `ADMIN_PASSWORD`, włącz HTTPS (lista w [`docs/infrastructure.md`](docs/infrastructure.md)).
 
 ---
 

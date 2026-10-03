@@ -1,236 +1,189 @@
 # Architektura Systemu i Integracje AI
 ## Małopolski Hub Innowacji Społecznych (MHIS)
 
-> **Autor**: Antigravity AI Architecture Team  
-> **Wersja**: 1.0.0  
-> **Status**: Approved for Multi-Agent Implementation
+> **Wersja**: 1.1 (po poprawkach z `docs/QA_REPORT_browser_test.md`)
+> Dokument opisuje stan zaimplementowany. Elementy planowane są oznaczone jako **[plan]**.
 
 ---
 
-## 1. Diagram Kontekstowy C4 (System Context)
+## 1. Kontekst systemu
 
 ```mermaid
 graph TB
-    subgraph Uzytkownicy [Aktorzy Systemu]
-        Mieszkaniec["Mieszkaniec / Lider NGO"]
-        Samorzad["Przedstawiciel JST / CUS"]
-        PracownikROPS["Koordynator ROPS Kraków"]
-        Mentor["Ekspert / Mentor"]
-        Tester["Tester Innowacji"]
+    subgraph Aktorzy
+        Mieszkaniec["Mieszkaniec / NGO"]
+        Samorzad["Urzędnik JST / CUS / OPS"]
+        ROPS["Koordynator ROPS"]
+        Mentor["Mentor"]
+        Tester["Tester"]
     end
 
-    subgraph HubSystem [Małopolski Hub Innowacji Społecznych]
-        Frontend["Frontend Web SPA (React + TypeScript + WCAG AA)"]
-        BackendAPI["Backend REST API (FastAPI Python)"]
-        VectorEngine["Silnik Wektorowy RAG (ChromaDB / FAISS)"]
-        RelationalDB["Baza Relacyjna (SQLite / PostgreSQL)"]
-        AIEngine["Warstwa AI (LLM / Embeddings)"]
+    subgraph MHIS [Małopolski Hub Innowacji Społecznych]
+        Frontend["SPA React 18 + TypeScript (Nginx)"]
+        API["REST API FastAPI"]
+        DB[("SQLite – wolumen /data")]
+        Index["Indeks TF-IDF + słownik potrzeb (w pamięci)"]
     end
 
-    subgraph Zewnetrzne [Systemy Zewnętrzne i Źródła Danych]
-        ROPSData["Baza Innowacji ROPS Kraków / IWS 2.0"]
-        GUSData["Dane Demograficzne Powiatów Małopolski (BDL GUS)"]
-        ExternalLLM["Dostawca LLM (Google Gemini / OpenAI / Ollama Local)"]
+    subgraph Zewnetrzne
+        Groq["Groq API: gpt-oss-20b (LLM) + Whisper (mowa)"]
+        SMTP["Serwer SMTP (opcjonalny)"]
     end
 
-    Mieszkaniec -->|Zgłasza problem, szuka rozwiązań, tworzy fiszkę| Frontend
-    Samorzad -->|Szuka innowacji, generuje Service Blueprint w Middlemanie| Frontend
-    PracownikROPS -->|Zarządza wiedzą, monitoruje trendy w Małopolsce| Frontend
-    Mentor -->|Udziela feedbacku, wspiera innowatorów| Frontend
-    Tester -->|Testuje prototypy, wypełnia ankiety SUS| Frontend
+    Mieszkaniec --> Frontend
+    Samorzad --> Frontend
+    ROPS -->|logowanie JWT| Frontend
+    Mentor -->|e-mail o rezerwacji| SMTP
+    Tester --> Frontend
+    Frontend -->|/api/v1 przez proxy Nginx| API
+    API --> DB
+    API --> Index
+    API -->|tylko tekst zanonimizowany| Groq
+    API -->|powiadomienia| SMTP
+```
 
-    Frontend -->|REST API / SSE (Streaming)| BackendAPI
-    BackendAPI -->|Zapytania CRUD| RelationalDB
-    BackendAPI -->|Wyszukiwanie podobieństwa wektorowego (Cos/L2)| VectorEngine
-    BackendAPI -->|Generowanie treści, mentoring, adaptacja usług| AIEngine
-    AIEngine -->|Konektor API| ExternalLLM
-    BackendAPI -->|Pobieranie i synchronizacja wiedzy| ROPSData
-    BackendAPI -->|Wskaźniki powiatowe| GUSData
+Bez klucza `GROQ_API_KEY` wszystkie funkcje działają w trybie szablonów (ranking Matchmakingu nie zależy od LLM).
+
+---
+
+## 2. Kontenery (Docker Compose)
+
+| Kontener | Obraz | Port | Rola |
+|---|---|---|---|
+| `mhis-frontend` | `nginx` + zbudowane SPA | 80, 3000 | pliki statyczne, fallback SPA (`try_files … /index.html`), proxy `/api/` → `backend:8000` |
+| `mhis-backend` | `python:3.11-slim` + Uvicorn | 8000 | API, migracje kolumn, seed, self-test; healthcheck `GET /api/v1/health` |
+| wolumen `mhis_data` | – | – | `/data/mhis.db` (SQLite) |
+
+---
+
+## 3. Backend
+
+```
+backend/app/
+├── main.py                  # lifespan: create_all → migrate_sqlite_columns → run_seed → self-test; handlery błędów 422/500
+├── core/
+│   ├── config.py            # pydantic-settings (.env): Groq, SECRET_KEY, ADMIN_PASSWORD, SMTP_*
+│   ├── constants.py         # 22 powiaty (+ miejscownik), 8 kategorii, normalizacja polskich znaków, format liczb
+│   ├── security.py          # token JWT koordynatora, zależność require_admin
+│   └── database.py          # async SQLAlchemy
+├── models/                  # innovation, problem_report, idea_fiszka (+canvas), testing (+tester_signups),
+│                            # communication (+mentor_bookings), notification, regional_stat
+├── schemas/                 # Pydantic v2 z walidacją słowników, limitów i zgód RODO
+├── services/
+│   ├── matchmaking_service.py   # rozpoznawanie potrzeb, ranking hybrydowy, próg trafności, alert trendu
+│   ├── vector_store.py          # TF-IDF na rdzeniach słów bez polskich znaków
+│   ├── pii_filter.py            # PESEL, telefony, e-maile, adresy, kody pocztowe, imiona+nazwiska
+│   ├── groq_client.py           # LLM: uzasadnienia dopasowań, synteza, Canwa, czat JST, Whisper
+│   ├── notification_service.py  # skrzynka powiadomień + opcjonalny SMTP
+│   ├── ai_assistant.py          # checklista Canwy, nabory, szkic wniosku
+│   ├── middleman_service.py     # pakiet wdrożeniowy i projekt uchwały (szablon)
+│   ├── testing_service.py       # zapisy bez overbookingu, punktacja SUS
+│   ├── communication_service.py # wątki, sloty i rezerwacje mentorów
+│   ├── knowledge_service.py     # katalog i wyszukiwanie
+│   ├── trend_analyzer.py        # radar trendów z danych w bazie
+│   └── etr_simplifier.py
+├── api/v1/                  # auth, health, matchmaking, voice, knowledge, ideas, testing,
+│                            # communication, admin (🔒 cały router), middleman, problems
+└── seed/                    # dane JSON + sync_reference_data()
 ```
 
 ---
 
-## 2. Architektura Kontenerowa (Container View)
-
-```mermaid
-graph LR
-    subgraph DockerCompose [Środowisko Docker Compose]
-        subgraph WebContainer [Kontener Frontend - Nginx:alpine]
-            WebStatic["Zbudowane pliki React SPA<br/>Port wewnętrzny: 80"]
-            ReverseProxy["Nginx Reverse Proxy<br/>/api -> backend:8000"]
-        end
-
-        subgraph APIContainer [Kontener Backend - Python 3.11-slim]
-            Uvicorn["Serwer ASGI Uvicorn"]
-            FastAPIApp["Aplikacja FastAPI"]
-            HybridMatchmaker["Moduł Matchmakingu RAG"]
-            MiddlemanEngine["Silnik Adaptacji Middleman AI"]
-            CanvasMentor["Asystent Canwy Innowacji"]
-        end
-
-        subgraph DataVolume [Wolumeny Danych]
-            AppDB[("Baza Relacyjna<br/>data/mhis.db")]
-            VectorStore[("Baza Wektorowa<br/>data/vector_store")]
-            Uploads[("Załączniki / Media<br/>data/uploads")]
-        end
-    end
-
-    UserBrowser(("Przeglądarka Użytkownika")) -->|HTTP Port 80 / 3000| ReverseProxy
-    ReverseProxy -->|Statyczne zasoby| WebStatic
-    ReverseProxy -->|Ruch API| Uvicorn
-    Uvicorn --> FastAPIApp
-    FastAPIApp --> AppDB
-    FastAPIApp --> VectorStore
-    FastAPIApp --> Uploads
-```
-
----
-
-## 3. Warstwowa Architektura Backendu (FastAPI)
-
-Backend został zaprojektowany w oparciu o czysty wzorzec domenowy (Clean / Hexagonal Architecture):
-
-```
-backend/
-├── app/
-│   ├── main.py                    # Punkt wejściowy FastAPI, CORS, middleware, lifespan
-│   ├── core/
-│   │   ├── config.py              # Ustawienia z pydantic-settings (.env)
-│   │   ├── security.py            # JWT tokeny, haszowanie, ochrona PII
-│   │   └── database.py            # Połączenie SQLAlchemy / sesje asynchroniczne
-│   ├── models/                    # Modele ORM (SQLAlchemy)
-│   │   ├── innovation.py          # Baza innowacji ROPS
-│   │   ├── problem_report.py      # Zgłoszenia problemów mieszkańców
-│   │   ├── idea_fiszka.py         # Fiszki i wnioski grantowe
-│   │   ├── canvas.py              # 9 bloków Canwy Innowacji Społecznych
-│   │   ├── testing.py             # Testy prototypów i ankiety ewaluacyjne
-│   │   ├── communication.py       # Pytania Q&A, mentorzy, partnerstwa
-│   │   └── regional_stats.py      # Statystyki 22 powiatów Małopolski
-│   ├── schemas/                   # Schematy walidacji Pydantic v2 (DTO)
-│   │   ├── innovation_schema.py
-│   │   ├── matchmaking_schema.py
-│   │   ├── idea_schema.py
-│   │   ├── middleman_schema.py
-│   │   └── admin_trends_schema.py
-│   ├── services/                  # Logika biznesowa i integracje AI
-│   │   ├── matchmaking_service.py # Hybrydowe wyszukiwanie wektorowe + BM25
-│   │   ├── vector_store.py        # Adapter ChromaDB / FAISS z lokalnym fallbackiem
-│   │   ├── ai_assistant.py        # Mentoring pomysłów, generowanie pytań, luki logiczne
-│   │   ├── middleman_service.py   # Generator pakietów wdrożeniowych dla JST
-│   │   ├── etr_simplifier.py      # Silnik upraszczania tekstu do formatu ETR
-│   │   └── trend_analyzer.py      # Klasteryzacja i wykrywanie anomalii potrzeb
-│   ├── api/v1/                    # Kontrolery endpointów REST
-│   │   ├── matchmaking.py         # [Moduł I]
-│   │   ├── knowledge.py           # [Moduł II]
-│   │   ├── ideas.py               # [Moduł III]
-│   │   ├── testing.py             # [Moduł IV]
-│   │   ├── communication.py       # [Moduł V]
-│   │   ├── admin.py               # [Moduł VI]
-│   │   └── middleman.py           # [Moduł VII]
-│   └── seed/                      # Generator realistycznych danych demonstracyjnych ROPS
-│       ├── seed_runner.py
-│       └── data/
-│           ├── innovations_rops.json
-│           ├── malopolska_powiaty.json
-│           └── sample_problems.json
-```
-
----
-
-## 4. Rurociąg Matchmakingu Społecznego RAG (Moduł I - Obligatoryjny)
+## 4. Matchmaking (Moduł I – obligatoryjny)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Uzytkownik as Mieszkaniec / JST
-    participant API as FastAPI Matchmaking Endpoint
-    participant PII as Filtr PII & Normalizator
-    participant VecStore as Vector Engine (ChromaDB/FAISS)
-    participant FullText as Indeks Słów Kluczowych (BM25)
-    participant Rerank as Moduł Rerankingu & LLM
-    participant DB as Baza Innowacji ROPS
+    actor U as Mieszkaniec
+    participant API as POST /matchmaking
+    participant PII as pii_filter
+    participant R as rank_innovations
+    participant LLM as Groq (opcjonalnie)
+    participant DB as SQLite
 
-    Uzytkownik->>API: POST /api/v1/matchmaking (opis: "Brak opieki dla seniorów w Lipnicy")
-    API->>PII: Anonimizacja i ekstrakcja intencji
-    PII-->>API: Czyste zapytanie + kategoria ('seniorzy', 'mobilność')
-    
-    par Wyszukiwanie Semantyczne & Leksykalne
-        API->>VecStore: Dense Query (Embedding 384/768d)
-        VecStore-->>API: Top-K innowacji semantycznych (odległość cosinusowa)
-        API->>FullText: Sparse Query (słowa kluczowe: 'senior', 'Lipnica', 'opieka')
-        FullText-->>API: Top-K innowacji leksykalnych
+    U->>API: opis problemu (+ powiat, kategoria – opcjonalnie)
+    API->>API: walidacja (22 powiaty, 8 kategorii, ≤ 4000 znaków)
+    API->>PII: anonimizacja
+    PII-->>API: clean_text
+    API->>R: rozpoznanie potrzeb + TF-IDF
+    R-->>API: wyniki ≥ progu, posortowane
+    alt są dopasowania
+        par
+            API->>LLM: uzasadnienie dla każdej innowacji (tylko opis z katalogu)
+            API->>LLM: podsumowanie i 3 kroki
+        end
+    else brak dopasowań
+        API->>API: odpowiedź no_match + kroki „zgłoś problem / zaproponuj pomysł”
     end
-
-    API->>Rerank: Fuzja wyników (Reciprocal Rank Fusion - RRF)
-    Rerank->>DB: Pobranie pełnych metadanych innowacji
-    DB-->>Rerank: Karty innowacji (np. Mobilny Doradca Seniora, Zmysłoteka)
-    Rerank->>Rerank: Wygenerowanie uzasadnienia dopasowania w 2 zdaniach
-    Rerank-->>API: Ustrukturyzowana lista rekomendacji ze wskaźnikiem trafności (%)
-    API-->>Uzytkownik: Zwrócenie wyników do widoku UI (< 300 ms)
+    API->>DB: zapis zanonimizowanego zgłoszenia (analityka trendów)
+    API->>DB: liczba podobnych zgłoszeń, alert trendu (90 dni vs poprzednie 90)
+    API-->>U: wyniki z uzasadnieniem i dopasowanymi potrzebami
 ```
+
+**Ranking** (`matchmaking_service.rank_innovations`):
+1. **Rozpoznawanie potrzeb** – słownik 14 pojęć (np. osoby starsze, samotność, bariery w mieszkaniu, dojazd, wykluczenie cyfrowe, opieka) z wyzwalaczami na prefiksach słów bez polskich znaków (np. `dziadk`, `wann`, `lazien`), wyrażeniami z polskimi znakami tam, gdzie forma bez nich byłaby dwuznaczna (`lęk` vs `lekarz`), wykrywaniem wieku 60+ („82-letni”) i podstawowymi słowami angielskimi.
+2. **Profil innowacji** – pojęcia z tytułu, hasła, grup docelowych i kategorii mają wagę 1,0, a pojęcia wyłącznie z opisu – 0,5.
+3. **Wynik** = 0,6 × pokrycie potrzeb zgłoszenia + 0,3 × podobieństwo TF-IDF (rdzenie 6-znakowe, bez słów funkcyjnych) + 0,08 za zgodną kategorię; maks. 0,97.
+4. **Próg trafności 0,35** i wymóg wspólnej potrzeby lub wyraźnego podobieństwa leksykalnego – bełkot i tematy spoza katalogu zwracają `no_match`.
+5. **Uzasadnienie** – LLM pisze osobne zdanie dla każdej innowacji (z zakazem dopisywania faktów spoza opisu); bez LLM szablon wymienia faktycznie dopasowane potrzeby i grupy docelowe.
+
+Ten sam ranking służy do automatycznego kojarzenia w Rejestrze Wyzwań JST. Indeks jest przebudowywany po każdej zmianie katalogu w Panelu ROPS.
+**[plan]** Embeddingi wielojęzyczne (np. `sentence-transformers`) w PostgreSQL + pgvector jako dodatkowy składnik wyniku.
 
 ---
 
-## 5. Silnik Middlemana Innowacji (Moduł VII - Killer Feature)
-
-Silnik Middlemana odpowiada na kluczowe pytanie stawiane przez samorządy: **"Jak zaadaptować sprawdzoną innowację ROPS do realiów mojej gminy?"**.
+## 5. Ścieżka zgłoszenia pomysłu i odpowiedzi (Moduły III i VI)
 
 ```mermaid
-graph TD
-    InnowacjaMeta["Metadane Innowacji ROPS<br/>(np. Mobilny Doradca Seniora, koszt bazowy: 45 000 zł)"] --> PromptEngine
-    SpecyfikaGminy["Dane Gminy wpisane przez urzędnika:<br/>- Nazwa: Gmina Słaboszów<br/>- Populacja: 3 800 osób (32% seniorów)<br/>- Budżet roczny na politykę społeczną: 120 000 zł<br/>- Infrastruktura: brak CUS, działa filia GOPS"] --> PromptEngine
+sequenceDiagram
+    actor A as Autor
+    participant H as Hub
+    participant K as Koordynator ROPS
+    A->>H: POST /ideas (fiszka + zgoda RODO)
+    H-->>K: powiadomienie w panelu (licznik „nowe”)
+    H-->>A: e-mail z numerem i linkiem /status/{id}
+    K->>H: PATCH /ideas/{id} (status, komentarz, mentor)
+    H-->>A: e-mail z decyzją i danymi mentora
+    A->>H: GET /ideas/{id}/status (bez logowania, bez danych osobowych)
+```
 
-    PromptEngine["Kompilator Promptu Adaptacyjnego Middlemana"] --> LLMModel["Model AI (Gemini 1.5 / GPT-4o / Ollama)"]
+Bez skonfigurowanego `SMTP_HOST` e-maile mają status `queued` i są widoczne w skrzynce nadawczej Panelu ROPS.
 
-    LLMModel --> BlueprintJSON["Ustrukturyzowany Service Blueprint (JSON)"]
-    
-    BlueprintJSON --> Sekcja1["1. Model Operacyjny Usługi (Krok po kroku)"]
-    BlueprintJSON --> Sekcja2["2. Zoptymalizowany Budżet Lokalny (wariant minimum i optimum)"]
-    BlueprintJSON --> Sekcja3["3. Wymagania Kadrowe (etaty/umowy zlecenia dla opiekunów)"]
-    BlueprintJSON --> Sekcja4["4. Wzór Uchwały Rady Gminy / Regulaminu Świadczenia Usługi"]
-    BlueprintJSON --> Sekcja5["5. Matryca Ryzyk i Mierniki Sukcesu (KPI wg wytycznych ROPS)"]
+---
+
+## 6. Middleman dla JST (Moduł VII)
+
+Generator regułowy (bez LLM) – deterministyczny i przewidywalny dla urzędu:
+- profil kosztowy i kadrowy dla każdej z 10 innowacji (dla nowych innowacji – profil domyślny),
+- skalowanie kosztu wg liczby mieszkańców i odsetka seniorów, koszt miesięczny, roczny i na odbiorcę,
+- projekt uchwały z poprawną odmianą („Rady Gminy X”, „Kierownikowi Gminnego Ośrodka Pomocy Społecznej” / „Dyrektorowi Centrum Usług Społecznych”), publikatory Dz. U. do uzupełnienia, zastrzeżenie o weryfikacji prawnej,
+- ryzyko przekroczenia budżetu, gdy koszt pierwszego roku > budżet gminy.
+
+Pytania otwarte obsługuje osobny czat (`/middleman/chat`) oparty na LLM.
+
+---
+
+## 7. Frontend
+
+```
+frontend/src/
+├── App.tsx                 # trasy, tytuły stron per trasa (WCAG 2.4.2), strona 404
+├── constants/domain.ts     # powiaty, kategorie, etykiety, formatowanie dat i kwot
+├── hooks/useDialog.ts      # dostępne okna dialogowe: fokus, Escape, pułapka Tab, przywrócenie fokusu
+├── services/api.ts         # klient Axios, token koordynatora (sessionStorage), czytelne komunikaty błędów
+├── store/useAccessibilityStore.ts  # kontrast, rozmiar tekstu, tryb ETR (klasy na <html>/<body>)
+├── components/             # pasek dostępności, nawigacja (z menu mobilnym), stopka, pasek Jury, kafelki powiatów
+└── views/                  # Home, Matchmaking, Problemy, Baza wiedzy (karta pod /baza-wiedzy/:id),
+                            # Kreator pomysłów, Middleman, Tester, Dialog, Panel ROPS,
+                            # Status fiszki (/status/:id), Deklaracja dostępności
 ```
 
 ---
 
-## 6. Architektura Frontendu (React + TypeScript)
+## 8. Odporność i bezpieczeństwo
 
-```
-frontend/
-├── src/
-│   ├── main.tsx                   # Inicjalizacja React 18 Root
-│   ├── App.tsx                    # Routing (React Router v6) & Providers
-│   ├── assets/                    # Logo ROPS Kraków, ikony, grafiki
-│   ├── components/                # Reużywalne komponenty
-│   │   ├── common/                # Button, Input, Modal, Badge, Card, Spinner
-│   │   ├── accessibility/         # AccessibilityBar (kontrast, font zoom, ETR mode)
-│   │   ├── layout/                # Navbar, Footer, Breadcrumbs, SkipToContent
-│   │   ├── canvas/                # Interaktywny grid 9 pól Canwy Innowacji
-│   │   ├── map/                   # SVG Interaktywna Mapa Powiatów Małopolski
-│   │   └── visualizer/            # Podgląd konceptu innowacji z asystentem
-│   ├── views/                     # Widoki modułów
-│   │   ├── HomeView.tsx           # Dashboard główny Hubu
-│   │   ├── MatchmakingView.tsx    # [Moduł I] Inteligentny kojarzyciel potrzeb
-│   │   ├── KnowledgeView.tsx      # [Moduł II] Biblioteka Innowacji & Kondycja Regionu
-│   │   ├── IdeaCreatorView.tsx    # [Moduł III] Fiszka, Wniosek grantowy, Canwa
-│   │   ├── TesterView.tsx         # [Moduł IV] Tablica testów i ewaluacja SUS
-│   │   ├── CommunicationView.tsx  # [Moduł V] Dialog ROPS, mentorzy, partnerstwa
-│   │   ├── AdminDashboardView.tsx # [Moduł VI] Panel koordynatora i Radar Trendów
-│   │   └── MiddlemanView.tsx      # [Moduł VII] Adaptacja innowacji do usług dla JST
-│   ├── hooks/                     # Custom hooki (useAccessibility, useMatchmaker, useAuth)
-│   ├── services/                  # Klient HTTP (Axios / Fetch) ze schematami Zod
-│   ├── store/                     # Globalny stan (Zustand: dostępność, koszyk innowacji, profil)
-│   └── styles/                    # Tailwind CSS, motywy wysokiego kontrastu (WCAG)
-```
-
----
-
-## 7. Strategia Odporności na Awarię i Tryb Offline
-
-1. **AI Graceful Degradation**:
-   - Jeśli brak klucza API do Gemini/OpenAI lub brak połączenia z siecią, system **automatycznie przełącza się na lokalny silnik heurystyczno-wektorowy**:
-     - Wyszukiwanie semantyczne wykorzystuje lokalne embeddingi `all-MiniLM-L6-v2` lub bazę podobieństwa TF-IDF/BM25.
-     - Asystent Middlemana wykorzystuje wbudowany szablon regułowy z dynamiczną parametryzacją budżetu i wzorem uchwały.
-   - Aplikacja **nigdy nie rzuca błędu 500** przy niedostępności zewnętrznego serwera LLM.
-2. **Persistence i Wolumeny**:
-   - Baza SQLite oraz indeksy wektorowe są montowane jako wolumeny Docker (`/data/mhis.db`), zapewniając trwałość danych między restartami kontenerów.
+- **Degradacja AI**: brak klucza lub błąd Groq → szablony; endpointy nie zwracają 500 z powodu LLM. Modele rozumujące (gpt-oss) dostają `reasoning_effort=low` przy krótkich zadaniach, aby limit tokenów nie wyczerpał się na rozumowaniu.
+- **Błędy**: globalny handler zwraca ogólny komunikat 500 (szczegóły tylko w logach) i czytelne 422.
+- **Dane osobowe**: anonimizacja przed zapisem i LLM, zgody RODO w formularzach, endpointy z e-mailami autorów tylko po zalogowaniu, dane demo z domeną `example.org`.
+- **Logowanie**: jedno hasło koordynatora (`ADMIN_PASSWORD`) i token JWT ważny 8 h. **[plan]** SSO / Keycloak z rolami (mieszkaniec, NGO, JST, mentor, ROPS).
+- **Trwałość**: SQLite w wolumenie; migracja brakujących kolumn przy starcie. **[plan]** PostgreSQL + Alembic.
