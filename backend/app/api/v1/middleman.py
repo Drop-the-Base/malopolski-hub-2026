@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.models.innovation import Innovation
 from app.schemas.middleman_schema import AdaptationRequest, AdaptationResponse, ETRRequest, ETRResponse
 from app.schemas.chat_schema import MiddlemanChatRequest, MiddlemanChatResponse
 from app.services.middleman_service import adapt_innovation_for_municipality
@@ -8,14 +11,15 @@ from app.services.groq_client import middleman_consultant_chat
 router = APIRouter()
 
 @router.post("/middleman/adapt", response_model=AdaptationResponse, tags=["Moduł VII: Middleman Innowacji dla JST"])
-async def adapt_service_for_jst(req: AdaptationRequest):
+async def adapt_service_for_jst(req: AdaptationRequest, db: AsyncSession = Depends(get_db)):
     """
-    [KILLER FEATURE DLA JEDNOSTEK SAMORZĄDU TERYTORIALNEGO]
-    Asystent AI dostosowujący sprawdzoną innowację ROPS do specyfiki małopolskiej gminy.
-    Generuje kompletny pakiet wdrożeniowy (Service Blueprint), kosztorys, wymagania kadrowe
-    oraz gotowy projekt Uchwały Rady Gminy.
+    Generator projektu pakietu wdrożeniowego dla gminy: plan kroków, kosztorys szacunkowy,
+    wymagania kadrowe i projekt uchwały (szablon – do weryfikacji przez radcę prawnego).
     """
-    return adapt_innovation_for_municipality(req)
+    innovation = await db.get(Innovation, req.innovation_id)
+    if not innovation or not innovation.is_published:
+        raise HTTPException(status_code=404, detail="Nie znaleziono innowacji o podanym ID.")
+    return adapt_innovation_for_municipality(req, innovation)
 
 @router.post("/middleman/chat", response_model=MiddlemanChatResponse, tags=["Moduł VII: Middleman Innowacji dla JST"])
 async def chat_with_jst_consultant(req: MiddlemanChatRequest):

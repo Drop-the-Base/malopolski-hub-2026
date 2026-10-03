@@ -1,21 +1,32 @@
 import axios from 'axios';
 import {
   InnovationItem,
+  InnovationUpsert,
   MatchmakingResult,
   RegionalChallenge,
   CanvasData,
   CanvasAudit,
+  CanvasAutofillResult,
   ServiceBlueprint,
   TestingCampaignItem,
+  EvaluationReport,
   CommunicationThreadItem,
   MentorItem,
+  MentorSlot,
+  BookingConfirmation,
   TrendRadarData,
   GrantApplication,
+  GrantCall,
   ProblemReportItem,
-  MunicipalReportSummary
+  MunicipalReportSummary,
+  FiszkaAdminItem,
+  FiszkaPublicStatus,
+  NotificationItem,
+  EducationalMaterial
 } from '../types';
 
 const API_BASE = '/api/v1';
+const TOKEN_KEY = 'mhis_admin_token';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -24,7 +35,57 @@ const client = axios.create({
   }
 });
 
+// Token koordynatora ROPS (sesja przeglądarki)
+export const authStore = {
+  get: (): string | null => {
+    try {
+      return sessionStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set: (token: string) => {
+    try {
+      sessionStorage.setItem(TOKEN_KEY, token);
+    } catch {
+      /* brak dostępu do storage – token tylko w pamięci żądania */
+    }
+  },
+  clear: () => {
+    try {
+      sessionStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* ignoruj */
+    }
+  }
+};
+
+client.interceptors.request.use((config) => {
+  const token = authStore.get();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+/** Czytelny komunikat błędu z odpowiedzi API (walidacja, konflikty, brak połączenia). */
+export const apiErrorMessage = (err: unknown, fallback = 'Wystąpił błąd. Spróbuj ponownie.'): string => {
+  if (axios.isAxiosError(err)) {
+    if (!err.response) return 'Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.';
+    const detail = (err.response.data as { detail?: unknown })?.detail;
+    if (typeof detail === 'string' && detail) return detail;
+  }
+  return fallback;
+};
+
+export const isUnauthorized = (err: unknown) => axios.isAxiosError(err) && err.response?.status === 401;
+
 export const api = {
+  // Uwierzytelnianie
+  login: async (password: string) => {
+    const res = await client.post<{ access_token: string }>('/auth/login', { password });
+    authStore.set(res.data.access_token);
+    return res.data;
+  },
+
   // Moduł I: Matchmaking
   matchProblem: async (problem_description: string, powiat?: string, category?: string) => {
     const res = await client.post<MatchmakingResult>('/matchmaking', {
@@ -52,7 +113,7 @@ export const api = {
   // Moduł II: Zasobnik Wiedzy
   getInnovations: async (category?: string, search?: string) => {
     const res = await client.get<InnovationItem[]>('/knowledge/innovations', {
-      params: { category, search }
+      params: { category: category || undefined, search: search || undefined }
     });
     return res.data;
   },
@@ -62,8 +123,27 @@ export const api = {
     return res.data;
   },
 
+  createInnovation: async (data: InnovationUpsert) => {
+    const res = await client.post<InnovationItem>('/knowledge/innovations', data);
+    return res.data;
+  },
+
+  updateInnovation: async (id: string, data: InnovationUpsert) => {
+    const res = await client.put<InnovationItem>(`/knowledge/innovations/${id}`, data);
+    return res.data;
+  },
+
+  unpublishInnovation: async (id: string) => {
+    await client.delete(`/knowledge/innovations/${id}`);
+  },
+
   getRegionalChallenges: async () => {
     const res = await client.get<RegionalChallenge[]>('/knowledge/challenges');
+    return res.data;
+  },
+
+  getMaterials: async () => {
+    const res = await client.get<EducationalMaterial[]>('/knowledge/materials');
     return res.data;
   },
 
@@ -77,8 +157,14 @@ export const api = {
     author_email: string;
     author_type: string;
     powiat: string;
+    rodo_consent: boolean;
   }) => {
-    const res = await client.post('/ideas', data);
+    const res = await client.post<FiszkaPublicStatus>('/ideas', data);
+    return res.data;
+  },
+
+  getFiszkaStatus: async (id: string) => {
+    const res = await client.get<FiszkaPublicStatus>(`/ideas/${encodeURIComponent(id)}/status`);
     return res.data;
   },
 
@@ -88,7 +174,7 @@ export const api = {
   },
 
   autofillCanvas: async (prompt: string, powiat?: string, target_group?: string) => {
-    const res = await client.post<import('../types').CanvasAutofillResult>('/canvas/autofill', {
+    const res = await client.post<CanvasAutofillResult>('/canvas/autofill', {
       prompt,
       powiat: powiat || 'Kraków',
       target_group: target_group || undefined
@@ -96,7 +182,13 @@ export const api = {
     return res.data;
   },
 
+  getGrantCalls: async () => {
+    const res = await client.get<GrantCall[]>('/grant-calls');
+    return res.data;
+  },
+
   generateGrantApplication: async (data: {
+    call_id: string;
     idea_title: string;
     summary: string;
     target_group: string;
@@ -110,7 +202,7 @@ export const api = {
     return res.data;
   },
 
-  // Moduł VII: Middleman Innowacji dla JST
+  // Moduł VII: Middleman dla JST
   adaptService: async (params: {
     innovation_id: string;
     municipality_name: string;
@@ -155,14 +247,16 @@ export const api = {
     return res.data;
   },
 
-  registerTester: async (campaign_id: string, tester_name: string, tester_email: string, tester_role: string, motivation: string) => {
-    const res = await client.post('/testing/register', {
-      campaign_id,
-      tester_name,
-      tester_email,
-      tester_role,
-      motivation
-    });
+  registerTester: async (data: {
+    campaign_id: string;
+    tester_name: string;
+    tester_email: string;
+    tester_role: string;
+    motivation: string;
+    guardian_consent: boolean;
+    rodo_consent: boolean;
+  }) => {
+    const res = await client.post<{ message: string; slots_taken: number; slots_total: number }>('/testing/register', data);
     return res.data;
   },
 
@@ -170,12 +264,17 @@ export const api = {
     campaign_id: string;
     tester_name: string;
     tester_role: string;
-    sus_score: number;
+    sus_answers: number[];
     usability_rating: number;
     identified_barriers: string;
     improvement_proposals: string;
   }) => {
-    const res = await client.post('/testing/feedback', feedback);
+    const res = await client.post<{ message: string; sus_score: number; sus_grade: string }>('/testing/feedback', feedback);
+    return res.data;
+  },
+
+  getCampaignReport: async (campaignId: string) => {
+    const res = await client.get<EvaluationReport>(`/testing/campaigns/${campaignId}/report`);
     return res.data;
   },
 
@@ -213,13 +312,48 @@ export const api = {
     return res.data;
   },
 
-  // Moduł VI: Panel Admina
+  getMentorSlots: async (mentorId: string) => {
+    const res = await client.get<MentorSlot[]>(`/communication/mentors/${mentorId}/slots`);
+    return res.data;
+  },
+
+  bookMentor: async (mentorId: string, data: {
+    slot_start: string;
+    requester_name: string;
+    requester_email: string;
+    topic: string;
+    rodo_consent: boolean;
+  }) => {
+    const res = await client.post<BookingConfirmation>(`/communication/mentors/${mentorId}/bookings`, data);
+    return res.data;
+  },
+
+  // Moduł VI: Panel ROPS (wymaga zalogowania)
   getTrendRadar: async () => {
     const res = await client.get<TrendRadarData>('/admin/trends');
     return res.data;
   },
 
-  // Moduł VIII: Rejestr Problemów i Panel Urzędnika JST
+  getSubmissions: async () => {
+    const res = await client.get<FiszkaAdminItem[]>('/admin/submissions');
+    return res.data;
+  },
+
+  moderateFiszka: async (id: string, data: { status: string; admin_notes?: string; assigned_mentor_id?: string }) => {
+    const res = await client.patch<FiszkaAdminItem>(`/ideas/${id}`, data);
+    return res.data;
+  },
+
+  getNotifications: async (channel?: 'panel' | 'email') => {
+    const res = await client.get<NotificationItem[]>('/admin/notifications', { params: { channel } });
+    return res.data;
+  },
+
+  markNotificationsRead: async () => {
+    await client.post('/admin/notifications/mark-read');
+  },
+
+  // Rejestr Wyzwań JST
   getProblems: async (params?: {
     powiat?: string;
     category?: string;

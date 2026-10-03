@@ -22,7 +22,22 @@ export const JuryFastTrackBar: React.FC = () => {
   const location = useLocation();
   const { etrMode, toggleEtrMode } = useAccessibility();
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  // Domyślnie zwinięty, żeby nie zasłaniał treści; wybór zapamiętywany w przeglądarce
+  const [collapsed, setCollapsedState] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('mhis_jury_collapsed') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const setCollapsed = (value: boolean) => {
+    setCollapsedState(value);
+    try {
+      localStorage.setItem('mhis_jury_collapsed', String(value));
+    } catch {
+      /* ignoruj */
+    }
+  };
 
   // Stan Auto-Touru
   const [isAutoTourRunning, setIsAutoTourRunning] = useState(false);
@@ -35,7 +50,7 @@ export const JuryFastTrackBar: React.FC = () => {
       id: 'step1',
       num: '1',
       title: 'Diagnoza Mieszkańca',
-      subtitle: 'Kojarzenie AI (98%)',
+      subtitle: 'Kojarzenie potrzeb z innowacjami',
       path: '/matchmaking?q=Mój+82-letni+dziadek+w+Limanowej+ma+trudności+z+wchodzeniem+do+wanny+i+potrzebuje+adaptacji+łazienki&powiat=limanowski',
       icon: Compass,
       color: 'hover:border-amber-400'
@@ -44,7 +59,7 @@ export const JuryFastTrackBar: React.FC = () => {
       id: 'step2',
       num: '2',
       title: 'Middleman dla JST',
-      subtitle: 'Uchwała Rady & Blueprint',
+      subtitle: 'Projekt uchwały i kosztorys',
       path: '/middleman?auto=1',
       icon: Building2,
       color: 'hover:border-blue-400'
@@ -53,7 +68,7 @@ export const JuryFastTrackBar: React.FC = () => {
       id: 'step3',
       num: '3',
       title: 'Canwa & AI Auto-Fill',
-      subtitle: 'Groq API ~1s (9 pól)',
+      subtitle: 'Autouzupełnianie LLM (9 pól)',
       path: '/kreator-pomyslow',
       icon: Sparkles,
       color: 'hover:border-purple-400'
@@ -71,8 +86,8 @@ export const JuryFastTrackBar: React.FC = () => {
     {
       id: 'step5',
       num: '5',
-      title: 'Radar Dyrektora ROPS',
-      subtitle: 'Trendy w 22 Powiatach',
+      title: 'Panel ROPS',
+      subtitle: 'Moderacja i trendy (logowanie)',
       path: '/admin',
       icon: Activity,
       color: 'hover:border-red-400'
@@ -90,6 +105,7 @@ export const JuryFastTrackBar: React.FC = () => {
   };
 
   const startAutoTour = () => {
+    setCollapsed(false);
     setIsAutoTourRunning(true);
     setAutoTourStep(0);
     setSecondsLeftInStep(12);
@@ -176,6 +192,7 @@ export const JuryFastTrackBar: React.FC = () => {
                     onClick={pauseAutoTour}
                     className="p-1 hover:text-amber-300 text-white"
                     title="Pauza"
+                    aria-label="Wstrzymaj pokaz"
                   >
                     <Pause className="w-3 h-3" />
                   </button>
@@ -184,6 +201,7 @@ export const JuryFastTrackBar: React.FC = () => {
                     onClick={stopAutoTour}
                     className="p-1 hover:text-red-400 text-white"
                     title="Zatrzymaj"
+                    aria-label="Zatrzymaj pokaz"
                   >
                     <Square className="w-3 h-3" />
                   </button>
@@ -203,8 +221,10 @@ export const JuryFastTrackBar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCollapsed(!collapsed)}
-                className="p-1 text-slate-400 hover:text-white transition-colors"
+                className="p-1 text-slate-300 hover:text-white transition-colors"
                 title={collapsed ? 'Rozwiń pasek szybkiej ścieżki' : 'Zwiń pasek szybkiej ścieżki'}
+                aria-label={collapsed ? 'Rozwiń pasek szybkiej ścieżki' : 'Zwiń pasek szybkiej ścieżki'}
+                aria-expanded={!collapsed}
               >
                 {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </button>
@@ -247,10 +267,10 @@ export const JuryFastTrackBar: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-bold text-white truncate flex items-center gap-1">
-                        <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-300" />
+                        <Icon className="w-3.5 h-3.5 text-slate-300 group-hover:text-amber-300" aria-hidden="true" />
                         <span>{s.title}</span>
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">
+                      <div className="text-[11px] text-slate-300 truncate">
                         {s.subtitle}
                       </div>
                     </div>

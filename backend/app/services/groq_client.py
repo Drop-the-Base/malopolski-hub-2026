@@ -5,6 +5,7 @@ import time
 from typing import Dict, Any, List, Optional
 import httpx
 from app.core.config import settings
+from app.core.constants import powiat_locative
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,8 @@ def _extract_json_from_text(raw_text: str) -> Optional[Dict[str, Any]]:
 async def groq_chat_completion(
     messages: List[Dict[str, str]],
     temperature: float = 0.3,
-    max_tokens: int = 1200
+    max_tokens: int = 1200,
+    reasoning_effort: Optional[str] = None
 ) -> Optional[str]:
     """
     Wykonuje asynchroniczne zapytanie do API Groq.
@@ -51,6 +53,9 @@ async def groq_chat_completion(
         "temperature": temperature,
         "max_tokens": max_tokens
     }
+    # Modele rozumujące (gpt-oss) zużywają część limitu na tokeny rozumowania – przy krótkich zadaniach ograniczamy je
+    if reasoning_effort and payload["model"].startswith("openai/gpt-oss"):
+        payload["reasoning_effort"] = reasoning_effort
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -78,7 +83,7 @@ async def autofill_social_canvas(prompt: str, powiat: str = "Kraków", target_gr
         "Zwróć odpowiedź WYŁĄCZNIE jako kompletny blok JSON w formacie:\n"
         "```json\n"
         "{\n"
-        '  "idea_title": "oficjalny, urzędowy tytuł innowacji",\n'
+        '  "idea_title": "krótki, rzeczowy tytuł innowacji",\n'
         '  "problem": "diagnoza problemu (1-2 zwięzłe zdania)",\n'
         '  "target_group": "grupa odbiorców (1 zdanie)",\n'
         '  "value_proposition": "unikalna propozycja wartości innowacji (1-2 zdania)",\n'
@@ -86,11 +91,17 @@ async def autofill_social_canvas(prompt: str, powiat: str = "Kraków", target_gr
         '  "resources": "kluczowe zasoby lokalowe, sprzętowe i kadrowe (1 zdanie)",\n'
         '  "partners": "partnerzy lokalni: CUS, GOPS, OSP, Koła Gospodyń, NGO (1 zdanie)",\n'
         '  "testing_plan": "plan 3-miesięcznego prototypowania i testów (1 zdanie)",\n'
-        '  "metrics": "mierzalne wskaźniki sukcesu, np. 30 osób, SUS > 80 (1 zdanie)",\n'
+        '  "metrics": "mierzalne wskaźniki sukcesu, np. liczba uczestników, odsetek zadowolonych w ankiecie (1 zdanie)",\n'
         '  "scalability": "ścieżka skalowania na inne gminy Małopolski (1 zdanie)"\n'
         "}\n"
         "```\n"
-        "Pisz zwięźle, profesjonalnie, po 1-2 krótkie zdania na pole. Upewnij się, że JSON jest kompletny i domknięty nawiasem }."
+        "Pisz zwięźle, profesjonalnie, po 1-2 krótkie zdania na pole. Upewnij się, że JSON jest kompletny i domknięty nawiasem }.\n"
+        "ZASADY: (1) Jako partnerów wymieniaj WYŁĄCZNIE typy instytucji, nie wymyślaj nazw własnych: "
+        "GOPS/OPS, Centrum Usług Społecznych (CUS), PCPR, Koło Gospodyń Wiejskich (KGW), Ochotnicza Straż Pożarna (OSP), "
+        "szkoła, przedszkole, parafia, biblioteka, dom kultury, organizacja pozarządowa (fundacja/stowarzyszenie), "
+        "uczelnia, Powiatowy Urząd Pracy, ROPS Kraków, sołtys/rada sołecka. "
+        "(2) Wskaźnik SUS stosuj tylko dla rozwiązań cyfrowych (aplikacja, strona); dla usług używaj liczby uczestników, "
+        "odsetka zadowolonych w ankiecie lub zmiany mierzonej przed/po. (3) Tytuł bez cudzysłowów."
     )
 
     user_prompt = f"Pomysł innowacji: \"{prompt}\". Powiat: {powiat}."
@@ -114,7 +125,7 @@ async def autofill_social_canvas(prompt: str, powiat: str = "Kraków", target_gr
         parsed = _extract_json_from_text(raw_response)
         if parsed and "idea_title" in parsed and "problem" in parsed:
             return {
-                "idea_title": parsed.get("idea_title", prompt[:60]),
+                "idea_title": str(parsed.get("idea_title") or prompt[:60]).strip().strip('"„”\'').strip(),
                 "problem": parsed.get("problem", ""),
                 "target_group": parsed.get("target_group", target_group or "Mieszkańcy Małopolski"),
                 "value_proposition": parsed.get("value_proposition", ""),
@@ -170,13 +181,13 @@ def _generate_fallback_canvas(prompt: str, powiat: str, target_group: Optional[s
     else:
         title = f"Innowacja Społeczna: {prompt[:40]}"
         tg = target_group or "Mieszkańcy gminy zagrożeni wykluczeniem społecznym lub samotnością"
-        prob = f"Niezaspokojona potrzeba społeczna w powiecie {powiat}: {prompt}. Brak elastycznych usług publicznych w tym zakresie."
+        prob = f"Niezaspokojona potrzeba społeczna {powiat_locative(powiat)}: {prompt}. Brak elastycznych usług publicznych w tym zakresie."
         val = "Nowoczesna, oddolna usługa integrująca społeczność lokalną oparta na modelu wzajemności i zasobach sąsiedzkich."
         bar = "Finansowanie początkowe i formalności samorządowe; rozwiązanie: ścieżka inkubacji ROPS Kraków."
         res = "Świetlica wiejska lub salka osiedlowa, materiały warsztatowe, koordynator wolontariatu (0.5 etatu)."
         part = "Gminny Ośrodek Pomocy Społecznej, Centrum Usług Społecznych, lokalne stowarzyszenia pozarządowe."
         test = "Pilotaż trwający 90 dni, seria 6 spotkań integrujących, zebranie ankiet ewaluacyjnych i feedbacku."
-        met = "Zrekrutowanie minimum 20 stałych uczestników, wskaźnik użyteczności SUS > 75 pkt."
+        met = "Zrekrutowanie minimum 20 stałych uczestników, min. 80% uczestników deklarujących w ankiecie poprawę sytuacji."
         scal = "Zgłoszenie do Bazy Dobrych Praktyk ROPS Kraków i replikacja w subregionach tarnowskim i nowosądeckim."
 
     return {
@@ -194,18 +205,39 @@ def _generate_fallback_canvas(prompt: str, powiat: str, target_group: Optional[s
         "latency_ms": latency_ms
     }
 
-async def generate_groq_match_rationale(problem_text: str, innovation_title: str, category: str) -> Optional[str]:
-    """Generuje spersonalizowane 2-zdaniowe uzasadnienie dopasowania innowacji za pomocą Groq."""
-    prompt = (
-        f"Jesteś doradcą ROPS Kraków. Uzasadnij w maksymalnie 2 zwięzłych zdaniach po polsku, dlaczego innowacja '{innovation_title}' "
-        f"(kategoria: {category}) jest właściwą odpowiedzią na potrzebę: '{problem_text}'. "
-        f"Nie dodawaj nagłówków ani wstępów, od razu podaj 2 konkretne zdania."
+async def generate_match_justifications(problem_text: str, innovations: List[Dict[str, Any]]) -> Dict[str, str]:
+    """
+    Generuje osobne, 2-zdaniowe uzasadnienie dla każdej dopasowanej innowacji (jedno wywołanie LLM).
+    Model dostaje wyłącznie opis innowacji z katalogu – nie wolno mu dopisywać faktów spoza niego.
+    Zwraca {innovation_id: uzasadnienie}; pusty słownik oznacza użycie szablonu.
+    """
+    if not innovations or not settings.GROQ_API_KEY:
+        return {}
+    catalog = "\n".join(
+        f"- id: {m['id']} | {m['title']} | {m['tagline']} | grupy: {', '.join(m.get('target_groups') or [])} | opis: {m.get('full_description', '')[:400]}"
+        for m in innovations
     )
-    return await groq_chat_completion(
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        max_tokens=150
+    system_prompt = (
+        "Jesteś doradcą ROPS Kraków. Dla każdej innowacji z listy napisz po polsku 1-2 zdania (maks. 45 słów), "
+        "DLACZEGO odpowiada ona na opisany problem – odwołaj się do konkretnych słów ze zgłoszenia i do grup docelowych. "
+        "Jeśli innowacja pasuje tylko częściowo, napisz uczciwie, której części problemu dotyczy. "
+        "Nie wymyślaj faktów, liczb ani instytucji spoza opisu. "
+        'Zwróć WYŁĄCZNIE JSON: {"uzasadnienia": {"<id>": "<tekst>", ...}}'
     )
+    raw = await groq_chat_completion(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Zgłoszenie: \"{problem_text[:1500]}\"\n\nInnowacje:\n{catalog}"},
+        ],
+        temperature=0.2,
+        max_tokens=2500,
+        reasoning_effort="low",
+    )
+    parsed = _extract_json_from_text(raw) if raw else None
+    if not parsed or not isinstance(parsed.get("uzasadnienia"), dict):
+        return {}
+    valid_ids = {m["id"] for m in innovations}
+    return {k: str(v).strip() for k, v in parsed["uzasadnienia"].items() if k in valid_ids and str(v).strip()}
 
 def _generate_fallback_ceneo_synthesis(
     problem_text: str,
@@ -214,7 +246,7 @@ def _generate_fallback_ceneo_synthesis(
 ) -> Dict[str, Any]:
     """Wysokiej jakości deterministyczna synteza dopasowania w stylu Ceneo/Allegro."""
     p_lower = problem_text.lower()
-    loc = f"w powiecie {powiat}" if powiat else "w Twojej miejscowości"
+    loc = powiat_locative(powiat) if powiat else "w Twojej miejscowości"
 
     if any(k in p_lower for k in ["senior", "starsz", "wanna", "łazienk", "dziad", "babci", "emeryt", "opiek"]):
         intro = (
@@ -298,7 +330,7 @@ async def generate_ceneo_match_synthesis(
     """
     titles = [f"'{m['title']}' ({m['category']})" for m in matched_innovations[:4]]
     titles_str = ", ".join(titles)
-    loc_str = f"w powiecie {powiat}" if powiat else "w Małopolsce"
+    loc_str = powiat_locative(powiat)
 
     system_prompt = (
         "Jesteś empatycznym, fachowym doradcą Małopolskiego Hubu Innowacji Społecznych ROPS Kraków. "
@@ -475,7 +507,7 @@ async def middleman_consultant_chat(
 
     system_prompt = (
         f"Jesteś starszym doradcą samorządowym Regionalnego Ośrodka Polityki Społecznej (ROPS) w Krakowie. "
-        f"Prowadzisz profesjonalną konsultację wdrożeniową dla władz i kadry samorządowej: {mun} (powiat {powiat}, "
+        f"Prowadzisz profesjonalną konsultację wdrożeniową dla władz i kadry samorządowej: {mun} ({powiat_locative(powiat)}, "
         f"mieszkańców: {pop}, seniorzy: {sen}%, CUS: {'TAK' if has_cus else 'NIE (GOPS/MOPS)'}). "
         f"Kontekst wdrożenia: {blueprint_sum[:300]}. "
         f"Odpowiadaj konkretnie, profesjonalnie, powołując się na polskie ramy prawne (Uchwała Rady Gminy, Ustawa o CUS, fundusze FEM 2021-2027). "

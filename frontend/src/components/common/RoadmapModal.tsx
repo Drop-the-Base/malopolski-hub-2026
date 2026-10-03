@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Calendar, Server, ShieldCheck, Cpu, ArrowUpRight, CheckCircle2, TrendingUp } from 'lucide-react';
+import { X, Server, TrendingUp } from 'lucide-react';
+import { useDialog } from '../../hooks/useDialog';
 
 interface RoadmapModalProps {
   isOpen: boolean;
@@ -7,11 +8,15 @@ interface RoadmapModalProps {
 }
 
 export const RoadmapModal: React.FC<RoadmapModalProps> = ({ isOpen, onClose }) => {
+  const dialogRef = useDialog<HTMLDivElement>(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn" onClick={onClose}>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 sm:p-8 relative"
         role="dialog"
         aria-modal="true"
@@ -20,7 +25,7 @@ export const RoadmapModal: React.FC<RoadmapModalProps> = ({ isOpen, onClose }) =
         {/* Przycisk zamknięcia */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           aria-label="Zamknij okno planu rozwoju"
         >
           <X className="w-5 h-5" />
@@ -36,7 +41,7 @@ export const RoadmapModal: React.FC<RoadmapModalProps> = ({ isOpen, onClose }) =
             Roadmapa Wdrożeniowa MHIS: 2026 – 2027
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-            Projekt został zaprojektowany z myślą o natychmiastowym wdrożeniu w ROPS Kraków oraz bezkosztowej integracji z krajową infrastrukturą cyfrową.
+            Propozycja etapów wdrożenia prototypu w ROPS Kraków. Terminy i partnerzy pilotażu są przykładowe – do ustalenia z zamawiającym.
           </p>
         </div>
 
@@ -48,7 +53,7 @@ export const RoadmapModal: React.FC<RoadmapModalProps> = ({ isOpen, onClose }) =
               <h4 className="text-sm font-bold text-slate-900">Pilotaż w 10 Małopolskich Gminach & Inkubacja ROPS</h4>
             </div>
             <p className="text-xs text-slate-600 mt-1">
-              Start pilotażu w partnerstwie z CUS Miechów, CUS Gorlice, Nowy Sącz i Limanowa. Przeszkolenie 50 koordynatorów gminnych i podłączenie pierwszych 100 innowacji społecznych do katalogu.
+              Pilotaż w kilku gminach (np. z subregionów gorlickiego, miechowskiego i limanowskiego), przeszkolenie koordynatorów gminnych, import pełnej Biblioteki Innowacji ROPS do katalogu, migracja na PostgreSQL + Alembic.
             </p>
           </div>
 
@@ -87,25 +92,30 @@ export const RoadmapModal: React.FC<RoadmapModalProps> = ({ isOpen, onClose }) =
         <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 space-y-3">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
             <Server className="w-4 h-4" />
-            <span>Kalkulacja TCO (Total Cost of Ownership) dla Województwa</span>
+            <span>Szacunkowy koszt utrzymania (TCO) – miesięcznie</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="bg-slate-800/80 p-3 rounded-xl">
-              <span className="text-slate-400 block mb-1">Miesięczny koszt chmury:</span>
-              <strong className="text-base text-emerald-400 font-black">&lt; 180 PLN / m-c</strong>
-              <p className="text-[11px] text-slate-400 mt-1">Lokalna instalacja Docker / VPS w chmurze krajowej.</p>
-            </div>
-            <div className="bg-slate-800/80 p-3 rounded-xl">
-              <span className="text-slate-400 block mb-1">Licencje komercyjne:</span>
-              <strong className="text-base text-amber-400 font-black">0 PLN (100% Open Source)</strong>
-              <p className="text-[11px] text-slate-400 mt-1">Brak vendor lock-in. FastAPI, SQLite, React, Nginx.</p>
-            </div>
-            <div className="bg-slate-800/80 p-3 rounded-xl">
-              <span className="text-slate-400 block mb-1">Dostępność cyfrowa:</span>
-              <strong className="text-base text-blue-400 font-black">100% WCAG 2.1 AA</strong>
-              <p className="text-[11px] text-slate-400 mt-1">Zgodność z ustawą o dostępności cyfrowej z 2019 r.</p>
-            </div>
-          </div>
+          <table className="w-full text-xs">
+            <caption className="sr-only">Składniki miesięcznego kosztu utrzymania platformy</caption>
+            <thead>
+              <tr className="text-left text-slate-300 border-b border-slate-700">
+                <th scope="col" className="py-1.5 pr-2 font-semibold">Składnik</th>
+                <th scope="col" className="py-1.5 pr-2 font-semibold">Założenie</th>
+                <th scope="col" className="py-1.5 text-right font-semibold">Koszt / m-c</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-200">
+              <tr className="border-b border-slate-800"><td className="py-1.5 pr-2">Serwer VPS (Docker)</td><td className="pr-2 text-slate-300">4 vCPU, 8 GB RAM, chmura krajowa</td><td className="text-right">ok. 120 zł</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-1.5 pr-2">Kopie zapasowe, domena, certyfikat</td><td className="pr-2 text-slate-300">backup dzienny 30 dni</td><td className="text-right">ok. 30 zł</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-1.5 pr-2">LLM (Groq, gpt-oss-20b)</td><td className="pr-2 text-slate-300">5 000 zapytań × ~2 000 tokenów</td><td className="text-right">ok. 10–20 zł</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-1.5 pr-2">Transkrypcja mowy (Whisper)</td><td className="pr-2 text-slate-300">~500 nagrań × 30 s</td><td className="text-right">&lt; 5 zł</td></tr>
+              <tr className="border-b border-slate-800"><td className="py-1.5 pr-2">Licencje</td><td className="pr-2 text-slate-300">FastAPI, React, SQLite/PostgreSQL – open source</td><td className="text-right">0 zł</td></tr>
+              <tr><td className="py-1.5 pr-2">Utrzymanie techniczne</td><td className="pr-2 text-slate-300">ok. 0,1 etatu programisty (aktualizacje, bezpieczeństwo)</td><td className="text-right">ok. 1 500 zł</td></tr>
+            </tbody>
+          </table>
+          <p className="text-[11px] text-slate-300">
+            Infrastruktura i API: ok. 170–200 zł/m-c; łącznie z utrzymaniem ok. 1,7 tys. zł/m-c. Ceny API wg cenników dostawców – do weryfikacji przy wdrożeniu.
+            Bez klucza LLM platforma działa w trybie szablonów (koszt API = 0 zł).
+          </p>
         </div>
 
         {/* Przycisk Zamknij */}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { api } from '../services/api';
+import { api, apiErrorMessage } from '../services/api';
 import { MatchmakingResult } from '../types';
+import { CATEGORIES, POWIATY, powiatLabel } from '../constants/domain';
 import {
   Sparkles,
   Search,
@@ -19,14 +20,16 @@ import {
   Zap,
   RefreshCw,
   PackageCheck,
-  MessageSquare
+  MessageSquare,
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 
 export const MatchmakingView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  const initialPowiat = searchParams.get('powiat') || 'gorlicki';
+  const initialPowiat = searchParams.get('powiat') || '';
   const { etrMode } = useAccessibility();
 
   const [problemDescription, setProblemDescription] = useState(initialQuery);
@@ -34,6 +37,8 @@ export const MatchmakingView: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MatchmakingResult | null>(null);
+  const [error, setError] = useState('');
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Stan nagrywania głosu (Groq Whisper)
   const [isRecording, setIsRecording] = useState(false);
@@ -81,12 +86,14 @@ export const MatchmakingView: React.FC = () => {
   const triggerMatch = async (text: string, powiat: string, category?: string) => {
     if (!text.trim()) return;
     setLoading(true);
+    setError('');
     try {
       const data = await api.matchProblem(text, powiat, category);
       setResult(data);
+      setTimeout(() => resultsRef.current?.focus(), 50);
     } catch (err) {
-      console.error(err);
-      alert('Wystąpił błąd podczas kojarzenia potrzeb.');
+      setResult(null);
+      setError(apiErrorMessage(err, 'Nie udało się dopasować innowacji. Spróbuj ponownie za chwilę.'));
     } finally {
       setLoading(false);
     }
@@ -101,11 +108,10 @@ export const MatchmakingView: React.FC = () => {
   useEffect(() => {
     const q = searchParams.get('q');
     const p = searchParams.get('powiat');
+    if (p) setSelectedPowiat(p);
     if (q) {
       setProblemDescription(q);
-      const chosenPowiat = p || selectedPowiat;
-      if (p) setSelectedPowiat(p);
-      triggerMatch(q, chosenPowiat);
+      triggerMatch(q, p || selectedPowiat, selectedCategory);
     }
   }, [searchParams]);
 
@@ -155,11 +161,10 @@ export const MatchmakingView: React.FC = () => {
     try {
       const res = await api.transcribeVoice(blob);
       setProblemDescription(res.text);
-      setVoiceBadge({ model: res.model, latencyMs: res.latency_ms });
+      setVoiceBadge({ model: res.is_fallback ? 'przykładowe nagranie (brak transkrypcji)' : res.model, latencyMs: res.latency_ms });
       triggerMatch(res.text, selectedPowiat, selectedCategory);
     } catch (err) {
-      console.error('Błąd transkrypcji:', err);
-      alert('Nie udało się przetworzyć nagrania audio.');
+      setError(apiErrorMessage(err, 'Nie udało się przetworzyć nagrania. Wpisz opis na klawiaturze.'));
     } finally {
       setTranscribing(false);
     }
@@ -172,20 +177,13 @@ export const MatchmakingView: React.FC = () => {
       const text = 'Mój 82-letni dziadek w Limanowej ma trudności z wchodzeniem do wanny i potrzebuje adaptacji łazienki, a GOPS jest daleko.';
       setProblemDescription(text);
       setSelectedPowiat('limanowski');
-      setVoiceBadge({ model: 'whisper-large-v3-turbo', latencyMs: 820 });
+      setVoiceBadge({ model: 'przykładowa wypowiedź (symulacja)', latencyMs: 0 });
       setTranscribing(false);
       triggerMatch(text, 'limanowski');
     }, 900);
   };
 
-  const categories = [
-    { value: '', label: 'Wszystkie obszary' },
-    { value: 'seniorzy', label: 'Seniorzy i usługi opiekuńcze' },
-    { value: 'zdrowie_psychiczne', label: 'Zdrowie psychiczne i młodzież' },
-    { value: 'dostepnosc', label: 'Dostępność i usuwanie barier' },
-    { value: 'wykluczenie_cyfrowe', label: 'Wykluczenie cyfrowe' },
-    { value: 'integracja', label: 'Integracja sąsiedzka' }
-  ];
+  const categories = [{ value: '', label: 'Wszystkie obszary (zalecane)' }, ...CATEGORIES];
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
@@ -196,12 +194,12 @@ export const MatchmakingView: React.FC = () => {
           <span>Moduł I: Matchmaking Społeczny (Obligatoryjny)</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
-          {etrMode ? 'Powiedz, co jest problemem – znajdziemy rozwiązanie' : 'Inteligentny Matchmaker Społeczny RAG'}
+          {etrMode ? 'Powiedz, co jest problemem – znajdziemy rozwiązanie' : 'Kojarzenie potrzeb z innowacjami społecznymi'}
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
           {etrMode
             ? 'Opisz swoimi słowami, co sprawia trudność w Twojej miejscowości. Możesz napisać na klawiaturze lub powiedzieć do mikrofonu.'
-            : 'Hybrydowy rurociąg wektorowo-leksykalny kojarzy zgłaszane potrzeby z portfolio innowacji ROPS Kraków. Obsługuje zgłoszenia tekstowe i głosowe (Groq Whisper), automatycznie filtrując dane wrażliwe (Zero PII).'}
+            : 'Opisz problem własnymi słowami lub głosem. System rozpoznaje potrzeby (np. samotność, bariery w mieszkaniu, dojazd), porównuje je z katalogiem innowacji i pokazuje tylko trafne dopasowania z uzasadnieniem. Dane osobowe są maskowane przed analizą.'}
         </p>
       </div>
 
@@ -235,9 +233,9 @@ export const MatchmakingView: React.FC = () => {
               </label>
 
               {voiceBadge && (
-                <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  Transkrypcja {voiceBadge.model} w {voiceBadge.latencyMs}ms
+                <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-700" aria-hidden="true" />
+                  Głos: {voiceBadge.model}{voiceBadge.latencyMs ? ` (${voiceBadge.latencyMs} ms)` : ''}
                 </span>
               )}
             </div>
@@ -249,7 +247,9 @@ export const MatchmakingView: React.FC = () => {
                 value={problemDescription}
                 onChange={(e) => setProblemDescription(e.target.value)}
                 placeholder="Wpisz treść lub kliknij mikrofon poniżej (np. W naszej wsi w powiecie gorlickim osoby starsze nie mają jak dojechać do lekarza...)"
-                className="w-full text-sm p-4 pr-12 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-y text-slate-900 placeholder:text-slate-400"
+                className="w-full text-sm p-4 pb-14 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-y text-slate-900 placeholder:text-slate-500"
+                maxLength={4000}
+                aria-describedby="problem-hint"
                 required
               />
 
@@ -290,14 +290,14 @@ export const MatchmakingView: React.FC = () => {
             </div>
 
             {/* Informacja o ułatwieniu dla seniorów */}
-            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-              <span>WCAG 2.1 AA: Obsługa mowy ułatwia zgłaszanie problemów osobom z trudnościami manualnymi.</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 mt-1">
+              <span id="problem-hint">Możesz mówić zamiast pisać. Nie podawaj imion, adresów ani numerów telefonu. ({problemDescription.length}/4000 znaków)</span>
               <button
                 type="button"
                 onClick={simulateVoiceInput}
-                className="text-blue-600 hover:underline font-semibold"
+                className="text-blue-700 hover:underline font-semibold"
               >
-                🎙️ Testuj próbkę mowy seniora (1 klik)
+                Przykładowa wypowiedź seniora (demo)
               </button>
             </div>
           </div>
@@ -305,38 +305,30 @@ export const MatchmakingView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="powiat-select" className="block text-xs font-bold text-slate-700 mb-1">
-                Lokalizacja (Powiat w Małopolsce):
+                Powiat (opcjonalnie):
               </label>
               <select
                 id="powiat-select"
                 value={selectedPowiat}
                 onChange={(e) => setSelectedPowiat(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-blue-500"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-blue-500"
               >
-                <option value="gorlicki">Powiat gorlicki</option>
-                <option value="limanowski">Powiat limanowski</option>
-                <option value="miechowski">Powiat miechowski</option>
-                <option value="tarnowski">Powiat tarnowski</option>
-                <option value="nowosądecki">Powiat nowosądecki</option>
-                <option value="wielicki">Powiat wielicki</option>
-                <option value="m. Kraków">m. Kraków</option>
-                <option value="oświęcimski">Powiat oświęcimski</option>
-                <option value="wadowicki">Powiat wadowicki</option>
-                <option value="proszowicki">Powiat proszowicki</option>
-                <option value="dąbrowski">Powiat dąbrowski</option>
-                <option value="tatrzański">Powiat tatrzański</option>
+                <option value="">Nie wiem / cała Małopolska</option>
+                {POWIATY.map((p) => (
+                  <option key={p} value={p}>{powiatLabel(p)}</option>
+                ))}
               </select>
             </div>
 
             <div>
               <label htmlFor="category-select" className="block text-xs font-bold text-slate-700 mb-1">
-                Kategoria tematyczna:
+                Obszar (opcjonalnie – zawęża wyniki):
               </label>
               <select
                 id="category-select"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-blue-500"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-blue-500"
               >
                 {categories.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -346,9 +338,9 @@ export const MatchmakingView: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <span className="text-xs text-slate-500 flex items-center gap-1">
-              <ShieldAlert className="w-3.5 h-3.5 text-emerald-500" />
-              Automatyczna ochrona prywatności (Zero-PII). Żadne dane osobowe nie trafiają do modelu.
+            <span className="text-xs text-slate-600 flex items-center gap-1">
+              <ShieldAlert className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+              PESEL, telefony, e-maile, adresy i typowe imiona z nazwiskami są maskowane przed analizą (filtr automatyczny).
             </span>
 
             <button
@@ -364,7 +356,7 @@ export const MatchmakingView: React.FC = () => {
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  <span>Znajdź Innowację (RAG)</span>
+                  <span>Znajdź innowację</span>
                 </>
               )}
             </button>
@@ -372,9 +364,16 @@ export const MatchmakingView: React.FC = () => {
         </form>
       </div>
 
+      {error && (
+        <div role="alert" className="bg-rose-50 border border-rose-300 text-rose-900 p-4 rounded-xl text-sm flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* Prezentacja Wyników Matchmakingu */}
       {result && (
-        <div className="space-y-6 animate-fadeIn">
+        <div ref={resultsRef} tabIndex={-1} aria-live="polite" className="space-y-6 animate-fadeIn focus:outline-none">
           {/* Alerty i podsumowanie analizy */}
           <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
             <div>
@@ -383,16 +382,19 @@ export const MatchmakingView: React.FC = () => {
                 <span>Diagnoza Potrzeby Ukończona</span>
               </div>
               <h2 className="text-lg font-black text-white">
-                Znaleziono {result.matches.length} dopasowane innowacje społeczne
+                {result.no_match
+                  ? 'Brak wystarczająco trafnych innowacji w katalogu'
+                  : `Dopasowane innowacje: ${result.matches.length}`}
               </h2>
-              <p className="text-xs text-slate-300 mt-1">
-                Wykryte motywy przewodnie: <strong className="text-amber-300">{result.detected_topics.join(', ')}</strong> | W regionie zidentyfikowano {result.similar_cases_count} podobnych przypadków.
+              <p className="text-xs text-slate-200 mt-1">
+                Rozpoznane potrzeby: <strong className="text-amber-300">{result.detected_topics.join(', ')}</strong>
+                {result.similar_cases_count > 0 && ` · Podobnych zgłoszeń na platformie: ${result.similar_cases_count}`}
               </p>
             </div>
 
             {result.trend_alert && (
               <div className="bg-amber-500/20 border border-amber-500/40 rounded-xl p-3 text-xs text-amber-200 max-w-sm">
-                <strong className="block font-bold mb-0.5">⚠️ Alert Regionalny ROPS:</strong>
+                <strong className="block font-bold mb-0.5">Sygnał z regionu:</strong>
                 {result.trend_alert}
               </div>
             )}
@@ -408,7 +410,7 @@ export const MatchmakingView: React.FC = () => {
                 <div className="space-y-1">
                   <div className="inline-flex items-center gap-1.5 bg-amber-200/80 text-amber-900 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Doradca Społeczny AI • Rekomendacja w Stylu Ceneo</span>
+                    <span>{result.no_match ? 'Co dalej?' : result.ai_generated ? 'Podsumowanie doradcy (AI)' : 'Podsumowanie doradcy'}</span>
                   </div>
                   <p className="text-sm sm:text-base font-semibold text-slate-900 leading-relaxed">
                     {result.ceneo_intro}
@@ -420,7 +422,7 @@ export const MatchmakingView: React.FC = () => {
               <div className="bg-white/95 rounded-xl p-4 border border-amber-200 text-xs sm:text-sm text-slate-800 space-y-1.5 shadow-xs">
                 <div className="font-bold text-amber-900 flex items-center gap-1.5">
                   <PackageCheck className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Dlaczego ten zestaw (bundle) innowacji tworzy spójne rozwiązanie:</span>
+                  <span>{result.no_match ? 'Nasza propozycja:' : 'Dlaczego te rozwiązania pasują razem:'}</span>
                 </div>
                 <p className="leading-relaxed text-slate-700">
                   {result.ceneo_bundle_rationale}
@@ -431,7 +433,7 @@ export const MatchmakingView: React.FC = () => {
               {result.action_steps && result.action_steps.length > 0 && (
                 <div className="pt-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
-                    📋 Twój natychmiastowy plan działania (3 proste kroki):
+                    Twój plan działania (3 kroki):
                   </span>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                     {result.action_steps.map((step, idx) => (
@@ -451,6 +453,20 @@ export const MatchmakingView: React.FC = () => {
             </div>
           )}
 
+          {result.no_match && (
+            <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-6 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+              <p className="text-sm text-slate-800 font-semibold">Nie mamy jeszcze sprawdzonego rozwiązania dla tego problemu – pomóż nam je stworzyć.</p>
+              <div className="flex flex-wrap gap-2">
+                <Link to="/problemy" className="inline-flex items-center gap-1.5 bg-rose-700 hover:bg-rose-800 text-white text-sm font-bold px-4 py-2 rounded-lg">
+                  <AlertCircle className="w-4 h-4" aria-hidden="true" /> Zgłoś problem do ROPS
+                </Link>
+                <Link to="/kreator-pomyslow" className="inline-flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold px-4 py-2 rounded-lg">
+                  <Lightbulb className="w-4 h-4" aria-hidden="true" /> Zaproponuj pomysł
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* Karty Dopasowanych Innowacji */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {result.matches.map((item, index) => (
@@ -461,29 +477,39 @@ export const MatchmakingView: React.FC = () => {
                 {/* Wskaźnik Match Score */}
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
-                    <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                      {item.category}
+                    <span className="text-xs font-bold text-blue-800 bg-blue-50 px-2.5 py-0.5 rounded-full">
+                      {item.category_label}
                     </span>
                     <h3 className="text-lg font-bold text-slate-900 mt-1">{item.title}</h3>
                   </div>
 
                   <div className="text-right flex-shrink-0">
-                    <span className="text-2xl font-black text-amber-500">
+                    <span className="text-2xl font-black text-amber-700">
                       {Math.round(item.match_score * 100)}%
                     </span>
-                    <span className="block text-[10px] text-slate-400 uppercase font-bold">Dopasowanie</span>
+                    <span className="block text-xs text-slate-600 font-bold">trafność<span className="sr-only"> dopasowania, pozycja {index + 1}</span></span>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 mb-4 line-clamp-2">{item.tagline}</p>
+                <p className="text-sm text-slate-700 mb-3">{item.tagline}</p>
+
+                {item.matched_needs.length > 0 && (
+                  <ul className="flex flex-wrap gap-1.5 mb-3" aria-label="Dopasowane potrzeby">
+                    {item.matched_needs.map((need) => (
+                      <li key={need} className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full font-semibold">
+                        ✓ {need}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* Sekcja: Dlaczego dopasowano */}
                 <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 mb-4">
-                  <span className="text-[11px] font-bold text-amber-900 block mb-1 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    Uzasadnienie dopasowania AI:
+                  <span className="text-xs font-bold text-amber-950 mb-1 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-700" aria-hidden="true" />
+                    Dlaczego to pasuje{result.ai_generated ? ' (AI)' : ''}:
                   </span>
-                  <p className="text-xs text-amber-950 leading-relaxed italic">{item.why_matched}</p>
+                  <p className="text-sm text-amber-950 leading-relaxed">{item.why_matched}</p>
                 </div>
 
                 {/* Tekst ETR jeśli włączony */}
@@ -496,31 +522,39 @@ export const MatchmakingView: React.FC = () => {
 
                 {/* Stopka karty z akcjami */}
                 <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 mt-auto">
-                  <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                  <span className="text-xs font-medium text-slate-700 bg-slate-100 px-2 py-1 rounded">
                     Gotowość: {item.readiness_level}
                   </span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      to={`/middleman?inn=${item.innovation_id}&powiat=${selectedPowiat}`}
+                      to={`/baza-wiedzy/${item.innovation_id}`}
+                      className="inline-flex items-center gap-1 text-xs font-bold border border-slate-300 hover:bg-slate-100 text-slate-900 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                      Szczegóły<span className="sr-only">: {item.title}</span>
+                    </Link>
+                    <Link
+                      to={`/middleman?inn=${item.innovation_id}${selectedPowiat ? `&powiat=${encodeURIComponent(selectedPowiat)}` : ''}`}
                       className="inline-flex items-center gap-1 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors"
                     >
-                      <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                      Adaptuj dla Gminy
-                    </Link>
-
-                    <Link
-                      to={`/baza-wiedzy?search=${encodeURIComponent(item.title)}`}
-                      className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Szczegóły innowacji w Bazie Wiedzy"
-                    >
-                      <ExternalLink className="w-4 h-4" />
+                      <Building2 className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                      Adaptuj dla gminy
                     </Link>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {!result.no_match && (
+            <p className="text-sm text-slate-700 text-center">
+              Żadne z rozwiązań nie pasuje?{' '}
+              <Link to="/problemy" className="font-bold text-blue-700 underline">Zgłoś problem do ROPS</Link>
+              {' '}albo{' '}
+              <Link to="/kreator-pomyslow" className="font-bold text-blue-700 underline">zaproponuj własny pomysł</Link>.
+            </p>
+          )}
         </div>
       )}
     </div>

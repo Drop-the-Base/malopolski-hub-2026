@@ -13,8 +13,11 @@ from app.schemas.problem_schema import (
     ProblemAssignRequest,
     MunicipalReportSummary
 )
+from collections import Counter
+from app.core.constants import normalize_powiat
+from app.services.matchmaking_service import populate_vector_store_if_needed, rank_innovations
+from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
-from app.services.vector_store import vector_store
 
 router = APIRouter(prefix="/problems", tags=["Moduł VIII: Rejestr Problemów i Panel Urzędnika JST"])
 
@@ -25,10 +28,11 @@ async def list_problems(
     urgency: Optional[str] = Query(None, description="Filtruj wg pilności"),
     status: Optional[str] = Query(None, description="Filtruj wg statusu"),
     reporter_type: Optional[str] = Query(None, description="Filtruj wg zgłaszającego"),
+    include_matchmaking: bool = Query(False, description="Dołącz anonimowe zapytania z Matchmakingu"),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Pobiera oficjalny rejestr zgłoszonych wyzwań społecznych z możliwością filtrowania
+    Pobiera rejestr zgłoszonych wyzwań społecznych z możliwością filtrowania
     dla wójtów, burmistrzów, dyrektorów CUS/OPS oraz ekspertów ROPS Kraków.
     """
     query = select(ProblemReport).order_by(ProblemReport.created_at.desc())
@@ -43,6 +47,8 @@ async def list_problems(
         query = query.where(ProblemReport.status == status)
     if reporter_type:
         query = query.where(ProblemReport.reporter_type == reporter_type)
+    if not include_matchmaking:
+        query = query.where(ProblemReport.status != "matched")
 
     result = await db.execute(query)
     return result.scalars().all()
@@ -58,19 +64,19 @@ async def create_problem_report(
     """
     clean_text = anonymize_text(req.raw_text)
 
-    # Automatyczne kojarzenie innowacji z wektorowej bazy
-    matched_ids: List[str] = []
-    if vector_store.documents:
-        results = vector_store.search(query=clean_text, top_k=3, category_filter=req.category)
-        matched_ids = [doc_id for doc_id, _, _ in results]
+    # Automatyczne kojarzenie innowacji (ten sam silnik co Matchmaking)
+    await populate_vector_store_if_needed(db)
+    ranked, _ = rank_innovations(f"{req.title}. {clean_text}", req.category, 3)
+    matched_ids: List[str] = [r["id"] for r in ranked]
+    category = req.category or (ranked[0]["meta"]["category"] if ranked else None)
 
     prob_id = f"prob-{uuid.uuid4().hex[:8]}"
     report = ProblemReport(
         id=prob_id,
-        title=req.title,
-        raw_text=req.raw_text,
+        title=anonymize_text(req.title),
+        raw_text=clean_text,
         clean_text=clean_text,
-        category=req.category,
+        category=category,
         powiat=req.powiat,
         gmina=req.gmina,
         reporter_type=req.reporter_type,
@@ -83,6 +89,11 @@ async def create_problem_report(
     )
 
     db.add(report)
+    if req.urgency == "krytyczny":
+        where = f"Powiat {report.powiat}" + (f", gmina {report.gmina}" if report.gmina else "")
+        await notify(db, ADMIN_RECIPIENT, subject=f"Krytyczne wyzwanie: {report.title}",
+                     body=f"{where}. Dotyczy ok. {report.affected_count} osób.",
+                     related_type="problem", related_id=prob_id)
     await db.commit()
     await db.refresh(report)
     return report
@@ -116,7 +127,9 @@ async def update_problem_report(
     if req.urgency is not None:
         report.urgency = req.urgency
     if req.assigned_innovation_id is not None:
-        report.assigned_innovation_id = req.assigned_innovation_id
+        if req.assigned_innovation_id and not await db.get(Innovation, req.assigned_innovation_id):
+            raise HTTPException(status_code=422, detail="Nie znaleziono wskazanej innowacji.")
+        report.assigned_innovation_id = req.assigned_innovation_id or None
     if req.assigned_notes is not None:
         report.assigned_notes = req.assigned_notes
 
@@ -131,7 +144,7 @@ async def assign_innovation(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Oficjalne przypisanie sprawdzonej innowacji ROPS Kraków do rozwiązania zgłoszonego problemu.
+    Przypisanie sprawdzonej innowacji ROPS Kraków do rozwiązania zgłoszonego problemu.
     Automatycznie zmienia status zgłoszenia na 'przypisana_innowacja'.
     """
     result = await db.execute(select(ProblemReport).where(ProblemReport.id == problem_id))
@@ -139,6 +152,8 @@ async def assign_innovation(
     if not report:
         raise HTTPException(status_code=404, detail="Nie znaleziono zgłoszenia wyzwania.")
 
+    if not await db.get(Innovation, req.innovation_id):
+        raise HTTPException(status_code=422, detail="Nie znaleziono wskazanej innowacji.")
     report.assigned_innovation_id = req.innovation_id
     if req.notes:
         report.assigned_notes = req.notes
@@ -157,6 +172,10 @@ async def get_municipal_diagnostic_summary(
     Generuje zagregowany raport diagnostyczny dla włodarzy samorządu i ROPS Kraków:
     sumaryczna liczba wyzwań, liczba dotkniętych mieszkańców oraz rekomendowane innowacje.
     """
+    try:
+        powiat = normalize_powiat(powiat) or "miechowski"
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     res = await db.execute(select(ProblemReport).where(ProblemReport.powiat == powiat))
     reports = res.scalars().all()
 
@@ -171,13 +190,16 @@ async def get_municipal_diagnostic_summary(
 
     top_categories = [{"category": k, "count": v} for k, v in categories_count.items()]
 
-    # Rekomendowane innowacje ROPS dla powiatu
-    inn_res = await db.execute(select(Innovation).limit(3))
-    inns = inn_res.scalars().all()
-    recommended = [
-        {"id": inn.id, "title": inn.title, "tagline": inn.tagline, "category": inn.category}
-        for inn in inns
-    ]
+    # Rekomendacje: innowacje najczęściej przypisywane / dopasowywane do zgłoszeń z tego powiatu
+    freq = Counter()
+    for r in reports:
+        freq.update([r.assigned_innovation_id] if r.assigned_innovation_id else (r.matched_innovations or []))
+    recommended = []
+    for inn_id, count in freq.most_common(3):
+        inn = await db.get(Innovation, inn_id)
+        if inn and inn.is_published:
+            recommended.append({"id": inn.id, "title": inn.title, "tagline": inn.tagline, "category": inn.category,
+                                "matched_reports": count})
 
     return MunicipalReportSummary(
         powiat=powiat,

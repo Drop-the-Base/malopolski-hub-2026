@@ -32,6 +32,7 @@ class AccessibilityStore {
     body.classList.remove('theme-yellow-black', 'theme-black-white');
     if (this.contrastMode === 'yellow-black') body.classList.add('theme-yellow-black');
     if (this.contrastMode === 'black-white') body.classList.add('theme-black-white');
+    body.classList.toggle('etr-mode', this.etrMode);
 
     html.classList.remove('font-large', 'font-huge');
     if (this.fontSize === 'large') html.classList.add('font-large');

@@ -18,6 +18,12 @@ services:
       - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SECRET_KEY=${SECRET_KEY:-zmien-mnie-w-produkcji-mhis-2026}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-rops-demo-2026}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - CORS_ORIGINS=["http://localhost", "http://localhost:3000", "http://localhost:80"]
     volumes:
       - mhis_data:/data

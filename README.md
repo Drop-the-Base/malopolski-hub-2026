@@ -65,6 +65,10 @@ Aplikacja jest natychmiast dostępna:
 - **Interfejs Użytkownika (Frontend)**: [http://localhost](http://localhost) lub [http://localhost:3000](http://localhost:3000)
 - **Dokumentacja API (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Stan Zdrowia Systemu**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+- **Panel ROPS** (`/admin`): wymaga logowania – hasło demo `rops-demo-2026` (zmienna `ADMIN_PASSWORD`; zmień przed publicznym udostępnieniem).
+- **Status zgłoszonej fiszki**: `/status/<numer-fiszki>` (link otrzymuje autor w e-mailu potwierdzającym).
+- **Powiadomienia e-mail**: bez `SMTP_HOST` trafiają do skrzynki nadawczej widocznej w Panelu ROPS.
+- **Czysta baza demo**: `docker compose down -v && docker compose up --build` (usuwa wolumen `mhis_data` i wgrywa dane od nowa).
 
 ---
 

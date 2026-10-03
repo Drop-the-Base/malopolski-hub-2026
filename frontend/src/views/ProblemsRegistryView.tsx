@@ -21,6 +21,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
+import { apiErrorMessage } from '../services/api';
+import { CATEGORIES, POWIATY, categoryLabel, powiatLabel } from '../constants/domain';
 
 export const ProblemsRegistryView: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -41,17 +43,20 @@ export const ProblemsRegistryView: React.FC = () => {
   const [form, setForm] = useState({
     title: '',
     raw_text: '',
-    category: 'seniorzy',
-    powiat: 'miechowski',
-    gmina: 'Gmina Miechów',
+    category: '',
+    powiat: initialPowiat || 'miechowski',
+    gmina: '',
     reporter_type: 'urzednik_jst',
-    reporter_name: 'Tomasz Nowak',
-    reporter_role: 'Kierownik Wydziału Spraw Społecznych',
+    reporter_name: '',
+    reporter_role: '',
     urgency: 'wysoki',
     affected_count: 50
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [listError, setListError] = useState('');
+  const [assignError, setAssignError] = useState('');
 
   // Raport diagnostyczny
   const [reportPowiat, setReportPowiat] = useState('miechowski');
@@ -109,8 +114,9 @@ export const ProblemsRegistryView: React.FC = () => {
         status: selectedStatus || undefined
       });
       setProblems(data);
+      setListError('');
     } catch (err) {
-      console.error('Błąd pobierania problemów:', err);
+      setListError(apiErrorMessage(err, 'Nie udało się wczytać rejestru wyzwań.'));
     } finally {
       setLoading(false);
     }
@@ -122,7 +128,8 @@ export const ProblemsRegistryView: React.FC = () => {
       const s = await api.getMunicipalSummary(p);
       setSummaryData(s);
     } catch (err) {
-      console.error('Błąd pobierania podsumowania:', err);
+      setSummaryData(null);
+      setListError(apiErrorMessage(err, 'Nie udało się przygotować raportu.'));
     } finally {
       setSummaryLoading(false);
     }
@@ -155,13 +162,13 @@ export const ProblemsRegistryView: React.FC = () => {
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError('');
     try {
-      await api.createProblem(form);
+      await api.createProblem({ ...form, category: form.category || undefined });
       setSubmitSuccess(true);
       fetchProblems();
     } catch (err) {
-      console.error(err);
-      alert('Wystąpił błąd podczas rejestracji wyzwania.');
+      setSubmitError(apiErrorMessage(err, 'Nie udało się zarejestrować wyzwania. Sprawdź pola formularza i spróbuj ponownie.'));
     } finally {
       setSubmitting(false);
     }
@@ -170,14 +177,14 @@ export const ProblemsRegistryView: React.FC = () => {
   const handleAssignInnovation = async () => {
     if (!assigningProblemId) return;
     setAssignLoading(true);
+    setAssignError('');
     try {
       await api.assignInnovationToProblem(assigningProblemId, selectedInnovationId, assignNotes);
       setAssigningProblemId(null);
       setAssignNotes('');
       fetchProblems();
     } catch (err) {
-      console.error(err);
-      alert('Nie udało się przypisać innowacji.');
+      setAssignError(apiErrorMessage(err, 'Nie udało się przypisać innowacji.'));
     } finally {
       setAssignLoading(false);
     }
@@ -200,7 +207,7 @@ export const ProblemsRegistryView: React.FC = () => {
           {etrMode ? 'Zgłaszanie i Rejestr Problemów w Gminach' : 'Rejestr Wyzwań Społecznych i Panel Urzędnika Samorządowego'}
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-          Oficjalne narzędzie dla włodarzy miast i gmin, dyrektorów CUS/OPS oraz pracowników socjalnych Małopolski.
+          Narzędzie dla włodarzy miast i gmin, dyrektorów CUS/OPS oraz pracowników socjalnych Małopolski.
           Pozwala rejestrować zdiagnozowane trudności lokalne, badać ich skalę (liczba dotkniętych mieszkańców),
           przypisywać gotowe innowacje ROPS Kraków oraz generować raporty diagnostyczne.
         </p>
@@ -281,6 +288,8 @@ export const ProblemsRegistryView: React.FC = () => {
             </div>
           </div>
 
+          {listError && <p role="alert" className="bg-rose-50 border border-rose-200 text-rose-900 p-3 rounded-xl text-sm">{listError}</p>}
+
           {/* Filtry */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
@@ -289,35 +298,27 @@ export const ProblemsRegistryView: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <select
+                aria-label="Filtr: powiat"
                 value={selectedPowiat}
                 onChange={(e) => setSelectedPowiat(e.target.value)}
-                className="text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
+                className="text-sm p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
               >
                 <option value="">Wszystkie powiaty</option>
-                <option value="gorlicki">Powiat gorlicki</option>
-                <option value="limanowski">Powiat limanowski</option>
-                <option value="miechowski">Powiat miechowski</option>
-                <option value="nowosądecki">Powiat nowosądecki</option>
-                <option value="tarnowski">Powiat tarnowski</option>
-                <option value="wielicki">Powiat wielicki</option>
-                <option value="m. Kraków">m. Kraków</option>
+                {POWIATY.map((p) => <option key={p} value={p}>{powiatLabel(p)}</option>)}
               </select>
 
               <select
+                aria-label="Filtr: kategoria"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
+                className="text-sm p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
               >
                 <option value="">Wszystkie kategorie</option>
-                <option value="seniorzy">Seniorzy i opieka</option>
-                <option value="zdrowie_psychiczne">Zdrowie psychiczne</option>
-                <option value="dostepnosc">Dostępność architektoniczna</option>
-                <option value="wykluczenie_cyfrowe">Wykluczenie cyfrowe</option>
-                <option value="uslugi_opiekuncze">Usługi opiekuńcze i wytchnieniowe</option>
-                <option value="integracja">Integracja społeczna</option>
+                {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
 
               <select
+                aria-label="Filtr: pilność"
                 value={selectedUrgency}
                 onChange={(e) => setSelectedUrgency(e.target.value)}
                 className="text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
@@ -329,6 +330,7 @@ export const ProblemsRegistryView: React.FC = () => {
               </select>
 
               <select
+                aria-label="Filtr: status"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
@@ -470,27 +472,29 @@ export const ProblemsRegistryView: React.FC = () => {
                 </p>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="pr-field-1" className="block text-xs font-bold text-slate-700 mb-1">
                     Wybierz innowację z katalogu:
                   </label>
                   <select
+ id="pr-field-1"
                     value={selectedInnovationId}
                     onChange={(e) => setSelectedInnovationId(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none"
                   >
                     {availableInnovations.map((inn) => (
                       <option key={inn.id} value={inn.id}>
-                        {inn.title} ({inn.category})
+                        {inn.title} ({categoryLabel(inn.category)})
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="pr-field-2" className="block text-xs font-bold text-slate-700 mb-1">
                     Notatka urzędowa / uzasadnienie wyboru:
                   </label>
                   <textarea
+ id="pr-field-2"
                     rows={3}
                     value={assignNotes}
                     onChange={(e) => setAssignNotes(e.target.value)}
@@ -498,6 +502,8 @@ export const ProblemsRegistryView: React.FC = () => {
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-300 text-slate-900 resize-y"
                   />
                 </div>
+
+                {assignError && <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-2 rounded-lg">{assignError}</p>}
 
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
@@ -558,8 +564,8 @@ export const ProblemsRegistryView: React.FC = () => {
                   Wyzwanie samorządowe zostało pomyślnie zarejestrowane!
                 </h3>
                 <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  Zgłoszenie trafiło do oficjalnego Rejestru Problemów Społecznych Małopolski. System automatycznie dobrał
-                  pasujące innowacje ROPS Kraków.
+                  Zgłoszenie trafiło do Rejestru Wyzwań. System dobrał pasujące innowacje z katalogu (jeśli istnieją),
+                  a zgłoszenia krytyczne trafiają od razu do powiadomień koordynatora ROPS.
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <button
@@ -582,10 +588,11 @@ export const ProblemsRegistryView: React.FC = () => {
             ) : (
               <form onSubmit={handleCreateSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-900 mb-1">
+                  <label htmlFor="pr-field-3" className="block text-xs font-bold text-slate-900 mb-1">
                     1. Tytuł zdiagnozowanego wyzwania w gminie:
                   </label>
                   <input
+ id="pr-field-3"
                     type="text"
                     required
                     value={form.title}
@@ -596,10 +603,11 @@ export const ProblemsRegistryView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-900 mb-1">
+                  <label htmlFor="pr-field-4" className="block text-xs font-bold text-slate-900 mb-1">
                     2. Szczegółowy opis sytuacji, braków w usługach i barier:
                   </label>
                   <textarea
+ id="pr-field-4"
                     rows={4}
                     required
                     value={form.raw_text}
@@ -608,25 +616,28 @@ export const ProblemsRegistryView: React.FC = () => {
                     className="w-full text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-rose-500 resize-y"
                   />
                   <span className="text-[11px] text-slate-400 mt-1 block">
-                    🔒 Zero-PII: Wszelkie nazwiska i numery PESEL zostaną automatycznie zamaskowane przed indeksacją.
+                    Dane osobowe w opisie (PESEL, telefony, e-maile, adresy, imiona i nazwiska) są automatycznie maskowane przed zapisem. Nie podawaj danych mieszkańców.
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Powiat:</label>
-                    <input
-                      type="text"
+                    <label htmlFor="pr-field-5" className="block text-xs font-bold text-slate-700 mb-1">Powiat:</label>
+                    <select
+ id="pr-field-5"
                       required
                       value={form.powiat}
                       onChange={(e) => setForm({ ...form, powiat: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-lg border border-slate-300 text-slate-900"
-                    />
+                      className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900"
+                    >
+                      {POWIATY.map((p) => <option key={p} value={p}>{powiatLabel(p)}</option>)}
+                    </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Gmina / Miejscowość:</label>
+                    <label htmlFor="pr-field-6" className="block text-xs font-bold text-slate-700 mb-1">Gmina / Miejscowość:</label>
                     <input
+ id="pr-field-6"
                       type="text"
                       required
                       value={form.gmina}
@@ -636,26 +647,24 @@ export const ProblemsRegistryView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Kategoria problemu:</label>
+                    <label htmlFor="pr-field-7" className="block text-xs font-bold text-slate-700 mb-1">Kategoria problemu:</label>
                     <select
+ id="pr-field-7"
                       value={form.category}
                       onChange={(e) => setForm({ ...form, category: e.target.value })}
                       className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900"
                     >
-                      <option value="seniorzy">Seniorzy</option>
-                      <option value="uslugi_opiekuncze">Usługi opiekuńcze</option>
-                      <option value="zdrowie_psychiczne">Zdrowie psychiczne</option>
-                      <option value="dostepnosc">Dostępność architektoniczna</option>
-                      <option value="wykluczenie_cyfrowe">Wykluczenie cyfrowe</option>
-                      <option value="integracja">Integracja sąsiedzka</option>
+                      <option value="">Nie wiem – dobierze system</option>
+                      {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Poziom pilności:</label>
+                    <label htmlFor="pr-field-8" className="block text-xs font-bold text-slate-700 mb-1">Poziom pilności:</label>
                     <select
+ id="pr-field-8"
                       value={form.urgency}
                       onChange={(e) => setForm({ ...form, urgency: e.target.value })}
                       className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900"
@@ -667,10 +676,11 @@ export const ProblemsRegistryView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label htmlFor="pr-field-9" className="block text-xs font-bold text-slate-700 mb-1">
                       Szacunkowa liczba mieszkańców dotkniętych problemem:
                     </label>
                     <input
+ id="pr-field-9"
                       type="number"
                       min="1"
                       value={form.affected_count}
@@ -682,10 +692,11 @@ export const ProblemsRegistryView: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label htmlFor="pr-field-10" className="block text-xs font-bold text-slate-700 mb-1">
                       Imię i nazwisko zgłaszającego:
                     </label>
                     <input
+ id="pr-field-10"
                       type="text"
                       required
                       value={form.reporter_name}
@@ -695,10 +706,11 @@ export const ProblemsRegistryView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label htmlFor="pr-field-11" className="block text-xs font-bold text-slate-700 mb-1">
                       Stanowisko / Rola w JST lub OPS:
                     </label>
                     <input
+ id="pr-field-11"
                       type="text"
                       required
                       value={form.reporter_role}
@@ -708,6 +720,9 @@ export const ProblemsRegistryView: React.FC = () => {
                   </div>
                 </div>
 
+                {submitError && (
+                  <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-3 rounded-lg">{submitError}</p>
+                )}
                 <button
                   type="submit"
                   disabled={submitting}
@@ -721,7 +736,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   ) : (
                     <>
                       <FilePlus2 className="w-4 h-4" />
-                      <span>Zarejestruj Wyzwanie Samorządowe w Hubie ROPS</span>
+                      <span>Zarejestruj wyzwanie w rejestrze</span>
                     </>
                   )}
                 </button>
@@ -748,14 +763,12 @@ export const ProblemsRegistryView: React.FC = () => {
 
             <div className="flex items-center gap-3">
               <select
+                aria-label="Powiat raportu"
                 value={reportPowiat}
                 onChange={(e) => setReportPowiat(e.target.value)}
-                className="bg-slate-800 text-white text-xs p-2 rounded-xl border border-slate-700 focus:outline-none"
+                className="bg-slate-800 text-white text-sm p-2 rounded-xl border border-slate-700 focus:outline-none"
               >
-                <option value="miechowski">Powiat miechowski</option>
-                <option value="gorlicki">Powiat gorlicki</option>
-                <option value="limanowski">Powiat limanowski</option>
-                <option value="nowosądecki">Powiat nowosądecki</option>
+                {POWIATY.map((p) => <option key={p} value={p}>{powiatLabel(p)}</option>)}
               </select>
 
               <button
@@ -820,7 +833,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   {summaryData.recommended_innovations.map((inn) => (
                     <div key={inn.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">
-                        {inn.category}
+                        {categoryLabel(inn.category)}
                       </span>
                       <h4 className="font-bold text-slate-900">{inn.title}</h4>
                       <p className="text-[11px] text-slate-600 line-clamp-2">{inn.tagline}</p>

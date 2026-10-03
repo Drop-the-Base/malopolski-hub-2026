@@ -10,15 +10,17 @@ class IdeaFiszka(Base):
     title = Column(String, nullable=False, index=True)
     summary = Column(Text, nullable=False)
     target_audience = Column(String, nullable=False)
-    implementation_stage = Column(String, default="pomysl")  # 'pomysl', 'prototyp', 'pilot'
+    implementation_stage = Column(String, default="pomysl")  # 'pomysl', 'prototyp', 'pilotaz', 'wdrozenie'
     author_name = Column(String, nullable=False)
     author_email = Column(String, nullable=False)
     author_type = Column(String, default="mieszkaniec")  # 'mieszkaniec', 'ngo', 'grupa_nieformalna', 'jst'
     powiat = Column(String, nullable=False, index=True)
-    status = Column(String, default="submitted")  # 'draft', 'submitted', 'verified_by_rops', 'rejected'
+    status = Column(String, default="submitted")  # 'submitted', 'in_review', 'approved', 'needs_changes', 'rejected'
     admin_notes = Column(Text, nullable=True)
     assigned_mentor_id = Column(String, nullable=True)
+    rodo_consent_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     canvas = relationship("CanvasModel", back_populates="fiszka", uselist=False, cascade="all, delete-orphan")
 

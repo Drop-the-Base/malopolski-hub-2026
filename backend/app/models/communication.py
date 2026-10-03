@@ -39,3 +39,14 @@ class Mentor(Base):
     available_hours = Column(String, default="Czwartki 14:00 - 18:00")
     contact_email = Column(String, nullable=False)
     avatar_url = Column(String, nullable=True)
+
+class MentorBooking(Base):
+    __tablename__ = "mentor_bookings"
+
+    id = Column(String, primary_key=True, index=True)
+    mentor_id = Column(String, ForeignKey("mentors.id"), nullable=False, index=True)
+    slot_start = Column(DateTime, nullable=False)
+    requester_name = Column(String, nullable=False)
+    requester_email = Column(String, nullable=False)
+    topic = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

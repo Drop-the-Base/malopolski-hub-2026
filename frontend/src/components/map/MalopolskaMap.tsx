@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { RegionalChallenge } from '../../types';
 import { MapPin, Users, TrendingDown, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
@@ -9,8 +10,15 @@ interface MapProps {
 }
 
 export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }) => {
-  const [selectedPowiat, setSelectedPowiat] = useState<RegionalChallenge | null>(challenges[4] || null); // domyślnie gorlicki
+  const [selectedPowiat, setSelectedPowiat] = useState<RegionalChallenge | null>(null);
   const { etrMode } = useAccessibility();
+
+  // Domyślny wybór po wczytaniu danych (powiat gorlicki – najwyższy odsetek seniorów w demo)
+  useEffect(() => {
+    if (!selectedPowiat && challenges.length) {
+      setSelectedPowiat(challenges.find((c) => c.powiat_name === 'gorlicki') ?? challenges[0]);
+    }
+  }, [challenges, selectedPowiat]);
 
   const handleSelect = (item: RegionalChallenge) => {
     setSelectedPowiat(item);
@@ -24,23 +32,23 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-blue-600" />
-            {etrMode ? 'Mapa Małopolski – Gdzie pomagamy' : 'Kondycja Małopolski i Mapa Wyzwań Społecznych'}
+            <MapPin className="w-5 h-5 text-blue-600" aria-hidden="true" />
+            {etrMode ? 'Powiaty Małopolski – gdzie pomagamy' : 'Wyzwania społeczne 22 powiatów Małopolski'}
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             {etrMode
               ? 'Wybierz swój powiat, aby zobaczyć, ilu ludzi tam mieszka i jakie są trudności.'
               : 'Wizualizacja diagnozy demograficznej i zapotrzebowania społecznego dla 22 powiatów regionu.'}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="flex items-center gap-1 font-medium text-slate-600">
-            <span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
-            Wysoki odsetek seniorów (depopulacja)
+        <div className="flex flex-wrap items-center gap-2 text-xs" aria-label="Legenda">
+          <span className="flex items-center gap-1 font-medium text-slate-700">
+            <span className="px-1.5 rounded bg-rose-100 border border-rose-300 text-rose-900 font-bold">S+</span>
+            seniorzy powyżej 25% mieszkańców
           </span>
-          <span className="flex items-center gap-1 font-medium text-slate-600 ml-2">
-            <span className="w-3 h-3 rounded-full bg-sky-400 inline-block"></span>
-            Wzrost populacji (wianuszek)
+          <span className="flex items-center gap-1 font-medium text-slate-700">
+            <span className="px-1.5 rounded bg-sky-100 border border-sky-300 text-sky-900 font-bold">▲</span>
+            wzrost liczby ludności
           </span>
         </div>
       </div>
@@ -48,8 +56,8 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Kafelkowa Mapa Powiatów Małopolski */}
         <div className="lg:col-span-7 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Wybierz powiat z listy lub kliknij kafelek:
+          <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
+            Wybierz powiat:
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[380px] overflow-y-auto pr-1">
             {challenges.map((c) => {
@@ -72,8 +80,12 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
                   }`}
                   aria-pressed={isSelected}
                 >
-                  <div className="font-bold truncate">{c.powiat_name}</div>
-                  <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                  <div className="font-bold truncate flex items-center gap-1">
+                    <span>{c.powiat_name}</span>
+                    {isHighSenior && <span className="text-[11px] font-black" title="Seniorzy powyżej 25%">S+</span>}
+                    {isGrowth && <span className="text-[11px] font-black" title="Wzrost liczby ludności">▲</span>}
+                  </div>
+                  <div className={`text-[11px] mt-0.5 ${isSelected ? 'text-blue-50' : 'text-slate-600'}`}>
                     Seniorzy: {c.senior_share_pct}%
                   </div>
                 </button>
@@ -94,7 +106,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
                   <h4 className="text-2xl font-black">{selectedPowiat.powiat_name}</h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-400">Aktywne innowacje</span>
+                  <span className="text-xs text-slate-300">Aktywne innowacje</span>
                   <div className="text-xl font-black text-emerald-400">{selectedPowiat.active_innovations_count}</div>
                 </div>
               </div>
@@ -102,7 +114,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
               {/* Metryki powiatu */}
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-300 mb-1">
                     <Users className="w-3.5 h-3.5 text-sky-400" />
                     Liczba ludności
                   </div>
@@ -110,7 +122,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
                 </div>
 
                 <div className="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-300 mb-1">
                     {selectedPowiat.demographic_trend.includes('wzrost') ? (
                       <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                     ) : (
@@ -133,12 +145,26 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
                 </p>
               </div>
 
-              <div className="text-xs text-slate-400">
-                Zgłoszone potrzeby mieszkańców: <strong className="text-white">{selectedPowiat.reported_problems_count}</strong>
+              <div className="text-xs text-slate-300 mb-4">
+                Zgłoszone potrzeby mieszkańców (dane bazowe): <strong className="text-white">{selectedPowiat.reported_problems_count}</strong>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to={`/matchmaking?powiat=${encodeURIComponent(selectedPowiat.powiat_name)}&q=${encodeURIComponent(selectedPowiat.key_social_challenge)}`}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-2 rounded-lg text-xs"
+                >
+                  Znajdź innowacje dla tego wyzwania
+                </Link>
+                <Link
+                  to={`/middleman?powiat=${encodeURIComponent(selectedPowiat.powiat_name)}`}
+                  className="border border-slate-500 hover:bg-slate-800 text-white font-bold px-3 py-2 rounded-lg text-xs"
+                >
+                  Wdrożenie w gminie
+                </Link>
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-400 text-sm">
+            <div className="text-center py-12 text-slate-300 text-sm">
               Wybierz powiat z listy po lewej stronie, aby wyświetlić szczegółowe wskaźniki społeczne.
             </div>
           )}

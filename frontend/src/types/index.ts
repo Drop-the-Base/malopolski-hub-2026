@@ -3,14 +3,41 @@ export interface InnovationItem {
   title: string;
   tagline: string;
   category: string;
+  category_label?: string;
   target_groups: string[];
   full_description: string;
   readiness_level: string;
   budget_bracket: string;
-  video_url?: string;
-  handbook_url?: string;
-  etr_summary?: string;
-  origin_poviat?: string;
+  video_url?: string | null;
+  handbook_url?: string | null;
+  etr_summary?: string | null;
+  origin_poviat?: string | null;
+  is_published?: boolean;
+}
+
+export interface InnovationUpsert {
+  title: string;
+  tagline: string;
+  category: string;
+  target_groups: string[];
+  full_description: string;
+  readiness_level: string;
+  budget_bracket: string;
+  video_url?: string | null;
+  handbook_url?: string | null;
+  etr_summary?: string | null;
+  origin_poviat?: string | null;
+  is_published: boolean;
+}
+
+export interface EducationalMaterial {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  download_url: string;
+  format: string;
+  is_external: boolean;
 }
 
 export interface MatchmakingMatch {
@@ -21,10 +48,12 @@ export interface MatchmakingMatch {
   why_matched: string;
   readiness_level: string;
   category: string;
+  category_label: string;
   target_groups: string[];
-  etr_summary?: string;
-  video_url?: string;
-  handbook_url?: string;
+  matched_needs: string[];
+  etr_summary?: string | null;
+  video_url?: string | null;
+  handbook_url?: string | null;
 }
 
 export interface MatchmakingResult {
@@ -32,11 +61,13 @@ export interface MatchmakingResult {
   detected_topics: string[];
   powiat?: string;
   matches: MatchmakingMatch[];
+  no_match: boolean;
   similar_cases_count: number;
-  trend_alert?: string;
+  trend_alert?: string | null;
   ceneo_intro?: string;
   ceneo_bundle_rationale?: string;
   action_steps?: string[];
+  ai_generated?: boolean;
 }
 
 
@@ -87,13 +118,27 @@ export interface CanvasAutofillResult {
   latency_ms: number;
 }
 
+export interface GrantCall {
+  id: string;
+  title: string;
+  opens_on: string;
+  closes_on: string;
+  min_budget_pln: number;
+  max_budget_pln: number;
+  criteria: string[];
+  is_open: boolean;
+}
+
 export interface GrantApplication {
   application_id: string;
+  call_id: string;
+  completeness_pct: number;
+  missing_elements: string[];
   call_title: string;
   submission_date: string;
   applicant_name: string;
   powiat: string;
-  gmina?: string;
+  gmina?: string | null;
   target_group: string;
   idea_title: string;
   executive_summary: string;
@@ -113,12 +158,14 @@ export interface ServiceBlueprint {
   estimated_budget: {
     koszt_uruchomienia_pln: number;
     miesieczny_koszt_utrzymania_pln: number;
+    roczny_koszt_utrzymania_pln: number;
     rekomendowane_zrodlo: string;
     wskaznik_efektywnosci_kosztowej: string;
   };
   staffing_requirements: string;
   resolution_draft: string;
   risk_mitigation: Array<{ risk: string; action: string }>;
+  disclaimer: string;
 }
 
 export interface TestingCampaignItem {
@@ -136,8 +183,9 @@ export interface TestingCampaignItem {
 export interface EvaluationReport {
   campaign_id: string;
   total_feedbacks: number;
-  average_sus_score: number;
-  satisfaction_rate: number;
+  average_sus_score: number | null;
+  sus_grade: string | null;
+  satisfaction_rate: number | null;
   common_barriers: string[];
   readiness_for_scaling: boolean;
 }
@@ -171,11 +219,33 @@ export interface MentorItem {
   contact_email: string;
 }
 
+export interface MentorSlot {
+  start: string;
+  end: string;
+  available: boolean;
+}
+
+export interface BookingConfirmation {
+  id: string;
+  mentor_id: string;
+  mentor_name: string;
+  slot_start: string;
+  slot_end: string;
+  topic: string;
+}
+
 export interface TrendRadarData {
   total_problems_analyzed: number;
+  baseline_cases_count: number;
+  platform_cases_count: number;
+  platform_cases_last_30_days: number;
+  quarterly_growth_pct: number | null;
+  pending_ideas_count: number;
+  unread_notifications_count: number;
   most_acute_challenges: Array<{
     category: string;
     impact_score: number;
+    cases_count: number;
     hotspot_powiaty: string[];
     suggested_action: string;
   }>;
@@ -183,10 +253,55 @@ export interface TrendRadarData {
     powiat: string;
     top_problem_category: string;
     reported_cases_count: number;
-    quarterly_growth_pct: number;
+    platform_cases_count: number;
+    quarterly_growth_pct: number | null;
     alert_level: string;
+    alert_reason: string;
   }>;
   systemic_gaps: string[];
+  methodology_note: string;
+}
+
+export interface FiszkaAdminItem {
+  id: string;
+  title: string;
+  summary: string;
+  target_audience: string;
+  implementation_stage: string;
+  author_name: string;
+  author_email: string;
+  author_type: string;
+  powiat: string;
+  status: string;
+  admin_notes?: string | null;
+  assigned_mentor_id?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface FiszkaPublicStatus {
+  id: string;
+  title: string;
+  status: string;
+  status_label: string;
+  implementation_stage: string;
+  admin_notes?: string | null;
+  mentor_name?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface NotificationItem {
+  id: string;
+  recipient: string;
+  channel: 'panel' | 'email' | string;
+  subject: string;
+  body: string;
+  related_type?: string | null;
+  related_id?: string | null;
+  delivery_status: string;
+  is_read: boolean;
+  created_at: string;
 }
 
 export interface ProblemReportItem {
@@ -215,6 +330,6 @@ export interface MunicipalReportSummary {
   critical_challenges: number;
   total_affected_residents: number;
   top_categories: Array<{ category: string; count: number }>;
-  recommended_innovations: Array<{ id: string; title: string; tagline: string; category: string }>;
+  recommended_innovations: Array<{ id: string; title: string; tagline: string; category: string; matched_reports?: number }>;
 }
 

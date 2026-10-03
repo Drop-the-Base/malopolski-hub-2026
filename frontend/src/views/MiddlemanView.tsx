@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { api } from '../services/api';
-import { ServiceBlueprint } from '../types';
+import { api, apiErrorMessage } from '../services/api';
+import { InnovationItem, ServiceBlueprint } from '../types';
+import { POWIATY, SAMPLE_GMINA, powiatLabel, formatPLN } from '../constants/domain';
 import {
   Building2,
   Sparkles,
@@ -32,12 +33,15 @@ interface ChatMsg {
 export const MiddlemanView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialInn = searchParams.get('inn') || 'rops-inn-001';
-  const initialPowiat = searchParams.get('powiat') || 'miechowski';
+  const initialPowiat = POWIATY.includes(searchParams.get('powiat') || '') ? (searchParams.get('powiat') as string) : 'miechowski';
   const { etrMode } = useAccessibility();
+
+  const [innovationsList, setInnovationsList] = useState<InnovationItem[]>([]);
+  const [formError, setFormError] = useState('');
 
   const [form, setForm] = useState({
     innovation_id: initialInn,
-    municipality_name: 'Gmina Słaboszów',
+    municipality_name: SAMPLE_GMINA[initialPowiat] ?? 'Słaboszów',
     powiat: initialPowiat,
     population: 3800,
     senior_percentage: 28.5,
@@ -122,30 +126,37 @@ export const MiddlemanView: React.FC = () => {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
+    setFormError('');
     try {
       const result = await api.adaptService(form);
       setBlueprint(result);
     } catch (err) {
-      console.error(err);
-      alert('Wystąpił błąd podczas adaptacji usługi.');
+      setBlueprint(null);
+      setFormError(apiErrorMessage(err, 'Nie udało się przygotować pakietu wdrożeniowego.'));
     } finally {
       setLoading(false);
     }
   };
 
-  React.useEffect(() => {
+  // Pełna lista innowacji z katalogu (deep link ?inn= działa dla każdej z nich)
+  useEffect(() => {
+    api
+      .getInnovations()
+      .then((items) => {
+        setInnovationsList(items);
+        if (!items.some((i) => i.id === initialInn)) {
+          setFormError(`Nie znaleziono innowacji „${initialInn}” – wybierz innowację z listy.`);
+          setForm((f) => ({ ...f, innovation_id: items[0]?.id ?? '' }));
+        }
+      })
+      .catch((err) => setFormError(apiErrorMessage(err, 'Nie udało się wczytać listy innowacji.')));
+  }, []);
+
+  useEffect(() => {
     if (searchParams.get('auto') === '1') {
       handleSubmit();
     }
   }, [searchParams]);
-
-  const innovationsList = [
-    { id: 'rops-inn-001', name: 'Mobilny Doradca Seniora' },
-    { id: 'rops-inn-002', name: 'Modularna Łazienka Wytchnieniowa' },
-    { id: 'rops-inn-003', name: 'koMIX Życiowy – Komiksy Terapeutyczne' },
-    { id: 'rops-inn-004', name: 'Terapeuta Przestrzeni' },
-    { id: 'rops-inn-006', name: 'Spółdzielnia Cyfrowa Senior+' }
-  ];
 
   const municipalPresets = [
     { name: 'Gmina Słaboszów', powiat: 'miechowski', pop: 3800, sen: 28.5, inn: 'rops-inn-001', cus: false },
@@ -165,7 +176,8 @@ export const MiddlemanView: React.FC = () => {
       has_cus: p.cus
     };
     setForm(updated);
-    api.adaptService(updated).then(setBlueprint).catch(console.error);
+    setFormError('');
+    api.adaptService(updated).then(setBlueprint).catch((err) => setFormError(apiErrorMessage(err)));
   };
 
   return (
@@ -177,10 +189,12 @@ export const MiddlemanView: React.FC = () => {
           <span>Moduł VII: Middleman Innowacji dla Jednostek Samorządu (JST)</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
-          {etrMode ? 'Dostosowanie Pomysłu do Twojej Gminy' : 'Asystent Adaptacji Innowacji do Usługi Publicznej'}
+          {etrMode ? 'Dostosowanie pomysłu do Twojej gminy' : 'Generator pakietu wdrożeniowego dla gminy'}
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
-          Narzędzie dla wójtów, burmistrzów i dyrektorów Centrów Usług Społecznych (CUS/OPS). Wprowadź parametry gminy, a Asystent AI wygeneruje gotowy model operacyjny usługi (Service Blueprint), kalkulację budżetu oraz projekt uchwały rady gminy.
+          Narzędzie dla wójtów, burmistrzów i dyrektorów CUS/OPS. Podaj parametry gminy, a generator przygotuje plan wdrożenia,
+          szacunkowy kosztorys i projekt uchwały na podstawie szablonu. Pytania szczegółowe zadasz doradcy AI poniżej.
+          Dokumenty wymagają weryfikacji przez radcę prawnego gminy.
         </p>
       </div>
 
@@ -198,7 +212,7 @@ export const MiddlemanView: React.FC = () => {
               onClick={() => handleSelectPreset(p)}
               className="text-xs bg-white hover:bg-indigo-50 hover:border-indigo-400 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-all"
             >
-              🏛️ {p.name} ({p.pop.toLocaleString('pl-PL')} mieszk., {p.sen}% seniorów)
+              {p.name} ({p.pop.toLocaleString('pl-PL')} mieszk., {p.sen}% seniorów)
             </button>
           ))}
         </div>
@@ -211,71 +225,98 @@ export const MiddlemanView: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Wybierz innowację z portfolio ROPS:
+              <label htmlFor="mm-innovation" className="block text-sm font-bold text-slate-800 mb-1">
+                Innowacja z katalogu
               </label>
               <select
+                id="mm-innovation"
                 value={form.innovation_id}
                 onChange={(e) => setForm({ ...form, innovation_id: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-indigo-500"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-indigo-500"
               >
                 {innovationsList.map((inn) => (
-                  <option key={inn.id} value={inn.id}>{inn.name}</option>
+                  <option key={inn.id} value={inn.id}>{inn.title}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Nazwa Gminy / Miasta w Małopolsce:
+              <label htmlFor="mm-gmina" className="block text-sm font-bold text-slate-800 mb-1">
+                Nazwa gminy (bez słowa „Gmina”)
               </label>
               <input
+                id="mm-gmina"
                 type="text"
                 required
+                minLength={2}
+                maxLength={120}
                 value={form.municipality_name}
                 onChange={(e) => setForm({ ...form, municipality_name: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-500"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Powiat:
+              <label htmlFor="mm-powiat" className="block text-sm font-bold text-slate-800 mb-1">
+                Powiat
               </label>
-              <input
-                type="text"
-                required
+              <select
+                id="mm-powiat"
                 value={form.powiat}
-                onChange={(e) => setForm({ ...form, powiat: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 text-slate-900"
-              />
+                onChange={(e) => setForm({ ...form, powiat: e.target.value, municipality_name: SAMPLE_GMINA[e.target.value] ?? form.municipality_name })}
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900"
+              >
+                {POWIATY.map((p) => <option key={p} value={p}>{powiatLabel(p)}</option>)}
+              </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Liczba mieszkańców:
+              <label htmlFor="mm-population" className="block text-sm font-bold text-slate-800 mb-1">
+                Liczba mieszkańców
               </label>
               <input
+                id="mm-population"
                 type="number"
-                min="500"
+                min={100}
+                max={1000000}
+                required
                 value={form.population}
                 onChange={(e) => setForm({ ...form, population: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 text-slate-900"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 text-slate-900"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Odsetek seniorów 65+ (%):
+              <label htmlFor="mm-seniors" className="block text-sm font-bold text-slate-800 mb-1">
+                Odsetek seniorów 65+ (%)
               </label>
               <input
+                id="mm-seniors"
                 type="number"
                 step="0.5"
+                min={0}
+                max={100}
+                required
                 value={form.senior_percentage}
                 onChange={(e) => setForm({ ...form, senior_percentage: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-300 text-slate-900"
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 text-slate-900"
+              />
+            </div>
+            <div>
+              <label htmlFor="mm-budget" className="block text-sm font-bold text-slate-800 mb-1">
+                Roczny budżet na usługę (zł)
+              </label>
+              <input
+                id="mm-budget"
+                type="number"
+                step={1000}
+                min={0}
+                required
+                value={form.annual_budget_pln}
+                onChange={(e) => setForm({ ...form, annual_budget_pln: Number(e.target.value) })}
+                className="w-full text-sm p-2.5 rounded-lg border border-slate-300 text-slate-900"
               />
             </div>
           </div>
@@ -288,10 +329,12 @@ export const MiddlemanView: React.FC = () => {
               onChange={(e) => setForm({ ...form, has_cus: e.target.checked })}
               className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
             />
-            <label htmlFor="has-cus" className="text-xs text-slate-700 font-medium">
-              Gmina posiada przekształcony <strong>Centrum Usług Społecznych (CUS)</strong> (jeśli nie, usługa trafi do GOPS/MOPS).
+            <label htmlFor="has-cus" className="text-sm text-slate-800 font-medium">
+              Gmina ma <strong>Centrum Usług Społecznych (CUS)</strong> – realizatorem i adresatem uchwały będzie dyrektor CUS (w przeciwnym razie kierownik GOPS).
             </label>
           </div>
+
+          {formError && <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-3 rounded-lg">{formError}</p>}
 
           <button
             type="submit"
@@ -299,7 +342,7 @@ export const MiddlemanView: React.FC = () => {
             className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all text-xs disabled:opacity-50"
           >
             <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>{loading ? 'Generowanie Pakietu Wdrożeniowego...' : 'Wygeneruj Pakiet Wdrożeniowy (Service Blueprint)'}</span>
+            <span>{loading ? 'Generowanie…' : 'Wygeneruj projekt pakietu wdrożeniowego'}</span>
           </button>
         </form>
       </div>
@@ -309,8 +352,8 @@ export const MiddlemanView: React.FC = () => {
         <section aria-live="polite" className="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                Oficjalny Pakiet Wdrożeniowy dla Samorządu
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-800">
+                Projekt pakietu wdrożeniowego (dokument roboczy)
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
                 {blueprint.title}
@@ -324,6 +367,10 @@ export const MiddlemanView: React.FC = () => {
               <span>Drukuj / Pobierz PDF</span>
             </button>
           </div>
+
+          <p className="text-sm bg-amber-50 border border-amber-300 text-amber-950 p-3 rounded-xl" role="note">
+            <strong>Uwaga: </strong>{blueprint.disclaimer}
+          </p>
 
           {/* Podsumowanie */}
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed">
@@ -363,7 +410,15 @@ export const MiddlemanView: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-slate-700">
                   <span>Miesięczne utrzymanie:</span>
-                  <strong className="text-indigo-950 font-bold">{blueprint.estimated_budget.miesieczny_koszt_utrzymania_pln.toLocaleString('pl-PL')} zł</strong>
+                  <strong className="text-indigo-950 font-bold">{formatPLN(blueprint.estimated_budget.miesieczny_koszt_utrzymania_pln)}</strong>
+                </div>
+                <div className="flex justify-between text-slate-700">
+                  <span>Utrzymanie rocznie:</span>
+                  <strong className="text-indigo-950 font-bold">{formatPLN(blueprint.estimated_budget.roczny_koszt_utrzymania_pln)}</strong>
+                </div>
+                <div className="flex justify-between text-slate-700">
+                  <span>Efektywność:</span>
+                  <strong className="text-indigo-950 font-bold text-right">{blueprint.estimated_budget.wskaznik_efektywnosci_kosztowej}</strong>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-2 border-t border-indigo-200/60 pt-2">
                   <strong>Finansowanie:</strong> {blueprint.estimated_budget.rekomendowane_zrodlo}
@@ -379,13 +434,15 @@ export const MiddlemanView: React.FC = () => {
               <p className="text-xs text-slate-700 leading-relaxed mb-3">
                 {blueprint.staffing_requirements}
               </p>
-              <h4 className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                Mitygacja Ryzyk:
+              <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
+                Ryzyka i działania:
               </h4>
-              <p className="text-[11px] text-slate-600">
-                {blueprint.risk_mitigation[0]?.action}
-              </p>
+              <ul className="space-y-1.5 text-xs text-slate-800">
+                {blueprint.risk_mitigation.map((r, i) => (
+                  <li key={i}><strong>{r.risk}</strong> – {r.action}</li>
+                ))}
+              </ul>
             </div>
           </div>
 
@@ -393,7 +450,7 @@ export const MiddlemanView: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4 text-indigo-600" />
-              Gotowy Projekt Uchwały Rady Gminy:
+              Projekt uchwały Rady Gminy (do weryfikacji prawnej):
             </h3>
             <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-72 border border-slate-800">
               {blueprint.resolution_draft}
@@ -412,14 +469,14 @@ export const MiddlemanView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-black text-slate-900">
-                  Wirtualny Doradca Samorządowy ROPS Kraków ds. Wdrożeń
+                  Doradca wdrożeniowy (czat AI)
                 </h3>
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-300">
-                  Aktywny (Groq AI)
+                <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2 py-0.5 rounded-full border border-emerald-300">
+                  LLM Groq · tryb zapasowy bez klucza
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                Zapytaj o procedury samorządowe, argumentację dla Radnych Gminy, montaż finansowy FEM 2021-2027 oraz kadrę dla {form.municipality_name}.
+              <p className="text-xs text-slate-600">
+                Odpowiedzi AI mają charakter pomocniczy. Zapytaj o procedury samorządowe, argumentację dla Radnych Gminy, montaż finansowy FEM 2021-2027 oraz kadrę dla {form.municipality_name}.
               </p>
             </div>
           </div>
@@ -428,7 +485,7 @@ export const MiddlemanView: React.FC = () => {
         {/* Sugerowane Pytania (Szybkie Prompty dla Wójta / Urzędnika / Jury) */}
         {suggestedFollowups.length > 0 && (
           <div className="space-y-1.5">
-            <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
               <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
               Szybkie pytania doradcze (kliknij, aby zapytać):
             </span>
@@ -441,7 +498,7 @@ export const MiddlemanView: React.FC = () => {
                   disabled={chatLoading}
                   className="text-xs bg-indigo-50/80 hover:bg-indigo-100 text-indigo-900 font-medium px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors disabled:opacity-50 text-left"
                 >
-                  💬 {q}
+                  {q}
                 </button>
               ))}
             </div>
@@ -449,7 +506,7 @@ export const MiddlemanView: React.FC = () => {
         )}
 
         {/* Okno Rozmowy */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-96 overflow-y-auto space-y-3">
+        <div role="log" aria-live="polite" aria-label="Rozmowa z doradcą" className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-96 overflow-y-auto space-y-3">
           {chatMessages.map((msg) => (
             <div
               key={msg.id}
@@ -472,7 +529,7 @@ export const MiddlemanView: React.FC = () => {
               >
                 <div className="whitespace-pre-wrap">{msg.content}</div>
                 {msg.latencyMs && (
-                  <span className="block text-[10px] text-slate-400 text-right font-mono">
+                  <span className="block text-xs text-slate-600 text-right font-mono">
                     odpowiedź w {msg.latencyMs}ms
                   </span>
                 )}
@@ -502,8 +559,11 @@ export const MiddlemanView: React.FC = () => {
           }}
           className="flex items-center gap-2 pt-1"
         >
+          <label htmlFor="mm-chat" className="sr-only">Pytanie do doradcy</label>
           <input
+            id="mm-chat"
             type="text"
+            maxLength={4000}
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder={`Zadaj pytanie doradcy (np. Jak sfinansować wdrożenie w ${form.municipality_name}?)...`}

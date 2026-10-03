@@ -1,14 +1,18 @@
-import os
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 from app.core.config import settings
-from app.core.database import engine, Base
+from app.core.database import engine, Base, AsyncSessionLocal
 from app.seed.seed_runner import run_seed
+import app.models  # noqa: F401 – rejestracja wszystkich modeli w metadanych
 
 # Routery
 from app.api.v1.health import router as health_router
+from app.api.v1.auth import router as auth_router
 from app.api.v1.matchmaking import router as matchmaking_router
 from app.api.v1.knowledge import router as knowledge_router
 from app.api.v1.ideas import router as ideas_router
@@ -22,63 +26,76 @@ from app.api.v1.problems import router as problems_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mhis_app")
 
+
+def migrate_sqlite_columns(connection):
+    """
+    Lekka migracja dla SQLite: create_all() nie zmienia istniejących tabel, więc dodajemy brakujące kolumny
+    na podstawie modeli. (Docelowo: PostgreSQL + Alembic.)
+    """
+    if connection.dialect.name != "sqlite":
+        return
+    for table in Base.metadata.sorted_tables:
+        existing = {row[1] for row in connection.execute(text(f"PRAGMA table_info({table.name})")).fetchall()}
+        if not existing:
+            continue
+        for column in table.columns:
+            if column.name in existing:
+                continue
+            col_type = column.type.compile(dialect=connection.dialect)
+            default = ""
+            if column.default is not None and column.default.is_scalar:
+                value = column.default.arg
+                default = f" DEFAULT {int(value) if isinstance(value, bool) else repr(value)}"
+            logger.info(f"Migracja: dodawanie kolumny {table.name}.{column.name} ({col_type})")
+            connection.execute(text(f"ALTER TABLE {table.name} ADD COLUMN {column.name} {col_type}{default}"))
+
+
+async def startup_self_test():
+    """Uruchamia jedno dopasowanie matchmakingu, aby błąd schematu/indeksu wyszedł przy starcie, a nie na demo."""
+    from app.services.matchmaking_service import populate_vector_store_if_needed, rank_innovations
+    async with AsyncSessionLocal() as session:
+        await populate_vector_store_if_needed(session)
+    ranked, _ = rank_innovations("Samotni seniorzy na wsi nie mają dojazdu do lekarza", None, 3)
+    if not ranked:
+        logger.error("SELF-TEST: matchmaking nie zwrócił wyników dla zapytania kontrolnego!")
+    else:
+        logger.info(f"SELF-TEST matchmaking OK: {ranked[0]['meta']['title']} ({ranked[0]['score']})")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Inicjalizacja struktur bazy danych i automatyczny seed danych ROPS
     logger.info("Inicjalizacja bazy danych i tabel SQLAlchemy...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        def migrate_sqlite_columns(connection):
-            try:
-                from sqlalchemy import text
-                result = connection.execute(text("PRAGMA table_info(problem_reports)"))
-                cols = [row[1] for row in result.fetchall()]
-                if cols:
-                    migrations = [
-                        ("title", "VARCHAR"),
-                        ("reporter_type", "VARCHAR DEFAULT 'urzednik_jst'"),
-                        ("reporter_name", "VARCHAR"),
-                        ("reporter_role", "VARCHAR"),
-                        ("urgency", "VARCHAR DEFAULT 'standardowy'"),
-                        ("affected_count", "INTEGER DEFAULT 0"),
-                        ("assigned_innovation_id", "VARCHAR"),
-                        ("assigned_notes", "TEXT")
-                    ]
-                    for col_name, col_type in migrations:
-                        if col_name not in cols:
-                            logger.info(f"Dodawanie brakującej kolumny {col_name} do problem_reports...")
-                            connection.execute(text(f"ALTER TABLE problem_reports ADD COLUMN {col_name} {col_type}"))
-            except Exception as e:
-                logger.warning(f"Błąd migracji kolumn SQLite: {e}")
         await conn.run_sync(migrate_sqlite_columns)
-    logger.info("Uruchamianie seedera danych demonstracyjnych ROPS Kraków...")
+    logger.info("Uruchamianie seedera danych demonstracyjnych...")
     await run_seed()
+    await startup_self_test()
     yield
     logger.info("Zamykanie zasobów aplikacji MHIS...")
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="""
-    ## Małopolski Hub Innowacji Społecznych (MHIS) – ROPS Kraków
-    
-    Oficjalny prototyp platformy integrującej mieszkańców, organizacje pozarządowe, 
-    Jednostki Samorządu Terytorialnego (JST/CUS) oraz ekspertów ROPS Kraków.
-    
-    ### Zrealizowane Moduły:
-    - **Moduł I**: Matchmaking Społeczny (RAG - wyszukiwanie hybrydowe z filtrem PII)
-    - **Moduł II**: Zasobnik Wiedzy (Biblioteka Innowacji i Mapa Wyzwań 22 Powiatów)
-    - **Moduł III**: Kreator Pomysłów (Fiszka 24/7, Canwa Innowacji z Asystentem AI, Generator Wniosków)
-    - **Moduł IV**: Tester Innowacji (Platforma ewaluacji i badania wskaźnika SUS)
-    - **Moduł V**: Platforma Aktywnej Komunikacji (Dialog z ROPS, giełda partnerstw, baza mentorów)
-    - **Moduł VI**: Panel Administratora (Radar Trendów Społecznych i moderacja zgłoszeń)
-    - **Moduł VII**: Middleman Innowacji dla JST (Automatyczny Service Blueprint i uchwała dla gminy)
-    - **Ułatwienia WCAG**: Silnik transformacji tekstu na Standard ETR (Tekst Łatwy do Czytania)
+    ## Małopolski Hub Innowacji Społecznych (MHIS) – prototyp HackYeah 2026
+
+    Koncepcja platformy dla ROPS Kraków integrującej mieszkańców, organizacje pozarządowe,
+    jednostki samorządu terytorialnego (JST/CUS) oraz ekspertów.
+
+    ### Moduły:
+    - **Moduł I**: Matchmaking Społeczny (ranking hybrydowy: rozpoznane potrzeby + TF-IDF, filtr PII, uzasadnienia LLM)
+    - **Moduł II**: Zasobnik Wiedzy (Biblioteka Innowacji i Mapa Wyzwań 22 powiatów)
+    - **Moduł III**: Kreator Pomysłów (fiszka 24/7 ze śledzeniem statusu, Canwa z autouzupełnianiem LLM, szkic wniosku)
+    - **Moduł IV**: Tester Innowacji (zapisy na testy, kwestionariusz SUS – 10 pytań)
+    - **Moduł V**: Platforma Aktywnej Komunikacji (wątki, rezerwacja konsultacji z mentorami)
+    - **Moduł VI**: Panel Administratora (logowanie, moderacja fiszek z odpowiedzią do autora, powiadomienia, edycja katalogu)
+    - **Moduł VII**: Middleman dla JST (projekt pakietu wdrożeniowego i uchwały – do weryfikacji prawnej)
     """,
-    version="1.0.0",
+    version="1.1.0",
     lifespan=lifespan
 )
 
-# Konfiguracja CORS dla frontendu
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -87,35 +104,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Czytelne komunikaty walidacji (pole + powód) bez zrzucania całych danych wejściowych."""
+    errors = []
+    for err in exc.errors():
+        field = ".".join(str(p) for p in err.get("loc", []) if p not in ("body", "query", "path"))
+        message = str(err.get("msg", "Nieprawidłowa wartość")).removeprefix("Value error, ")
+        errors.append({"field": field, "message": message})
+    summary = "; ".join(f"{e['field']}: {e['message']}" if e["field"] else e["message"] for e in errors)
+    return JSONResponse(status_code=422, content={"detail": summary, "errors": errors})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Szczegóły błędu trafiają do logów serwera – klient dostaje ogólny komunikat (bez SQL i parametrów)."""
+    logger.exception(f"Nieobsłużony błąd {request.method} {request.url.path}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Wystąpił błąd serwera. Spróbuj ponownie za chwilę lub skontaktuj się z administratorem."},
+    )
+
+
 # Rejestracja routerów pod prefiksem /api/v1
-app.include_router(health_router, prefix="/api/v1")
-app.include_router(matchmaking_router, prefix="/api/v1")
-app.include_router(knowledge_router, prefix="/api/v1")
-app.include_router(ideas_router, prefix="/api/v1")
-app.include_router(middleman_router, prefix="/api/v1")
-app.include_router(testing_router, prefix="/api/v1")
-app.include_router(communication_router, prefix="/api/v1")
-app.include_router(admin_router, prefix="/api/v1")
-app.include_router(voice_router, prefix="/api/v1")
-app.include_router(problems_router, prefix="/api/v1")
+for router in (health_router, auth_router, matchmaking_router, knowledge_router, ideas_router, middleman_router,
+               testing_router, communication_router, admin_router, voice_router, problems_router):
+    app.include_router(router, prefix="/api/v1")
+
 
 @app.get("/", tags=["Root"])
 async def root():
     return {
         "project": settings.PROJECT_NAME,
-        "organization": "Regionalny Ośrodek Polityki Społecznej w Krakowie (ROPS)",
+        "note": "Prototyp HackYeah 2026 – koncepcja dla ROPS Kraków",
         "docs_url": "/docs",
         "api_v1_prefix": "/api/v1",
         "status": "online",
-        "wcag_level": "WCAG 2.1 AA",
-        "modules_active": [
-            "I. Matchmaking Społeczny (RAG)",
-            "II. Zasobnik Wiedzy",
-            "III. Kreator Pomysłów (Canwa Innowacji)",
-            "IV. Tester Innowacji (SUS Score)",
-            "V. Platforma Aktywnej Komunikacji",
-            "VI. Panel Administratora (Radar Trendów)",
-            "VII. Middleman Innowacji dla JST",
-            "Udogodnienia WCAG & Standard ETR"
-        ]
     }

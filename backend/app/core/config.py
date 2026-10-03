@@ -12,6 +12,17 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = "openai/gpt-oss-20b"
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
+    # Demo-logowanie koordynatora ROPS (panel administratora). W produkcji: SSO / Keycloak.
+    SECRET_KEY: str = "zmien-mnie-w-produkcji-mhis-2026"
+    ADMIN_PASSWORD: str = "rops-demo-2026"
+    ADMIN_TOKEN_TTL_MINUTES: int = 480
+    ADMIN_NOTIFY_EMAIL: str = "innowacje@rops.example.org"
+    # Opcjonalna wysyłka e-mail (bez SMTP_HOST powiadomienia trafiają tylko do skrzynki nadawczej w bazie)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "hub-innowacji@rops.example.org"
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",

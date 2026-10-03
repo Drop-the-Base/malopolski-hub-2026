@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Sparkles,
@@ -8,18 +8,23 @@ import {
   Users,
   ShieldCheck,
   FlaskConical,
-  AlertCircle
+  AlertCircle,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const { etrMode } = useAccessibility();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => setMobileOpen(false), [location.pathname]);
 
   const navLinks = [
     {
       to: '/matchmaking',
-      label: etrMode ? 'Znajdź pomoc' : 'Kojarzenie potrzeb (RAG)',
+      label: etrMode ? 'Znajdź pomoc' : 'Kojarzenie potrzeb',
       icon: Sparkles,
       highlight: true
     },
@@ -41,7 +46,7 @@ export const Navbar: React.FC = () => {
     },
     {
       to: '/middleman',
-      label: etrMode ? 'Dla Gminy' : 'Middleman JST (Asystent AI)',
+      label: etrMode ? 'Dla Gminy' : 'Middleman JST',
       icon: Building2,
       badge: 'Dla Samorządów'
     },
@@ -77,7 +82,7 @@ export const Navbar: React.FC = () => {
               </div>
               <div className="text-xs font-semibold text-blue-600 flex items-center gap-1">
                 <span>Innowacji Społecznych</span>
-                <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">ROPS Kraków</span>
+                <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">prototyp</span>
               </div>
             </div>
           </Link>
@@ -92,6 +97,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.to}
                   to={link.to}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all relative ${
                     isActive
                       ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
@@ -100,10 +106,10 @@ export const Navbar: React.FC = () => {
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : link.highlight ? 'text-amber-600' : 'text-slate-400'}`} aria-hidden="true" />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : link.highlight ? 'text-amber-600' : 'text-slate-500'}`} aria-hidden="true" />
                   <span>{link.label}</span>
                   {link.badge && (
-                    <span className="text-[9px] bg-blue-600 text-white font-bold px-1.5 py-0.2 rounded-full ml-1">
+                    <span className="text-[10px] bg-blue-700 text-white font-bold px-1.5 py-0.5 rounded-full ml-1">
                       JST
                     </span>
                   )}
@@ -111,22 +117,45 @@ export const Navbar: React.FC = () => {
               );
             })}
           </nav>
+
+          {/* Przycisk menu mobilnego */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="lg:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 text-slate-800 text-sm font-semibold hover:bg-slate-100"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+          >
+            {mobileOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+            <span>Menu</span>
+          </button>
         </div>
       </div>
-      {/* Pasek mobilnej nawigacji */}
-      <div className="lg:hidden border-t border-slate-100 px-4 py-2 flex overflow-x-auto gap-2 text-xs scrollbar-none bg-slate-50">
-        {navLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full font-medium ${
-              location.pathname === link.to ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-700'
-            }`}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </div>
+      {/* Menu mobilne */}
+      {mobileOpen && (
+        <nav id="mobile-nav" aria-label="Nawigacja główna (mobilna)" className="lg:hidden border-t border-slate-200 bg-white px-4 py-3">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = location.pathname === link.to;
+              return (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-semibold ${
+                      isActive ? 'bg-blue-600 text-white' : 'text-slate-800 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" aria-hidden="true" />
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      )}
     </header>
   );
 };

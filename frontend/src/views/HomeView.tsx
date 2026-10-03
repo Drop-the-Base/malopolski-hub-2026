@@ -53,8 +53,8 @@ export const HomeView: React.FC = () => {
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">
             {etrMode
-              ? 'Wpisz swój problem lub trudność. Sztuczna inteligencja od razu podpowie Ci sprawdzony pomysł przetestowany przez ROPS Kraków.'
-              : 'Platforma oparta na sztucznej inteligencji eliminująca biurokrację, przyspieszająca wdrażanie sprawdzonych innowacji przez samorządy i budująca partnerstwa między mieszkańcami a ekspertami.'}
+              ? 'Wpisz swój problem lub trudność. Podpowiemy Ci sprawdzony pomysł z katalogu innowacji.'
+              : 'Prototyp platformy, która kojarzy zgłaszane potrzeby z katalogiem sprawdzonych innowacji, pomaga samorządom je wdrażać i łączy mieszkańców z ekspertami.'}
           </p>
 
           {/* Szybka wyszukiwarka RAG */}
@@ -64,26 +64,26 @@ export const HomeView: React.FC = () => {
               value={quickInput}
               onChange={(e) => setQuickInput(e.target.value)}
               placeholder="Opisz problem (np. W naszej wsi starsze osoby nie mają jak dojechać do apteki...)"
-              className="flex-1 px-4 py-3 text-slate-900 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-slate-400"
+              className="flex-1 px-4 py-3 text-slate-900 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-slate-500"
               aria-label="Wpisz problem społeczny"
             />
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm shadow-md"
             >
-              <span>{etrMode ? 'Szukaj pomocy' : 'Dopasuj innowację (RAG)'}</span>
+              <span>{etrMode ? 'Szukaj pomocy' : 'Dopasuj innowację'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           {/* Przykładowe zapytania demonstracyjne */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
             <span className="font-medium text-slate-300">Sprawdź przykłady:</span>
             {sampleQueries.map((q, idx) => (
               <button
                 key={idx}
                 type="button"
-                onClick={() => setQuickInput(q)}
+                onClick={() => navigate(`/matchmaking?q=${encodeURIComponent(q)}`)}
                 className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg border border-slate-700 transition-colors text-[11px]"
               >
                 {q}
@@ -136,7 +136,7 @@ export const HomeView: React.FC = () => {
               </div>
               <h3 className="font-bold text-slate-900 text-base mb-1">Jednostki Samorządu (JST)</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Asystent Middleman AI: wygeneruj Service Blueprint, budżet i projekt uchwały dla swojej gminy.
+                Middleman JST: wygeneruj plan wdrożenia, kosztorys i projekt uchwały dla swojej gminy.
               </p>
             </div>
             <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-700">
@@ -155,7 +155,7 @@ export const HomeView: React.FC = () => {
               </div>
               <h3 className="font-bold text-slate-900 text-base mb-1">Innowatorzy i Granty</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Zbuduj 9-elementową Canwę Innowacji ROPS Kraków z asystentem AI i wygeneruj wniosek grantowy.
+                Zbuduj 9-elementową Canwę Innowacji z autouzupełnianiem AI i przygotuj szkic wniosku grantowego.
               </p>
             </div>
             <div className="mt-4 flex items-center gap-1 text-xs font-bold text-amber-600">
@@ -196,7 +196,7 @@ export const HomeView: React.FC = () => {
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Wpisz wyzwania społeczne, z którymi mierzy się Twoja gmina. Zbadaj liczbę dotkniętych mieszkańców,
-            przypisz gotowe innowacje ROPS Kraków i wygeneruj oficjalny Raport Diagnostyczny dla Rady Gminy.
+            przypisz gotowe innowacje z katalogu i przygotuj raport diagnostyczny dla Rady Gminy.
           </p>
         </div>
         <Link
@@ -212,20 +212,22 @@ export const HomeView: React.FC = () => {
       <section className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div>
-            <div className="text-3xl font-black text-blue-600 mb-1">200+</div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Innowacji w Portfolio ROPS</div>
+            <div className="text-3xl font-black text-blue-600 mb-1">10</div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Innowacji w wersji demo (docelowo cała Biblioteka ROPS)</div>
           </div>
           <div>
             <div className="text-3xl font-black text-indigo-600 mb-1">22</div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Powiaty Małopolski w Bazie</div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Powiaty Małopolski w Bazie</div>
           </div>
           <div>
-            <div className="text-3xl font-black text-emerald-600 mb-1">100%</div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Zgodność z WCAG 2.1 AA</div>
+            <div className="text-3xl font-black text-emerald-700 mb-1">WCAG 2.1 AA</div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              Cel projektowy – <Link to="/deklaracja-dostepnosci" className="underline text-blue-700">deklaracja dostępności</Link>
+            </div>
           </div>
           <div>
-            <div className="text-3xl font-black text-amber-500 mb-1">&lt; 100 zł</div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Miesięczny Koszt TCO Hostingu</div>
+            <div className="text-3xl font-black text-amber-700 mb-1">ok. 200 zł</div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Infrastruktura + API LLM / m-c (szacunek w Roadmapie)</div>
           </div>
         </div>
       </section>
