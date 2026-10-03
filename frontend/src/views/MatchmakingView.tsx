@@ -90,7 +90,17 @@ export const MatchmakingView: React.FC = () => {
     try {
       const data = await api.matchProblem(text, powiat, category);
       setResult(data);
-      setTimeout(() => resultsRef.current?.focus(), 50);
+      // Fokus bez skoku widoku; płynne przewinięcie tylko, gdy wyniki są poza ekranem (z uwzględnieniem lepkiego nagłówka)
+      requestAnimationFrame(() => {
+        const el = resultsRef.current;
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        const top = el.getBoundingClientRect().top;
+        if (top < 0 || top > window.innerHeight * 0.75) {
+          const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+        }
+      });
     } catch (err) {
       setResult(null);
       setError(apiErrorMessage(err, 'Nie udało się dopasować innowacji. Spróbuj ponownie za chwilę.'));
@@ -371,9 +381,17 @@ export const MatchmakingView: React.FC = () => {
         </div>
       )}
 
+      {/* Miejsce na wyniki podczas pierwszego wyszukiwania – bez skoku układu */}
+      {loading && !result && (
+        <div role="status" className="min-h-[420px] bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-center gap-2 text-sm text-slate-700">
+          <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
+          Szukamy pasujących innowacji…
+        </div>
+      )}
+
       {/* Prezentacja Wyników Matchmakingu */}
       {result && (
-        <div ref={resultsRef} tabIndex={-1} aria-live="polite" className="space-y-6 animate-fadeIn focus:outline-none">
+        <div ref={resultsRef} tabIndex={-1} aria-live="polite" className="space-y-6 animate-fadeIn focus:outline-none scroll-mt-28">
           {/* Alerty i podsumowanie analizy */}
           <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
             <div>
