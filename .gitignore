@@ -75,6 +75,7 @@ frontend/dist-ssr/
 *.sqlite
 *.sqlite3
 data/
+!backend/app/seed/data/
 backend/data/
 
 # IDE & OS

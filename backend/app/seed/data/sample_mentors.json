@@ -1,0 +1,26 @@
+[
+  {
+    "id": "mentor-001",
+    "full_name": "dr Anna Kowalska-Nowak",
+    "specialization": "Gerontologia społeczna i usługi sąsiedzkie",
+    "bio": "12 lat doświadczenia w projektowaniu usług senioralnych w Małopolsce, doradczyni 8 gmin przy tworzeniu Centrów Usług Społecznych.",
+    "available_hours": "Środy 16:00 - 19:00",
+    "contact_email": "anna.kowalska@example.org"
+  },
+  {
+    "id": "mentor-002",
+    "full_name": "mgr inż. arch. Michał Zieliński",
+    "specialization": "Dostępność architektoniczna i standardy WCAG",
+    "bio": "Audytor dostępności budynków użyteczności publicznej, współtwórca innowacji 'Terapeuta Przestrzeni'.",
+    "available_hours": "Czwartki 14:00 - 17:00",
+    "contact_email": "michal.zielinski@example.org"
+  },
+  {
+    "id": "mentor-003",
+    "full_name": "Katarzyna Wójcik",
+    "specialization": "Pozyskiwanie grantów EFS i budowanie partnerstw NGO-JST",
+    "bio": "Ekspertka ds. funduszy europejskich dla organizacji pozarządowych w programie Fundusze Europejskie dla Małopolski.",
+    "available_hours": "Piątki 10:00 - 13:00",
+    "contact_email": "katarzyna.wojcik@example.org"
+  }
+]

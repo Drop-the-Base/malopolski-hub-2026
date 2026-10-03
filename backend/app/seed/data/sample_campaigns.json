@@ -1,0 +1,35 @@
+[
+  {
+    "id": "test-camp-001",
+    "innovation_id": "rops-inn-003",
+    "campaign_name": "Testy podręcznika warsztatowego koMIX Życiowy v2.0",
+    "goal_description": "Sprawdzenie czy nowe scenariusze komiksowe są zrozumiałe dla uczniów klas 7-8 szkół podstawowych z małych miast.",
+    "tester_profile_needed": "Pedagodzy szkolni, psycholodzy, młodzież 13-15 lat",
+    "slots_total": 25,
+    "slots_taken": 18,
+    "status": "open",
+    "deadline": "2026-11-15"
+  },
+  {
+    "id": "test-camp-002",
+    "innovation_id": "rops-inn-002",
+    "campaign_name": "Test montażu szybkiej łazienki modułowej w gminie wiejskiej",
+    "goal_description": "Ewaluacja ergonomii wózków kąpielowych i czasu instalacji przez lokalną ekipę remontową.",
+    "tester_profile_needed": "Opiekunowie osób zależnych, pracownicy GOPS",
+    "slots_total": 10,
+    "slots_taken": 7,
+    "status": "open",
+    "deadline": "2026-11-30"
+  },
+  {
+    "id": "test-camp-003",
+    "innovation_id": "rops-inn-006",
+    "campaign_name": "Pilotaż aplikacji Spółdzielnia Cyfrowa – weryfikacja czytelności",
+    "goal_description": "Weryfikacja czy interfejs z piktogramami jest intuicyjny dla osób 75+ niekorzystających dotąd z bankowości mobilnej.",
+    "tester_profile_needed": "Seniorzy 75+ z rodzinami",
+    "slots_total": 30,
+    "slots_taken": 12,
+    "status": "open",
+    "deadline": "2026-12-10"
+  }
+]

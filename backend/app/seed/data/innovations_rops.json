@@ -1,0 +1,190 @@
+[
+  {
+    "id": "rops-inn-001",
+    "title": "Mobilny Doradca Seniora",
+    "tagline": "Specjalistyczny bus docierający do odległych wsi z poradnictwem i wsparciem sąsiedzkim",
+    "category": "seniorzy",
+    "target_groups": [
+      "seniorzy",
+      "osoby z niepełnosprawnościami",
+      "mieszkańcy wsi"
+    ],
+    "full_description": "Innowacja polega na uruchomieniu mobilnego punktu wsparcia w specjalnie zaadaptowanym pojeździe, który regularnie odwiedza oddalone sołectwa w Małopolsce. Na pokładzie dyżuruje animator społeczny oraz pracownik socjalny, oferujący pomoc w załatwianiu spraw urzędowych, e-recept, badań profilaktycznych oraz organizujący sąsiedzkie spotkania integracyjne.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Średni (20-60k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Bus przyjeżdża do Twojej wsi. W busie jest pomocny pan i pani. Pomagają załatwić sprawę u lekarza i w urzędzie. Nie musisz jechać daleko do miasta.",
+    "origin_poviat": "gorlicki",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-002",
+    "title": "Modularna Łazienka Wytchnieniowa",
+    "tagline": "Szybko montowany, tymczasowy kontener łazienkowy dla osób niesamodzielnych",
+    "category": "dostepnosc",
+    "target_groups": [
+      "osoby po udarach",
+      "seniorzy niesamodzielni",
+      "opiekunowie faktyczni"
+    ],
+    "full_description": "Prefabrykowany, w pełni dostępny moduł sanitarny z podjazdem, montowany tymczasowo w ogródku lub przedsionku domu seniora w 24 godziny. Zapewnia podnośnik kąpielowy, prysznic bezprogowy i ogrzewanie, rozwiązując nagłą barierę higieniczną po powrocie chorego ze szpitala.",
+    "readiness_level": "Wdrożona w 3 gminach",
+    "budget_bracket": "Średni (20-60k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Czysta i ciepła łazienka. Można ją postawić przy Twoim domu w jeden dzień. Ma specjalne uchwyty i wózek do kąpieli.",
+    "origin_poviat": "miechowski",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-003",
+    "title": "koMIX Życiowy – Komiksy Terapeutyczne",
+    "tagline": "Narzędzie wsparcia zdrowia psychicznego młodzieży poprzez narrację graficzną",
+    "category": "zdrowie_psychiczne",
+    "target_groups": [
+      "młodzież 12-18 lat",
+      "pedagodzy",
+      "psycholodzy szkolni"
+    ],
+    "full_description": "Seria interaktywnych zeszytów komiksowych oraz aplikacja webowa pomagająca nastolatkom radzić sobie z lękiem społecznym, samotnością i depresją. Uczniowie uzupełniają dymki wypowiedzi bohaterów i analizują trudne emocje bez poczucia bycia ocenianym.",
+    "readiness_level": "Przetestowana w szkołach",
+    "budget_bracket": "Niski (<20k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Książeczka z obrazkami i komiksem. Pomaga, gdy czujesz smutek lub złość. Możesz rysować i czytać o problemach.",
+    "origin_poviat": "nowosądecki",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-004",
+    "title": "Terapeuta Przestrzeni",
+    "tagline": "Bezpłatne audyty i adaptacje mieszkań chroniące seniorów przed upadkami",
+    "category": "dostepnosc",
+    "target_groups": [
+      "seniorzy 75+",
+      "osoby samotne",
+      "osoby niedowidzące"
+    ],
+    "full_description": "Model usługi środowiskowej: przeszkolony fizjoterapeuta i monter odwiedzają mieszkanie seniora, usuwają progi, instalują kontrastowe taśmy na schodach, uchwyty asekuracyjne i czujniki zmierzchowe, radykalnie zmniejszając liczbę hospitalizacji.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Niski (<20k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Ekspert przychodzi do Twojego domu. Sprawdza, czy nie potkniesz się o dywan lub próg. Za darmo montuje poręcze i lampki.",
+    "origin_poviat": "m. Kraków",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-005",
+    "title": "Zmysłoteka – Mobilna Integracja Sensoryczna",
+    "tagline": "Mobilna strefa wyciszenia i terapii SI dla wiejskich szkół i przedszkoli",
+    "category": "edukacja",
+    "target_groups": [
+      "dzieci w spektrum autyzmu",
+      "dzieci z ADHD",
+      "nauczyciele"
+    ],
+    "full_description": "Zestaw certyfikowanych pomocy sensorycznych, hamaków i paneli świetlnych w skrzyniach transportowych, umożliwiający stworzenie profesjonalnej sali wyciszenia w dowolnej placówce nieposiadającej stałego gabinetu terapeutycznego.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Średni (20-60k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Cichy pokój pełen miękkich poduszek, światełek i zabawek. Dzieci mogą tam odpocząć od hałasu w szkole.",
+    "origin_poviat": "tarnowski",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-006",
+    "title": "Spółdzielnia Cyfrowa Senior+",
+    "tagline": "Rówieśnicza edukacja cyfrowa i bezpieczne korzystanie ze smartfona",
+    "category": "wykluczenie_cyfrowe",
+    "target_groups": [
+      "seniorzy",
+      "wolontariusze 60+"
+    ],
+    "full_description": "Sieć klubów sąsiedzkich, gdzie aktywni cyfrowo seniorzy uczą rówieśników bezpiecznego korzystania z Internetu, bankowości elektronicznej, IKP (Internetowego Konta Pacjenta) oraz obrony przed oszustwami 'na wnuczka'.",
+    "readiness_level": "Wdrożona w Krakowie i Tarnowie",
+    "budget_bracket": "Niski (<20k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Spotkania z innymi seniorami przy herbacie. Uczymy się obsługiwać telefon komórkowy i dzwonić do wnuków.",
+    "origin_poviat": "m. Kraków",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-007",
+    "title": "Przystanek Wytchnienie – Bony Opiekuńcze",
+    "tagline": "Zastępcza opieka domowa dająca oddech członkom rodzin osób zależnych",
+    "category": "uslugi_opiekuncze",
+    "target_groups": [
+      "opiekunowie rodzinni",
+      "osoby z chorobą Alzheimera"
+    ],
+    "full_description": "System bonów na profesjonalną opiekę wytchnieniową. Rodzina otrzymuje 4 godziny tygodniowo wykwalifikowanego opiekuna medycznego, co pozwala głównemu opiekunowi na odpoczynek, wizytę u lekarza lub załatwienie spraw osobistych.",
+    "readiness_level": "Pilotaż w 5 gminach",
+    "budget_bracket": "Wysoki (>60k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Ktoś przychodzi zaopiekować się Twoją chorą mamą lub tatą na kilka godzin. Ty możesz w tym czasie odpocząć.",
+    "origin_poviat": "wadowicki",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-008",
+    "title": "Sąsiedzki Dzielnik Żywności i Sadzonek",
+    "tagline": "Lokalna szafa i stół wymiany plonów oraz warsztaty zapobiegające marnowaniu",
+    "category": "integracja",
+    "target_groups": [
+      "mieszkańcy wsi",
+      "działkowcy",
+      "rodziny w trudnej sytuacji"
+    ],
+    "full_description": "Punkt społecznej wymiany nadwyżek warzyw, owoców i przetworów z ogrodów przydomowych. Połączony ze świetlicą, w której organizowane są międzypokoleniowe warsztaty kiszenia i gotowania dla młodzieży i samotnych seniorek.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Niski (<20k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Szafka w centrum wsi. Możesz zostawić jabłka ze swojego ogrodu lub wziąć słoik dżemu, jeśli potrzebujesz.",
+    "origin_poviat": "proszowicki",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-009",
+    "title": "Paszport Samodzielności Młodzieży",
+    "tagline": "Grywalizacyjny program mentoringowy dla wychowanków pieczy zastępczej",
+    "category": "usamodzielnienie",
+    "target_groups": [
+      "młodzież 17-24 lata",
+      "wychowankowie pieczy",
+      "mentorzy biznesowi"
+    ],
+    "full_description": "Aplikacja mobilna i cykl zadań z mentorem przygotowujący młodzież opuszczającą placówki opiekuńczo-wychowawcze do dorosłości: wynajem mieszkania, planowanie budżetu domowego, pierwsze CV i prawa pracownicze.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Średni (20-60k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Aplikacja w telefonie dla młodych ludzi. Uczy jak znaleźć mieszkanie, pracę i jak nie wpaść w długi.",
+    "origin_poviat": "oświęcimski",
+    "is_published": true
+  },
+  {
+    "id": "rops-inn-010",
+    "title": "Cichy Kącik Urzędowy (Strefa AAC)",
+    "tagline": "Kabinowa strefa wyciszenia i alternatywnej komunikacji w urzędach gmin",
+    "category": "dostepnosc",
+    "target_groups": [
+      "osoby w spektrum autyzmu",
+      "osoby z afazją",
+      "klienci urzędów"
+    ],
+    "full_description": "Modułowa kabina wygłuszająca z zestawem tablic komunikacji wspomagającej (AAC), piktogramami i pętlą indukcyjną, umożliwiająca komfortową obsługę mieszkańców mających trudności z komunikacją werbalną.",
+    "readiness_level": "Gotowa do skalowania",
+    "budget_bracket": "Niski (<20k zł)",
+    "video_url": null,
+    "handbook_url": null,
+    "etr_summary": "Ciche miejsce w urzędzie gminy. Jeśli trudno Ci mówić, urzędnik pokaże Ci obrazki, aby szybko załatwić sprawę.",
+    "origin_poviat": "wielicki",
+    "is_published": true
+  }
+]
