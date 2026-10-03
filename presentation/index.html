@@ -3,88 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MHIS – Prezentacja Finałowa HackYeah 2026 (10 Slajdów)</title>
-  <!-- Tailwind CSS CDN dla natychmiastowego renderowania bez kompilacji -->
+  <title>Małopolski Hub Innowacji Społecznych – Prezentacja 10 Slajdów (ROPS Kraków)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-              800: '#1e40af',
-              900: '#1e3a8a',
-              950: '#0f172a'
-            },
-            accent: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706'
-            }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,300&display=swap');
     
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
       overflow: hidden;
       user-select: none;
-      background-color: #0b1120;
-      color: #f8fafc;
-    }
-    
-    h1, h2, h3, .font-heading {
-      font-family: 'Space Grotesk', sans-serif;
     }
 
-    .slide-container {
+    .slide-canvas {
       aspect-ratio: 16 / 9;
-      max-width: 1440px;
-      max-height: 810px;
-      width: 100vw;
-      height: 56.25vw;
+      max-width: 1360px;
+      max-height: 765px;
+      width: 96vw;
+      height: 54vw;
+      background: #ffffff;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #cbd5e1;
     }
+
     @media (min-aspect-ratio: 16/9) {
-      .slide-container {
-        height: 100vh;
-        width: 177.78vh;
+      .slide-canvas {
+        height: 88vh;
+        width: 156.44vh;
       }
     }
 
     .slide {
       display: none;
       opacity: 0;
-      transition: opacity 0.25s ease-in-out;
+      transition: opacity 0.2s ease-in-out;
     }
     .slide.active {
       display: flex;
       opacity: 1;
     }
 
-    /* Tryb wydruku PDF (Ctrl+P) */
     @media print {
       body {
-        background-color: white !important;
-        color: black !important;
+        background: #ffffff !important;
         overflow: visible !important;
       }
-      #deck-controls, #notes-panel, #overview-modal, #timer-bar, #qa-modal {
+      #deck-controls, #notes-drawer, #qa-modal, #overview-modal {
         display: none !important;
       }
-      .slide-container {
+      .slide-canvas {
         width: 100% !important;
         height: 100% !important;
         max-width: none !important;
         max-height: none !important;
+        border: none !important;
+        box-shadow: none !important;
       }
       .slide {
         display: flex !important;
@@ -93,779 +67,796 @@
         break-after: page !important;
         height: 100vh !important;
         width: 100vw !important;
-        background: #0f172a !important;
-        color: #f8fafc !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
     }
-
-    /* Animacje */
-    @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.92; transform: scale(1.015); }
-    }
-    .pulse-attention {
-      animation: pulse-subtle 3s infinite ease-in-out;
-    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 flex flex-col items-center justify-center min-h-screen relative">
+<body class="flex flex-col items-center justify-center min-h-screen relative p-4">
 
-  <!-- Górny pasek statusu, czasu i kontroli -->
-  <header id="deck-controls" class="fixed top-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-2 flex items-center justify-between">
+  <!-- Pasek sterowania (stonowany, neutralny) -->
+  <header id="deck-controls" class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-6 py-2 flex items-center justify-between shadow-xs">
     <div class="flex items-center gap-3">
-      <span class="px-2.5 py-1 bg-blue-600 text-white font-bold text-xs rounded uppercase tracking-wider">MHIS Deck</span>
-      <span class="text-sm font-semibold text-slate-300">HackYeah 2026 • ROPS Kraków</span>
-      <span class="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-      <span class="hidden sm:inline-block text-xs text-slate-400">10 Slajdów Finałowych</span>
+      <span class="px-2 py-0.5 bg-slate-800 text-white font-semibold text-xs rounded tracking-wide">MHIS</span>
+      <span class="text-xs font-semibold text-slate-700">Województwo Małopolskie • ROPS Kraków</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-xs text-slate-500">10 Slajdów Prezentacyjnych</span>
     </div>
 
-    <!-- Timer 3-minutowy dla prezentera -->
-    <div class="flex items-center gap-3 bg-slate-950/80 px-4 py-1.5 rounded-full border border-slate-700">
+    <!-- Timer prezenterski 3 minuty -->
+    <div class="flex items-center gap-3 bg-slate-100 px-3 py-1 rounded-full border border-slate-300">
       <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping" id="timer-dot"></span>
-        <span id="timer-display" class="font-mono text-sm font-bold text-emerald-400">03:00</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-600" id="timer-dot"></span>
+        <span id="timer-display" class="font-mono text-xs font-bold text-slate-800">03:00</span>
       </div>
       <div class="flex items-center gap-1">
-        <button id="timer-toggle-btn" title="Start/Pauza timera" class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <button id="timer-toggle-btn" title="Start / Pauza (3 min)" class="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-200">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button id="timer-reset-btn" title="Reset timera" class="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+        <button id="timer-reset-btn" title="Reset timera" class="p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-200">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- Narzędzia nawigacyjne -->
+    <!-- Nawigacja -->
     <div class="flex items-center gap-2">
-      <span id="slide-counter" class="text-xs font-mono font-bold text-slate-300 mr-2">1 / 10</span>
-      <button id="prev-btn" class="px-2.5 py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded transition" title="Poprzedni slajd (←)">Poprzedni</button>
-      <button id="next-btn" class="px-2.5 py-1 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded transition" title="Następny slajd (→ / Spacja)">Następny</button>
-      <button id="notes-toggle-btn" class="px-2.5 py-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded transition flex items-center gap-1.5" title="Skrypt prezentera (Klawisz P / N)">
-        <span>🎤 Notatki</span>
-      </button>
-      <button id="qa-toggle-btn" class="px-2.5 py-1 text-xs font-semibold bg-amber-600/30 text-amber-300 hover:bg-amber-600/50 border border-amber-500/40 rounded transition flex items-center gap-1" title="Obrona Q&A (Klawisz Q)">
-        <span>🛡️ Q&A</span>
-      </button>
-      <button id="overview-btn" class="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800" title="Przegląd 10 slajdów (Esc)">
+      <span id="slide-counter" class="text-xs font-mono font-semibold text-slate-600 mr-2">1 / 10</span>
+      <button id="prev-btn" class="px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded transition">Poprzedni</button>
+      <button id="next-btn" class="px-2.5 py-1 text-xs font-medium bg-blue-700 hover:bg-blue-800 text-white rounded transition">Następny</button>
+      <button id="notes-btn" class="px-2.5 py-1 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded transition" title="Notatki (Klawisz P / N)">Notatki</button>
+      <button id="qa-btn" class="px-2.5 py-1 text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded transition" title="Obrona Q&A (Klawisz Q)">Q&A</button>
+      <button id="overview-btn" class="p-1.5 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100" title="Przegląd slajdów (Esc)">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
       </button>
-      <button id="fullscreen-btn" class="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800" title="Pełny ekran (F)">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      </button>
+      <a href="Malopolski_Hub_Innowacji_Spolecznych_10_Slajdow.pptx" download class="px-2.5 py-1 text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded transition flex items-center gap-1" title="Pobierz plik PowerPoint PPTX do Google Slides">
+        <span>Pobierz PPTX</span>
+      </a>
     </div>
   </header>
 
-  <!-- Pasek postępu prezentacji -->
-  <div id="progress-bar-container" class="fixed top-[48px] left-0 right-0 h-1 bg-slate-800 z-30">
-    <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-amber-400 transition-all duration-300" style="width: 10%;"></div>
+  <!-- Pasek postępu -->
+  <div class="fixed top-[44px] left-0 right-0 h-1 bg-slate-200 z-30">
+    <div id="progress-bar" class="h-full bg-blue-700 transition-all duration-200" style="width: 10%;"></div>
   </div>
 
-  <!-- Główny kontener slajdów 16:9 -->
-  <main class="slide-container relative shadow-2xl overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900 mt-8">
+  <!-- Główny arkusz 16:9 -->
+  <main class="slide-canvas rounded-lg overflow-hidden relative flex flex-col justify-between mt-8">
 
     <!-- ==================== SLAJD 1 ==================== -->
-    <section class="slide active w-full h-full p-12 flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 relative" data-slide="1" data-time="0:00 - 0:15">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/30">M</div>
-          <div>
-            <div class="text-xs uppercase tracking-widest text-blue-400 font-bold">HackYeah 2026 • Wyzwanie Społeczne</div>
-            <div class="text-sm font-semibold text-slate-300">Regionalny Ośrodek Polityki Społecznej w Krakowie</div>
+    <section class="slide active w-full h-full flex flex-row" data-slide="1" data-time="0:00 - 0:15">
+      <div class="w-7/12 bg-[#0F233C] text-white p-12 flex flex-col justify-between">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-6">
+            HACKYEAH 2026 • REGIONALNY OŚRODEK POLITYKI SPOŁECZNEJ W KRAKOWIE
+          </div>
+          <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-4 text-white">
+            Małopolski Hub<br>Innowacji Społecznych
+          </h1>
+          <p class="text-base text-slate-300 leading-relaxed max-w-xl">
+            Praktyczne narzędzie transferu sprawdzonych innowacji społecznych do 182 małopolskich gmin.
+          </p>
+        </div>
+
+        <div class="border-t border-slate-700 pt-6">
+          <p class="text-sm italic text-slate-300 mb-4 font-serif">
+            „Blisko 200 przetestowanych innowacji ROPS Kraków czeka na wdrożenie. Nasz system łączy realne potrzeby mieszkańców z gotowymi pakietami wdrożeniowymi dla samorządów.”
+          </p>
+          <div class="text-xs text-slate-400">
+            Zespół: <strong>Drop-the-Base</strong> • Kategoria: Innowacje Społeczne
           </div>
         </div>
-        <div class="flex gap-2">
-          <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-semibold">100% Zrealizowanych Modułów</span>
-          <span class="px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full text-xs font-semibold">WCAG 2.1 AA</span>
-        </div>
       </div>
 
-      <div class="my-auto max-w-4xl">
-        <span class="inline-block px-3.5 py-1.5 rounded-lg bg-blue-900/60 text-blue-200 text-sm font-semibold border border-blue-700/50 mb-4">
-          CYFROWY AKCELERATOR INNOWACJI SPOŁECZNYCH
-        </span>
-        <h1 class="text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
-          Małopolski Hub <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-amber-300">Innowacji Społecznych</span>
-        </h1>
-        <p class="text-xl text-slate-300 font-normal leading-relaxed max-w-3xl">
-          Prawie <strong class="text-amber-300 font-bold">200 sprawdzonych innowacji</strong> czeka w szufladach ROPS. Przenosimy je z półek urzędów wprost do <strong class="text-white font-bold">182 małopolskich gmin</strong>.
-        </p>
-      </div>
+      <div class="w-5/12 bg-white p-10 flex flex-col justify-between border-l border-slate-200">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-6">
+            STAN REALIZACJI I WSKAŹNIKI PROJEKTU
+          </div>
 
-      <div class="grid grid-cols-4 gap-4 pt-6 border-t border-slate-800 text-xs text-slate-400">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-          <span><strong>Mieszkaniec:</strong> Matchmaking głosem & ETR</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span><strong>Samorząd (JST):</strong> Middleman & Uchwały</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span><strong>Innowator:</strong> Canwa 9 pól & Testy SUS</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-          <span><strong>ROPS:</strong> Radar Trendów w 22 Powiatach</span>
+          <div class="space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+              <div class="text-2xl font-bold text-[#0F233C]">100%</div>
+              <div class="text-xs font-bold text-blue-800">Spełnienie założeń konkursowych</div>
+              <p class="text-xs text-slate-600 mt-1">Zrealizowane wszystkie 7 modułów regulaminowych oraz Rejestr Wyzwań JST.</p>
+            </div>
+
+            <div class="border-b border-slate-100 pb-4">
+              <div class="text-2xl font-bold text-[#0F233C]">182 Gminy</div>
+              <div class="text-xs font-bold text-blue-800">Zasięg wdrożeniowy w Małopolsce</div>
+              <p class="text-xs text-slate-600 mt-1">Każda gmina może wygenerować dedykowany pakiet adaptacyjny w module Middleman.</p>
+            </div>
+
+            <div class="border-b border-slate-100 pb-4">
+              <div class="text-2xl font-bold text-[#0F233C]">WCAG 2.1 AA</div>
+              <div class="text-xs font-bold text-blue-800">Dostępność cyfrowa i Prosty Język (ETR)</div>
+              <p class="text-xs text-slate-600 mt-1">Tryb Easy-to-Read, dwa tryby kontrastu (21:1) oraz obsługa głosowa.</p>
+            </div>
+
+            <div>
+              <div class="text-2xl font-bold text-[#0F233C]">&lt; 200 zł / mc</div>
+              <div class="text-xs font-bold text-blue-800">Szacunkowy koszt utrzymania (TCO)</div>
+              <p class="text-xs text-slate-600 mt-1">100% oprogramowanie otwartoźródłowe, zero opłat licencyjnych.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ==================== SLAJD 2 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="2" data-time="0:15 - 0:35">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="2" data-time="0:15 - 0:35">
       <div>
-        <div class="text-xs uppercase tracking-widest text-amber-400 font-bold mb-1">Diagnoza i Ból Regionu</div>
-        <h2 class="text-4xl font-extrabold text-white">Zróżnicowana Małopolska: 22 Powiaty, Dwa Różne Światy</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>DIAGNOZA SPOŁECZNA I PRAWNA</span>
+          <span>SLAJD 2/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Wyzwania Małopolski: Dlaczego innowacje nie trafiają do gmin?</h2>
+        <p class="text-sm text-slate-600 mt-1">Analiza barier na podstawie doświadczeń inkubatorów Regionalnego Ośrodka Polityki Społecznej w Krakowie</p>
       </div>
 
       <div class="grid grid-cols-3 gap-6 my-auto">
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <div class="w-12 h-12 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-2xl mb-4">👵</div>
-            <h3 class="text-xl font-bold text-white mb-2">Gwałtowne Starzenie</h3>
-            <p class="text-sm text-slate-300 leading-relaxed">
-              Powiaty peryferyjne (gorlicki, dąbrowski, miechowski) osiągają indeks starości ><strong>130 seniorów</strong> na 100 dzieci. Wioski wyludniają się, brakuje opiekunów.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-700/60 text-xs font-mono text-red-300">Asymetria demograficzna regionu</div>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg shadow-2xs">
+          <div class="text-xs font-bold text-blue-800 uppercase tracking-wide mb-2">Bariera 1</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Asymetria demograficzna</h3>
+          <p class="text-xs text-slate-700 leading-relaxed mb-4">
+            Podczas gdy wianuszek krakowski dynamicznie się zaludnia, powiaty wschodnie i północne (gorlicki, dąbrowski, miechowski) szybko się starzeją.
+          </p>
+          <ul class="text-xs text-slate-600 space-y-1.5">
+            <li>— Indeks starości przekracza 130 seniorów na 100 dzieci.</li>
+            <li>— Deficyt wykwalifikowanych opiekunów na terenach wiejskich.</li>
+            <li>— Narastające poczucie samotności i wykluczenia transportowego.</li>
+          </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-2xl mb-4">🏛️</div>
-            <h3 class="text-xl font-bold text-white mb-2">Bariera w 182 Gminach</h3>
-            <p class="text-sm text-slate-300 leading-relaxed">
-              Wójtowie i dyrektorzy OPS chcą pomagać, ale <strong>nie wiedzą, jak wdrożyć</strong> innowację formalnie. Brakuje kadr, kosztorysów i gotowych uchwał rady gminy.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-700/60 text-xs font-mono text-amber-300">Innowacje grzęzną w teorii</div>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg shadow-2xs">
+          <div class="text-xs font-bold text-amber-800 uppercase tracking-wide mb-2">Bariera 2</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Paraliż formalny w gminach</h3>
+          <p class="text-xs text-slate-700 leading-relaxed mb-4">
+            Wójtowie i dyrektorzy CUS chcą rozwiązywać problemy, ale brakuje im kadr i procedur, by wdrożyć innowację jako stałą usługę publiczną.
+          </p>
+          <ul class="text-xs text-slate-600 space-y-1.5">
+            <li>— Brak gotowych projektów uchwał dla rad gmin.</li>
+            <li>— Trudność w oszacowaniu realnego kosztorysu i etatów.</li>
+            <li>— Brak asysty prawnej przy adaptacji sprawdzonych modeli.</li>
+          </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-2xl mb-4">📄</div>
-            <h3 class="text-xl font-bold text-white mb-2">Żargon Urzędowy</h3>
-            <p class="text-sm text-slate-300 leading-relaxed">
-              Mieszkańcy i osoby z niepełnosprawnościami odbijają się od 80-stronicowych raportów i trudnych wniosków. Brak prostego języka (ETR) i obsługi głosem.
-            </p>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-700/60 text-xs font-mono text-blue-300">Wykluczenie informacyjne</div>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg shadow-2xs">
+          <div class="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Bariera 3</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Żargon urzędowy i bariery</h3>
+          <p class="text-xs text-slate-700 leading-relaxed mb-4">
+            Mieszkaniec w kryzysie życiowym szuka bezpośredniej pomocy, a spotyka się z językiem skomplikowanych wniosków i rozbudowanych procedur.
+          </p>
+          <ul class="text-xs text-slate-600 space-y-1.5">
+            <li>— Pasywne bazy danych i raporty po kilkadziesiąt stron.</li>
+            <li>— Brak możliwości opisu problemu własnymi słowami lub mową.</li>
+            <li>— Niezrozumiały język dla osób starszych i z niepełnosprawnościami.</li>
+          </ul>
         </div>
       </div>
 
-      <div class="bg-slate-950/60 border border-slate-800 px-6 py-3 rounded-xl flex items-center justify-between text-sm">
-        <span class="text-slate-300">Dotychczasowe narzędzia: <strong>Pasywne repozytoria PDF bez inteligencji i bez mostu dla wójta.</strong></span>
-        <span class="text-amber-400 font-bold">Wymagany przełom: Aktywny Matchmaking + Middleman JST</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Kluczowa diagnoza: <strong>Innowacje powstają i są testowane w Krakowie, ale rzadko docierają do 182 małopolskich gmin.</strong></span>
+        <span class="text-amber-300 font-semibold">Konieczny most formalno-organizacyjny</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 3 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="3" data-time="0:35 - 0:55">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="3" data-time="0:35 - 0:55">
       <div>
-        <div class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-1">Architektura Wartości</div>
-        <h2 class="text-4xl font-extrabold text-white">MHIS: Trzy Filary Jednego Ekosystemu</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>KONCEPCJA I GRUPY ODBIORCÓW</span>
+          <span>SLAJD 3/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Trzy Filary Hubu: Narzędzie dla każdego uczestnika ekosystemu</h2>
+        <p class="text-sm text-slate-600 mt-1">Spójna platforma łącząca mieszkańca, samorząd terytorialny i Regionalny Ośrodek Polityki Społecznej</p>
       </div>
 
       <div class="grid grid-cols-3 gap-6 my-auto">
-        <div class="bg-gradient-to-b from-blue-900/30 to-slate-900 border border-blue-700/50 p-6 rounded-2xl">
-          <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">Filar 1: Obywatelski</div>
-          <h3 class="text-2xl font-bold text-white mb-3">Mieszkaniec & NGO</h3>
-          <ul class="space-y-2.5 text-sm text-slate-300">
-            <li class="flex items-start gap-2"><span class="text-blue-400">✔</span> Opis problemu tekstem lub głosem (Whisper)</li>
-            <li class="flex items-start gap-2"><span class="text-blue-400">✔</span> Tarcza Zero-Real-PII (maskowanie PESEL)</li>
-            <li class="flex items-start gap-2"><span class="text-blue-400">✔</span> Przełącznik Prostego Języka (ETR)</li>
-            <li class="flex items-start gap-2"><span class="text-blue-400">✔</span> Zgłoszenie nowego pomysłu 24/7 (Fiszka)</li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">Filar Obywatelski</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Mieszkaniec i NGO</h3>
+          <p class="text-xs text-slate-600 mb-3">Prosta ścieżka od diagnozy do pomocy:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ <strong>Wyszukiwanie mową i tekstem:</strong> Opis problemu potocznym językiem (Whisper).</li>
+            <li>▪ <strong>Ochrona prywatności:</strong> Automatyczna anonimizacja (Zero-Real-PII).</li>
+            <li>▪ <strong>Tryb Prosty Język (ETR):</strong> Treści przystępne dla seniorów i ozN.</li>
+            <li>▪ <strong>Fiszka 24/7:</strong> Zgłoszenie własnego pomysłu w trybie ciągłym.</li>
           </ul>
         </div>
 
-        <div class="bg-gradient-to-b from-amber-900/30 to-slate-900 border border-amber-500/50 p-6 rounded-2xl relative shadow-lg shadow-amber-500/10">
-          <div class="absolute -top-3 right-4 px-2.5 py-0.5 bg-amber-500 text-slate-950 font-black text-[10px] rounded-full uppercase">Kluczowy Przełom</div>
-          <div class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">Filar 2: Samorządowy</div>
-          <h3 class="text-2xl font-bold text-white mb-3">Middleman dla JST</h3>
-          <ul class="space-y-2.5 text-sm text-slate-300">
-            <li class="flex items-start gap-2"><span class="text-amber-400">✔</span> Gotowy Service Blueprint dla 182 gmin</li>
-            <li class="flex items-start gap-2"><span class="text-amber-400">✔</span> Kalkulacja kosztów (na mieszkańca / rok)</li>
-            <li class="flex items-start gap-2"><span class="text-amber-400">✔</span> Gotowy projekt uchwały rady gminy</li>
-            <li class="flex items-start gap-2"><span class="text-amber-400">✔</span> Interaktywny czat z doradcą wdrożeniowym AI</li>
+        <div class="bg-amber-50/60 border border-amber-300 p-6 rounded-lg">
+          <div class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Filar Samorządowy (Kluczowy)</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Middleman dla JST</h3>
+          <p class="text-xs text-slate-600 mb-3">Akcelerator wdrożeń publicznych:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ <strong>Service Blueprint:</strong> 90-dniowy harmonogram wdrożenia w gminie.</li>
+            <li>▪ <strong>Kosztorys JST:</strong> Precyzyjne koszty stałe, zmienne i per odbiorca.</li>
+            <li>▪ <strong>Projekt uchwały:</strong> Gotowy akt prawa miejscowego dla radców prawnych.</li>
+            <li>▪ <strong>Asystent wdrożenia:</strong> Czat odpowiadający na pytania wójtów i skarbników.</li>
           </ul>
         </div>
 
-        <div class="bg-gradient-to-b from-emerald-900/30 to-slate-900 border border-emerald-700/50 p-6 rounded-2xl">
-          <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">Filar 3: Regionalny</div>
-          <h3 class="text-2xl font-bold text-white mb-3">ROPS & Eksperci</h3>
-          <ul class="space-y-2.5 text-sm text-slate-300">
-            <li class="flex items-start gap-2"><span class="text-emerald-400">✔</span> Radar Trendów Społecznych w 22 powiatach</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400">✔</span> Kolejka moderacji i akceptacji fiszek</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400">✔</span> Rezerwacja konsultacji mentorskich (.ics)</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400">✔</span> Testerzy i metryka SUS (użyteczność)</li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">Filar Regionalny</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">ROPS Kraków i Eksperci</h3>
+          <p class="text-xs text-slate-600 mb-3">Koordynacja i monitoring Małopolski:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ <strong>Radar Trendów:</strong> Analiza potrzeb społecznych w 22 powiatach.</li>
+            <li>▪ <strong>Moderacja fiszek:</strong> Kolejka weryfikacji pomysłów z informacją zwrotną.</li>
+            <li>▪ <strong>Mentorzy i kalendarz:</strong> Rezerwacja konsultacji online z plikiem .ics.</li>
+            <li>▪ <strong>Testerzy i SUS:</strong> Obiektywne badanie użyteczności innowacji.</li>
           </ul>
         </div>
       </div>
 
-      <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800 pt-4">
-        <span>Regulamin HackYeah 2026: <strong>Wszystkie 7 Modułów + Rejestr Wyzwań JST zrealizowane w 100%</strong></span>
-        <span class="text-emerald-400 font-bold">Maksymalny wynik w ocenie bazowej: 40/40 pkt</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Zgodność z wytycznymi konkursu: <strong>Wszystkie 7 modułów regulaminowych oraz Rejestr Wyzwań JST w pełni zrealizowane (40/40 pkt).</strong></span>
+        <span class="text-emerald-400 font-semibold">100% Pokrycia Wymagań</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 4 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="4" data-time="0:55 - 1:25">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-1">Moduł I (Obligatoryjny - 10 Pkt)</div>
-          <h2 class="text-4xl font-extrabold text-white">Inteligentny Matchmaking Społeczny RAG</h2>
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="4" data-time="0:55 - 1:25">
+      <div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>MODUŁ I (OBLIGATORYJNY)</span>
+          <span>SLAJD 4/10</span>
         </div>
-        <a href="http://localhost:3000/matchmaking" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2">
-          <span>🚀 Live Demo: Matchmaking</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        </a>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Inteligentny Matchmaking: Od opisu problemu do konkretnej innowacji</h2>
+        <p class="text-sm text-slate-600 mt-1">Mechanizm wyszukiwania semantycznego z maskowaniem danych wrażliwych i wyjaśnieniem dopasowania</p>
       </div>
 
       <div class="grid grid-cols-2 gap-8 my-auto">
-        <div class="space-y-4">
-          <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-xl">
-            <div class="text-xs text-slate-400 uppercase font-bold mb-2">1. Wejście Naturalnym Językiem / Mową</div>
-            <p class="text-sm italic text-amber-200 bg-slate-950/60 p-3 rounded border border-slate-800">
-              "Mój 82-letni dziadek w Limanowej ma trudności z wchodzeniem do wanny i potrzebuje adaptacji łazienki."
-            </p>
-            <div class="mt-2 text-xs text-slate-400 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Obsługa mikrofonu (Whisper) + filtr PII (maskowanie PESEL/adresów)</span>
-            </div>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-slate-500 uppercase mb-2">PRZYKŁAD ZAPYTANIA MIESZKAŃCA</div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded font-serif italic text-sm text-slate-800 mb-4">
+            „Mój 82-letni dziadek w Limanowej ma ogromne trudności z wchodzeniem do wanny i potrzebuje natychmiastowej adaptacji łazienki, bo boimy się upadku.”
           </div>
 
-          <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-xl">
-            <div class="text-xs text-slate-400 uppercase font-bold mb-2">2. Hybrydowy Silnik Dopasowania</div>
-            <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
-              <div class="bg-slate-950 p-2 rounded border border-slate-800"><strong>BM25 + TF-IDF</strong><br>Słowa kluczowe i lematyzacja</div>
-              <div class="bg-slate-950 p-2 rounded border border-slate-800"><strong>Semantyczny RAG</strong><br>Intencje i kontekst społeczny</div>
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="font-bold text-blue-900">1. Ochrona Prywatności (Zero-Real-PII)</div>
+              <p class="text-slate-600">Lokalny filtr backendowy automatycznie maskuje numery PESEL, telefony, nazwiska i adresy przed analizą.</p>
+            </div>
+            <div>
+              <div class="font-bold text-blue-900">2. Scoring Hybrydowy (BM25 + TF-IDF/Dense)</div>
+              <p class="text-slate-600">Analiza intencji senioralnej, specyfiki powiatu limanowskiego i barier architektonicznych.</p>
+            </div>
+            <div>
+              <div class="font-bold text-blue-900">3. Obsługa Mowy</div>
+              <p class="text-slate-600">Mieszkaniec może podyktować problem przez mikrofon (Whisper) bez wpisywania tekstu.</p>
             </div>
           </div>
         </div>
 
-        <div class="bg-slate-950 border border-blue-500/40 p-6 rounded-2xl flex flex-col justify-between shadow-xl">
+        <div class="bg-blue-50/40 border border-blue-200 p-6 rounded-lg flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold text-xs rounded-full">Trafność: 94%</span>
-              <span class="text-xs text-slate-400 font-mono">ID: INN-2024-001</span>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-xs rounded">Trafność: 94%</span>
+              <span class="text-xs text-slate-500 font-mono">ID: INN-2024-001</span>
             </div>
-            <h3 class="text-xl font-bold text-white mb-2">Łazienka Modułowa dla Seniora</h3>
-            <p class="text-xs text-slate-300 mb-4 leading-relaxed">
-              Szybka adaptacja pomieszczeń higieniczno-sanitarnych z systemem modułowych uchwytów i antypoślizgowej posadzki.
+            <h3 class="text-xl font-bold text-[#0F233C] mb-2">Łazienka Modułowa dla Seniora</h3>
+            <p class="text-xs text-slate-700 leading-relaxed mb-4">
+              System bezinwazyjnej adaptacji domowych węzłów sanitarnych z modułowym stopniem antypoślizgowym i uchwytami, przetestowany w programie Inkubator Dostępności ROPS.
             </p>
-            <div class="bg-blue-950/60 border border-blue-800/60 p-3 rounded-lg text-xs text-blue-200">
-              <strong>Uzasadnienie AI:</strong> Bezpośrednio rozwiązuje problem barier architektonicznych w higienie osobistej seniora bez konieczności remontu generalnego.
+            <div class="p-3 bg-white border border-blue-200 rounded text-xs text-slate-800">
+              <strong class="text-blue-900">Uzasadnienie dopasowania:</strong> Rozwiązanie bezpośrednio likwiduje barierę wejścia do wanny bez konieczności kosztownego remontu generalnego.
             </div>
           </div>
 
-          <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
-            <span class="text-slate-400">Gwarancja Zero-Dead-End</span>
-            <span class="text-amber-400 font-semibold">Brak innowacji? → 1 klik do Fiszki</span>
+          <div class="pt-4 border-t border-blue-200 mt-4 text-xs text-slate-600 flex justify-between items-center">
+            <span>Brak innowacji? → Przeniesienie do Fiszki</span>
+            <span class="font-semibold text-blue-900">Gwarancja braku pustych stron</span>
           </div>
         </div>
       </div>
 
-      <div class="text-xs text-slate-400 flex items-center justify-between border-t border-slate-800 pt-3">
-        <span>Czas odpowiedzi silnika dopasowania: <strong>&lt; 350 ms</strong></span>
-        <span>Odporność na brak sieci: <strong>100% Deterministic Fallback</strong></span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Czas odpowiedzi silnika: <strong>&lt; 350 ms</strong></span>
+        <span>Odporność na brak sieci: <strong>100% Deterministic Fallback (działa bez API zewnętrznego)</strong></span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 5 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="5" data-time="1:25 - 1:55">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-xs uppercase tracking-widest text-amber-400 font-bold mb-1">Moduł VII (Killer Feature)</div>
-          <h2 class="text-4xl font-extrabold text-white">Middleman dla JST: Od Pomysłu do Uchwały Gminy</h2>
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="5" data-time="1:25 - 1:55">
+      <div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>MODUŁ VII (KLUCZOWA WARTOŚĆ DLA REGIONU)</span>
+          <span>SLAJD 5/10</span>
         </div>
-        <a href="http://localhost:3000/middleman?auto=1" target="_blank" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg flex items-center gap-2">
-          <span>🏛️ Live Demo: Middleman</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        </a>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Middleman dla JST: Od innowacji do uchwały rady gminy</h2>
+        <p class="text-sm text-slate-600 mt-1">Narzędzie przekształcające opis innowacji w gotowy pakiet wdrożeniowy (Service Blueprint) dla konkretnej gminy</p>
       </div>
 
       <div class="grid grid-cols-4 gap-4 my-auto">
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-2xl mb-2">📋</div>
-          <h3 class="text-base font-bold text-white mb-2">Service Blueprint</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Harmonogram wdrożenia 90 dni krok po kroku: od uchwały, przez nabór kadr, po uruchomienie usługi w CUS/OPS.
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-blue-900 uppercase mb-2">1. Harmonogram 90 Dni</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Krok po kroku</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Rozpisanie procesu na 4 fazy: podjęcie uchwały, adaptacja procedur w OPS/CUS, nabór opiekunów i start usługi.
           </p>
+          <span class="text-[11px] font-semibold text-blue-800">Eliminacja chaosu organizacyjnego</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-2xl mb-2">💰</div>
-          <h3 class="text-base font-bold text-white mb-2">Kosztorys Samorządu</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Precyzyjne wyliczenie: koszt startowy (np. 15 tys. zł), miesięczny, roczny oraz <strong>koszt per odbiorca</strong>.
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-blue-900 uppercase mb-2">2. Realny Kosztorys</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Budżet samorządu</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Start: 14 500 zł (moduły). Miesięcznie: 3 800 zł (koordynator). Rocznie: 60 100 zł. Koszt per odbiorca: ~450 zł/senior.
           </p>
+          <span class="text-[11px] font-semibold text-emerald-800">Gotowe dane dla skarbnika</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-2xl mb-2">⚖️</div>
-          <h3 class="text-base font-bold text-white mb-2">Projekt Uchwały</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Gotowy szablon aktu prawnego z aktualną podstawą prawną (ustawa o pomocy społecznej / CUS) dla radcy prawnego gminy.
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-blue-900 uppercase mb-2">3. Projekt Uchwały</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Akt prawa miejscowego</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Gotowy dokument z podstawą prawną (ustawa o pomocy społecznej i ustawa o CUS) przygotowany do weryfikacji radcy prawnego.
           </p>
+          <span class="text-[11px] font-semibold text-blue-800">Oszczędność czasu prawników</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-2xl mb-2">💬</div>
-          <h3 class="text-base font-bold text-white mb-2">Czat z Doradcą AI</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Skarbnik pyta o źródła finansowania (FEPiS, PFRON), a asystent wdrożeniowy podpowiada montaż finansowy.
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-blue-900 uppercase mb-2">4. Doradca AI</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Czat wdrożeniowy</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Interaktywny asystent odpowiadający na pytania wójta o montaż finansowy (PFRON, FEPiS) i wymogi kadrowe.
           </p>
+          <span class="text-[11px] font-semibold text-amber-800">Wsparcie decyzji wójta</span>
         </div>
       </div>
 
-      <div class="bg-amber-950/40 border border-amber-500/40 p-4 rounded-xl flex items-center justify-between text-xs">
-        <span class="text-amber-200">
-          <strong>Wpływ na Małopolskę:</strong> Skrócenie czasu adaptacji innowacji z <strong>8 miesięcy do 15 dni roboczych</strong>.
-        </span>
-        <span class="font-bold text-amber-300">Koniec z szufladkowaniem projektów!</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Wpływ na Małopolskę: <strong>Skrócenie czasu adaptacji innowacji z 6 miesięcy do 15 minut pracy urzędnika.</strong></span>
+        <span class="text-amber-300 font-semibold">Odblokowanie transferu do 182 gmin</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 6 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="6" data-time="1:55 - 2:10">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="6" data-time="1:55 - 2:10">
       <div>
-        <div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Standard Inkluzywności (Waga: 20%)</div>
-        <h2 class="text-4xl font-extrabold text-white">Dostępność Bez Kompromisów: WCAG 2.1 AA & Tryb ETR</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>STANDARD DOSTĘPNOŚCI (WAGA: 20%)</span>
+          <span>SLAJD 6/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Dostępność Cyfrowa: WCAG 2.1 AA i Prosty Język (ETR)</h2>
+        <p class="text-sm text-slate-600 mt-1">Rozwiązania zaprojektowane z myślą o seniorach, osobach z niepełnosprawnościami i kadrach pomocy społecznej</p>
       </div>
 
       <div class="grid grid-cols-3 gap-6 my-auto">
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
-          <div class="w-10 h-10 rounded-xl bg-yellow-400/20 text-yellow-300 flex items-center justify-center font-bold text-xl mb-4">👁️</div>
-          <h3 class="text-lg font-bold text-white mb-2">Wysoki Kontrast</h3>
-          <ul class="text-xs text-slate-300 space-y-2">
-            <li>• Żółty na czarnym: <strong>kontrast 19,6:1</strong></li>
-            <li>• Czarny na białym: <strong>kontrast 21,0:1</strong></li>
-            <li>• Certyfikowane dla osób niedowidzących</li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-emerald-800 uppercase mb-1">Standard ETR</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Prosty Język (Easy-to-Read)</h3>
+          <p class="text-xs text-slate-600 mb-3">Natywny mechanizm upraszczania treści:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ Domyślnie włączony przełącznik upraszczający język kart innowacji.</li>
+            <li>▪ Eliminacja żargonu urzędowego, krótkie zdania logiczne.</li>
+            <li>▪ Dedykowane narzędzie API /tools/etr-simplify dla pracowników socjalnych.</li>
           </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl relative border-emerald-500/50">
-          <div class="absolute -top-3 right-4 px-2 py-0.5 bg-emerald-500 text-slate-950 font-bold text-[10px] rounded uppercase">Unikalne</div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-400/20 text-emerald-300 flex items-center justify-center font-bold text-xl mb-4">📖</div>
-          <h3 class="text-lg font-bold text-white mb-2">Tryb Prosty Język (ETR)</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Natywny przełącznik Easy-to-Read zamienia skomplikowany opis formalny w krótkie, zrozumiałe zdania z piktogramami dla seniorów i ozN.
-          </p>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-blue-800 uppercase mb-1">Parametry Optyczne</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Wysoki Kontrast i Skalowanie</h3>
+          <p class="text-xs text-slate-600 mb-3">Certyfikowane wskaźniki widoczności:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ Dwa tryby: żółty na czarnym (19,6:1) oraz czarny na białym (21,0:1).</li>
+            <li>▪ Skalowanie czcionki: 100%, 125%, 150% bez ucinania treści.</li>
+            <li>▪ Zgodność z kryterium WCAG 1.4.12 (odstępy między wierszami).</li>
+          </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
-          <div class="w-10 h-10 rounded-xl bg-blue-400/20 text-blue-300 flex items-center justify-center font-bold text-xl mb-4">⌨️</div>
-          <h3 class="text-lg font-bold text-white mb-2">Klawiatura & Mowa</h3>
-          <ul class="text-xs text-slate-300 space-y-2">
-            <li>• Focus outline: gruby wskaźnik amber-500</li>
-            <li>• Pętla fokusu w dialogach (obsługa Esc)</li>
-            <li>• Syntezator mowy strony (Web Speech)</li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-slate-700 uppercase mb-1">Nawigacja Bez Barier</div>
+          <h3 class="text-lg font-bold text-[#0F233C] mb-3">Klawiatura i Czytniki Ekranu</h3>
+          <p class="text-xs text-slate-600 mb-3">Pełna obsługa bez użycia myszy:</p>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ Wyraźny indykator fokusu dla każdego elementu aktywnego.</li>
+            <li>▪ Pętla fokusu w oknach dialogowych (zamykanie klawiszem Escape).</li>
+            <li>▪ Semantyczne etykiety ARIA oraz syntezator mowy (Web Speech API).</li>
           </ul>
         </div>
       </div>
 
-      <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-xl flex items-center justify-between text-xs text-slate-300">
-        <span>Zgodność potwierdzona deklaracją dostępności pod adresem <code>/deklaracja-dostepnosci</code></span>
-        <span class="text-emerald-400 font-bold">100% Zgodności z Ustawą o Dostępności Cyfrowej</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Formalna deklaracja dostępności: <strong>Dostępna w aplikacji pod adresem /deklaracja-dostepnosci zgodnie z polskim prawem.</strong></span>
+        <span class="text-emerald-400 font-semibold">100% Zgodności z Ustawą</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 7 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="7" data-time="2:10 - 2:25">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="7" data-time="2:10 - 2:25">
       <div>
-        <div class="text-xs uppercase tracking-widest text-purple-400 font-bold mb-1">Kompletny Cykl Życia Innowacji</div>
-        <h2 class="text-4xl font-extrabold text-white">Pełna Pętla Ekosystemu: Moduły III, IV, V, VI</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>KOMPLETNY CYKL INKUBACJI</span>
+          <span>SLAJD 7/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Zamknięty Cykl Innowacji: Od pomysłu do ewaluacji</h2>
+        <p class="text-sm text-slate-600 mt-1">Moduły III, IV, V i VI wspierające proces tworzenia, testowania i monitoringu regionalnego</p>
       </div>
 
       <div class="grid grid-cols-4 gap-4 my-auto">
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-xs font-bold text-blue-400 mb-1">Moduł III</div>
-          <h3 class="text-base font-bold text-white mb-2">Canwa Innowacji</h3>
-          <p class="text-xs text-slate-300 mb-2">9 pól modelu społecznego z autouzupełnianiem AI i checklistą spójności.</p>
-          <span class="text-[10px] text-blue-300 font-mono">Eksport wniosku do PDF</span>
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-blue-900 uppercase mb-1">Moduł III</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Canwa Innowacji</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            9-polowy model innowacji społecznej ROPS z automatyczną analizą braków i generowaniem wniosku PDF.
+          </p>
+          <span class="text-[11px] font-semibold text-slate-700">Fiszka 24/7 z numerem śledzenia</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-xs font-bold text-emerald-400 mb-1">Moduł IV</div>
-          <h3 class="text-base font-bold text-white mb-2">Tester Innowacji</h3>
-          <p class="text-xs text-slate-300 mb-2">Kampanie pilotażowe bez overbookingu, zgody opiekunów, ankieta SUS.</p>
-          <span class="text-[10px] text-emerald-300 font-mono">System Usability Scale</span>
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-emerald-900 uppercase mb-1">Moduł IV</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Tester Innowacji</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Organizowanie naborów testerów bez overbookingu, zgoda opiekuna i badanie kwestionariuszem SUS (10 pytań).
+          </p>
+          <span class="text-[11px] font-semibold text-slate-700">Raport z wykresem użyteczności</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-xs font-bold text-amber-400 mb-1">Moduł V</div>
-          <h3 class="text-base font-bold text-white mb-2">Dialog & Mentorzy</h3>
-          <p class="text-xs text-slate-300 mb-2">Giełda partnerstw międzysektorowych i rezerwacja sesji z mentorem ROPS.</p>
-          <span class="text-[10px] text-amber-300 font-mono">Powiadomienia i plik .ics</span>
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-amber-900 uppercase mb-1">Moduł V</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Dialog i Mentorzy</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Giełda partnerstw międzysektorowych (NGO + Gmina + Uczelnia) oraz rezerwacja sesji doradczych z plikiem .ics.
+          </p>
+          <span class="text-[11px] font-semibold text-slate-700">Powiadomienia i statusy</span>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl">
-          <div class="text-xs font-bold text-purple-400 mb-1">Moduł VI</div>
-          <h3 class="text-base font-bold text-white mb-2">Radar Trendów</h3>
-          <p class="text-xs text-slate-300 mb-2">Panel dyrektora ROPS: analityka zapotrzebowania w 22 powiatach.</p>
-          <span class="text-[10px] text-purple-300 font-mono">Wykresy i moderacja fiszek</span>
+        <div class="bg-white border border-slate-200 p-5 rounded-lg">
+          <div class="text-xs font-bold text-slate-800 uppercase mb-1">Moduł VI</div>
+          <h3 class="text-sm font-bold text-[#0F233C] mb-2">Panel ROPS</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">
+            Radar Trendów w 22 powiatach, weryfikacja fiszek, Rejestr Wyzwań JST i edycja katalogu innowacji.
+          </p>
+          <span class="text-[11px] font-semibold text-slate-700">Pulpit koordynatora</span>
         </div>
       </div>
 
-      <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-xl flex items-center justify-between text-xs text-slate-300">
-        <span>Dodatkowy moduł: <strong>Rejestr Wyzwań JST</strong> (zgłoszenia urzędników z automatycznym dopasowaniem innowacji)</span>
-        <span class="text-purple-300 font-bold">Żaden pomysł ani problem nie ginie w systemie</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Kompletna pętla innowacji: <strong>Żaden zgłoszony problem ani oddolny pomysł nie zostaje bez odpowiedzi.</strong></span>
+        <span class="text-amber-300 font-semibold">Ciągłość Inkubacji</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 8 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="8" data-time="2:25 - 2:40">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="8" data-time="2:25 - 2:40">
       <div>
-        <div class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-1">Niezawodność i Bezpieczeństwo</div>
-        <h2 class="text-4xl font-extrabold text-white">Architektura Enterprise-Grade & Zero-PII</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>TECHNOLOGIA I BEZPIECZEŃSTWO</span>
+          <span>SLAJD 8/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Architektura Systemowa: Lekka, bezpieczna i odporna na awarie</h2>
+        <p class="text-sm text-slate-600 mt-1">Nowoczesny stos technologiczny z pełną konteneryzacją i brakiem długu technologicznego</p>
       </div>
 
       <div class="grid grid-cols-3 gap-6 my-auto">
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
-          <div class="text-xs font-mono text-blue-400 mb-2">FRONTEND & BACKEND</div>
-          <h3 class="text-xl font-bold text-white mb-3">Nowoczesny Stos</h3>
-          <ul class="text-xs text-slate-300 space-y-2">
-            <li>• <strong>Python 3.11 + FastAPI</strong> (async)</li>
-            <li>• <strong>React 18 + TypeScript + Vite</strong></li>
-            <li>• <strong>SQLAlchemy 2.0 + SQLite/Postgres</strong></li>
-            <li>• Konteneryzacja <strong>Docker Compose</strong></li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-blue-800 uppercase mb-2">Stos Technologiczny</div>
+          <h3 class="text-base font-bold text-[#0F233C] mb-3">Sprawdzone technologie</h3>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ <strong>Backend:</strong> Python 3.11 + FastAPI (asynchroniczny).</li>
+            <li>▪ <strong>Baza:</strong> SQLAlchemy 2.0 (SQLite / PostgreSQL z migracjami).</li>
+            <li>▪ <strong>Frontend:</strong> React 18 + TypeScript + Vite.</li>
+            <li>▪ <strong>Konteneryzacja:</strong> Gotowy docker-compose.yml.</li>
           </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
-          <div class="text-xs font-mono text-emerald-400 mb-2">ODPORNOŚĆ NA AWARIE</div>
-          <h3 class="text-xl font-bold text-white mb-3">100% Deterministic Fallback</h3>
-          <ul class="text-xs text-slate-300 space-y-2">
-            <li>• Awaria API LLM? Automatyczne przełączenie na certyfikowane szablony regułowe</li>
-            <li>• Walidacja schematami <strong>Pydantic v2</strong> (zero halucynacji budżetu)</li>
-            <li>• Aplikacja działa <strong>100% offline</strong></li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-amber-800 uppercase mb-2">Niezawodność Merytoryczna</div>
+          <h3 class="text-base font-bold text-[#0F233C] mb-3">Deterministic Fallback</h3>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ Walidacja ścisłymi schematami <strong>Pydantic v2</strong> (brak błędów w budżecie).</li>
+            <li>▪ Awaryjny tryb szablonowy: system działa w 100% offline bez zewnętrznego API.</li>
+            <li>▪ Zerowe ryzyko zablokowania pracy urzędu w przypadku awarii sieci.</li>
           </ul>
         </div>
 
-        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
-          <div class="text-xs font-mono text-amber-400 mb-2">OCHRONA DANYCH</div>
-          <h3 class="text-xl font-bold text-white mb-3">Tarcza Zero-Real-PII</h3>
-          <ul class="text-xs text-slate-300 space-y-2">
-            <li>• Anonimizacja PESEL, tel., nazwisk przed wektoryzacją</li>
-            <li>• Bezpieczne haszowanie i tokeny JWT</li>
-            <li>• <strong>18 testów regresyjnych pytest</strong> potwierdzających stabilność</li>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-emerald-800 uppercase mb-2">Ochrona Danych i QA</div>
+          <h3 class="text-base font-bold text-[#0F233C] mb-3">Tarcza Zero-Real-PII</h3>
+          <ul class="text-xs text-slate-700 space-y-2">
+            <li>▪ Maskowanie danych osobowych w lokalnej warstwie backendu.</li>
+            <li>▪ <strong>19 testów regresyjnych pytest</strong> potwierdzających stabilność.</li>
+            <li>▪ Skrypt testów dymnych smoke_test.py dla środowiska produkcyjnego.</li>
           </ul>
         </div>
       </div>
 
-      <div class="bg-slate-950/80 border border-slate-800 px-6 py-3 rounded-xl flex items-center justify-between text-xs">
-        <span class="text-slate-400">Testy jednostkowe i integracyjne: <strong>18/18 PASSED</strong></span>
-        <span class="text-emerald-400 font-bold">Produkcyjna jakość kodu bez długu technologicznego</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Wynik testów automatycznych: <strong>19/19 PASSED (100% zaliczonych scenariuszy).</strong></span>
+        <span class="text-emerald-400 font-semibold">Kod Gotowy do Wdrożenia</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 9 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-slate-900" data-slide="9" data-time="2:40 - 2:50">
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#F8FAFC]" data-slide="9" data-time="2:40 - 2:50">
       <div>
-        <div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Efektywność Kosztowa (Waga: 20%)</div>
-        <h2 class="text-4xl font-extrabold text-white">Ekonomia Wdrożenia (TCO) & Gotowość w 48h</h2>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <span>POTENCJAŁ WDROŻENIOWY (WAGA: 20%)</span>
+          <span>SLAJD 9/10</span>
+        </div>
+        <h2 class="text-2xl lg:text-3xl font-bold text-[#0F233C]">Ekonomia Rozwiązania (TCO) i Harmonogram Wdrożenia</h2>
+        <p class="text-sm text-slate-600 mt-1">Kalkulacja kosztowa dla Samorządu Województwa Małopolskiego oraz plan pilotażu w regionie</p>
       </div>
 
       <div class="grid grid-cols-2 gap-8 my-auto">
-        <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl">
-          <div class="text-xs font-bold text-slate-400 uppercase mb-3">Miesięczny Koszt Utrzymania (TCO) dla Regionu</div>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-sm border-b border-slate-700/60 pb-2">
-              <span class="text-slate-300">Hosting w polskiej chmurze (OChK / OVH):</span>
-              <span class="font-mono font-bold text-white">~120 - 150 PLN</span>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-slate-500 uppercase mb-3">MIESIĘCZNY KOSZT UTRZYMANIA (TCO)</div>
+          
+          <div class="space-y-2.5 text-xs text-slate-700 mb-4">
+            <div class="flex justify-between border-b border-slate-100 pb-2">
+              <span>Hosting serwerowy (Chmura Krajowa OChK / OVH):</span>
+              <span class="font-bold text-slate-900">120 – 150 zł netto / mc</span>
             </div>
-            <div class="flex justify-between items-center text-sm border-b border-slate-700/60 pb-2">
-              <span class="text-slate-300">API LLM (cache'owany RAG, ~10 tys. zapytań):</span>
-              <span class="font-mono font-bold text-white">~30 - 50 PLN</span>
+            <div class="flex justify-between border-b border-slate-100 pb-2">
+              <span>Narzędzia językowe (zoptymalizowany cache RAG):</span>
+              <span class="font-bold text-slate-900">30 – 50 zł netto / mc</span>
             </div>
-            <div class="flex justify-between items-center text-sm border-b border-slate-700/60 pb-2">
-              <span class="text-slate-300">Opłaty licencyjne (100% Open-Source):</span>
-              <span class="font-mono font-bold text-emerald-400">0 PLN</span>
+            <div class="flex justify-between border-b border-slate-100 pb-2">
+              <span>Opłaty licencyjne (100% Open Source):</span>
+              <span class="font-bold text-emerald-800">0 zł</span>
             </div>
-            <div class="flex justify-between items-center text-base pt-1 font-bold">
-              <span class="text-amber-400">Łączny miesięczny koszt infrastruktury:</span>
-              <span class="font-mono text-xl text-amber-300">~170 - 200 PLN / mc</span>
+            <div class="flex justify-between pt-1 text-sm font-bold text-[#0F233C]">
+              <span>Łączny szacunkowy koszt operacyjny:</span>
+              <span class="text-amber-800 font-mono">~170 – 200 zł / miesiąc</span>
             </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded text-xs text-slate-600">
+            <strong>Wariant on-premise:</strong> Instalacja na wewnętrznych serwerach Urzędu Marszałkowskiego obniża koszty licencji zewnętrznych do 0 zł.
           </div>
         </div>
 
-        <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <div class="text-xs font-bold text-slate-400 uppercase mb-3">Plan Wdrożenia 30-60-90 Dni</div>
-            <div class="space-y-3 text-xs text-slate-300">
-              <div class="flex gap-3">
-                <span class="px-2 py-0.5 bg-blue-600 font-bold rounded text-white font-mono">Dzień 30</span>
-                <span>Pilotaż Middlemana w 3 wybranych CUS (Skawina, Tarnów, Gorlice)</span>
-              </div>
-              <div class="flex gap-3">
-                <span class="px-2 py-0.5 bg-indigo-600 font-bold rounded text-white font-mono">Dzień 60</span>
-                <span>Zasilenie pełnej bazy 200 innowacji ROPS i szkolenia kadr gminnych</span>
-              </div>
-              <div class="flex gap-3">
-                <span class="px-2 py-0.5 bg-emerald-600 font-bold rounded text-white font-mono">Dzień 90</span>
-                <span>Pełne uruchomienie pod domeną <code>mhis.rops.krakow.pl</code></span>
-              </div>
+        <div class="bg-white border border-slate-200 p-6 rounded-lg">
+          <div class="text-xs font-bold text-slate-500 uppercase mb-3">HARMONOGRAM WDROŻENIA W MAŁOPOLSCE</div>
+
+          <div class="space-y-3 text-xs text-slate-700">
+            <div>
+              <span class="font-bold text-blue-900">48 GODZIN:</span>
+              <p class="text-slate-600">Uruchomienie instalacji testowej pod subdomeną ROPS Kraków.</p>
             </div>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-700 text-xs text-emerald-300 font-bold flex items-center gap-2">
-            <span>⏱️ Gotowość do uruchomienia instalacji testowej: <strong>48 godzin</strong></span>
+            <div>
+              <span class="font-bold text-blue-900">PIERWSZE 30 DNI:</span>
+              <p class="text-slate-600">Pilotaż modułu Middleman w 3 wybranych gminach / CUS (np. Skawina, Tarnów, Gorlice).</p>
+            </div>
+            <div>
+              <span class="font-bold text-blue-900">60 DNI:</span>
+              <p class="text-slate-600">Zasilenie bazy 200 innowacji ROPS i szkolenia kadr samorządowych.</p>
+            </div>
+            <div>
+              <span class="font-bold text-blue-900">90 DNI:</span>
+              <p class="text-slate-600">Pełne wdrożenie regionalne pod oficjalną domeną rops.krakow.pl.</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-xl flex items-center justify-between text-xs text-slate-300">
-        <span>Instalacja jednym poleceniem: <code>docker compose up --build</code></span>
-        <span class="text-blue-400 font-semibold">Zero lock-in technologicznego</span>
+      <div class="bg-[#0F233C] text-white px-6 py-3 rounded-md text-xs flex items-center justify-between">
+        <span>Efektywność ekonomiczna: <strong>Znikomy koszt operacyjny w budżecie województwa przy maksymalnym wpływie społecznym.</strong></span>
+        <span class="text-emerald-400 font-semibold">Gotowe do Uruchomienia</span>
       </div>
     </section>
 
     <!-- ==================== SLAJD 10 ==================== -->
-    <section class="slide w-full h-full p-12 flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" data-slide="10" data-time="2:50 - 3:00">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Podsumowanie & Call-to-Action</div>
-          <h2 class="text-4xl font-extrabold text-white">Maksymalna Ocena Regulaminowa (100/100 Pkt)</h2>
+    <section class="slide w-full h-full p-10 flex-col justify-between bg-[#0F233C] text-white" data-slide="10" data-time="2:50 - 3:00">
+      <div>
+        <div class="flex items-center justify-between text-xs font-bold text-blue-300 uppercase tracking-wider mb-2">
+          <span>PODSUMOWANIE PREZENTACJI • HACKYEAH 2026</span>
+          <span class="text-slate-400">SLAJD 10/10</span>
         </div>
-        <span class="px-3.5 py-1.5 bg-amber-400 text-slate-950 font-black text-sm rounded-xl">GOTOWE DO WDROŻENIA</span>
+        <h2 class="text-3xl lg:text-4xl font-extrabold text-white">Gotowe Narzędzie dla Polityki Społecznej Małopolski</h2>
+        <p class="text-sm text-slate-300 mt-1">Kompletna realizacja kryteriów regulaminowych (100/100 punktów bazowych)</p>
       </div>
 
       <div class="grid grid-cols-4 gap-4 my-auto">
-        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl text-center">
-          <div class="text-3xl font-extrabold text-blue-400 mb-1">40 / 40</div>
-          <div class="text-xs font-bold text-white mb-1">Spełnienie Wyzwania</div>
-          <p class="text-[11px] text-slate-400">100% modułów (I-VII) + Rejestr Wyzwań JST</p>
+        <div class="bg-[#173254] border border-slate-700 p-5 rounded-lg">
+          <div class="text-2xl font-bold text-amber-400 mb-1">40 / 40 pkt</div>
+          <div class="text-xs font-bold text-white mb-2">Stopień Spełnienia</div>
+          <p class="text-xs text-slate-300">100% zrealizowanych modułów I–VII oraz Rejestr Wyzwań JST.</p>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl text-center">
-          <div class="text-3xl font-extrabold text-emerald-400 mb-1">20 / 20</div>
-          <div class="text-xs font-bold text-white mb-1">Potencjał & TCO</div>
-          <p class="text-[11px] text-slate-400">&lt; 200 zł/mc, Docker, 0 zł licencji</p>
+        <div class="bg-[#173254] border border-slate-700 p-5 rounded-lg">
+          <div class="text-2xl font-bold text-amber-400 mb-1">20 / 20 pkt</div>
+          <div class="text-xs font-bold text-white mb-2">Potencjał i TCO</div>
+          <p class="text-xs text-slate-300">&lt; 200 zł/mc, Docker, 0 zł licencji on-premise, start w 48h.</p>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl text-center">
-          <div class="text-3xl font-extrabold text-yellow-400 mb-1">20 / 20</div>
-          <div class="text-xs font-bold text-white mb-1">Dostępność WCAG</div>
-          <p class="text-[11px] text-slate-400">WCAG 2.1 AA, Tryb ETR, mowa, kontrast 21:1</p>
+        <div class="bg-[#173254] border border-slate-700 p-5 rounded-lg">
+          <div class="text-2xl font-bold text-amber-400 mb-1">20 / 20 pkt</div>
+          <div class="text-xs font-bold text-white mb-2">Dostępność WCAG</div>
+          <p class="text-xs text-slate-300">Natywny tryb ETR, kontrast 21:1, mowa, deklaracja dostępności.</p>
         </div>
 
-        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl text-center">
-          <div class="text-3xl font-extrabold text-purple-400 mb-1">20 / 20</div>
-          <div class="text-xs font-bold text-white mb-1">UX & Innowacja</div>
-          <p class="text-[11px] text-slate-400">Middleman JST, Radar, Canwa, Q&A</p>
+        <div class="bg-[#173254] border border-slate-700 p-5 rounded-lg">
+          <div class="text-2xl font-bold text-amber-400 mb-1">20 / 20 pkt</div>
+          <div class="text-xs font-bold text-white mb-2">Innowacyjność i UX</div>
+          <p class="text-xs text-slate-300">Middleman JST, Radar Trendów, Canwa 9 pól, filtr Zero-PII.</p>
         </div>
       </div>
 
-      <div class="bg-slate-950 border border-blue-500/30 p-6 rounded-2xl flex items-center justify-between">
+      <div class="bg-white text-slate-900 p-6 rounded-lg flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-bold text-white mb-1">Uwolnijmy Potencjał Małopolskich Innowacji!</h3>
-          <p class="text-xs text-slate-300">
-            Działające demo dostępne lokalnie: <code>http://localhost:3000</code> • API Docs: <code>http://localhost:8000/docs</code>
-          </p>
+          <div class="text-xs font-bold text-blue-900 uppercase">DOSTĘP DO PROTOTYPU NA ŻYWO:</div>
+          <div class="text-xs text-slate-700 mt-1">
+            Aplikacja: <strong>http://localhost:3000</strong> &nbsp;|&nbsp; Dokumentacja API: <strong>http://localhost:8000/docs</strong> &nbsp;|&nbsp; Hasło ROPS: <code>rops-demo-2026</code>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <a href="http://localhost:3000" target="_blank" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition">
-            Otwórz Działającą Platformę →
-          </a>
-        </div>
+        <a href="http://localhost:3000" target="_blank" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded transition">
+          Otwórz Aplikację →
+        </a>
       </div>
 
       <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-3">
-        <span>Zespół projektowy: <strong>Drop-the-Base</strong> • HackYeah 2026</span>
-        <span class="text-slate-300 font-semibold">Dziękujemy za uwagę i zapraszamy do pytań!</span>
+        <span>Zespół: <strong>Drop-the-Base</strong> (HackYeah 2026)</span>
+        <span class="text-slate-300">Dziękujemy za uwagę i zapraszamy do pytań!</span>
       </div>
     </section>
 
   </main>
 
-  <!-- Pływające notatki prezentera (Notes Drawer) -->
-  <aside id="notes-panel" class="fixed bottom-0 left-0 right-0 max-h-60 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 p-5 z-40 transition-transform duration-300 transform translate-y-full shadow-2xl flex flex-col">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-      <div class="flex items-center gap-3">
-        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Notatki Prezentera (3-minutowy pitch)</span>
-        <span id="notes-slide-indicator" class="text-xs font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Slajd 1 (0:00 - 0:15)</span>
+  <!-- Notatki prezentera -->
+  <aside id="notes-drawer" class="fixed bottom-0 left-0 right-0 max-h-56 bg-white border-t border-slate-300 p-4 z-40 transition-transform duration-200 transform translate-y-full shadow-lg">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200 mb-2">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Skrypt Prezentera (3-minutowy pitch)</span>
+          <span id="notes-timing" class="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">Slajd 1 (0:00 - 0:15)</span>
+        </div>
+        <button id="notes-close-btn" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">Zamknij [Esc]</button>
       </div>
-      <button id="notes-close-btn" class="p-1 text-slate-400 hover:text-white rounded">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-      </button>
-    </div>
-    <div id="notes-content" class="text-sm text-slate-200 overflow-y-auto leading-relaxed italic pr-2">
-      <!-- Wypełniane dynamicznie przez JS -->
+      <p id="notes-text" class="text-xs leading-relaxed text-slate-800 font-serif italic"></p>
     </div>
   </aside>
 
-  <!-- Modal Obrony przed Pytaniami Jury (Q&A Modal) -->
-  <div id="qa-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden items-center justify-center p-6">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+  <!-- Modal Q&A -->
+  <div id="qa-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-6">
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl border border-slate-300 overflow-hidden">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
         <div>
-          <span class="text-xs uppercase tracking-widest text-amber-400 font-bold">Obrona Merytoryczna</span>
-          <h3 class="text-xl font-bold text-white">Anticipated Judge Q&A (Gotowe Odpowiedzi)</h3>
+          <span class="text-xs uppercase font-bold text-slate-500">Anticipated Judge Q&A</span>
+          <h3 class="text-base font-bold text-[#0F233C]">Gotowe odpowiedzi na pytania Jury</h3>
         </div>
-        <button id="qa-close-btn" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800">
+        <button id="qa-close-btn" class="p-1 text-slate-500 hover:text-slate-800 rounded">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div class="p-6 overflow-y-auto space-y-4 text-xs">
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-          <h4 class="font-bold text-amber-300 text-sm mb-1">Q1: "Co w przypadku awarii API LLM lub halucynacji w kalkulacjach?"</h4>
-          <p class="text-slate-300 leading-relaxed">
-            <strong>Odp:</strong> Architektura posiada automatyczny <em>Deterministic Fallback</em>. W razie błędu API Groq, aplikacja natychmiast przełącza się na sprawdzone szablony z bazy ROPS. Modele Pydantic v2 wymuszają ścisły schemat JSON, uniemożliwiając generowanie błędnych kwot czy nieistniejących uchwał.
+      <div class="p-5 overflow-y-auto space-y-3 text-xs">
+        <div class="p-3 bg-slate-50 rounded border border-slate-200">
+          <h4 class="font-bold text-slate-900 mb-1">Q1: Co w sytuacji awarii API zewnętrznego lub halucynacji w kalkulacjach?</h4>
+          <p class="text-slate-700 leading-relaxed">
+            System posiada automatyczny <em>Deterministic Fallback</em>. W razie błędu API aplikacja natychmiast korzysta ze sprawdzonych szablonów regułowych. Wszystkie dane są walidowane schematami Pydantic v2, co uniemożliwia generowanie błędnych kwot czy nieistniejących uchwał.
           </p>
         </div>
 
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-          <h4 class="font-bold text-amber-300 text-sm mb-1">Q2: "Czym MHIS różni się od dotychczasowych stron ROPS / ministerialnych baz?"</h4>
-          <p class="text-slate-300 leading-relaxed">
-            <strong>Odp:</strong> Istniejące bazy to pasywne repozytoria PDF. MHIS to aktywny proces: mieszkaniec zgłasza potrzebę głosem, AI natychmiast kojarzy innowację, a wójt gminy jednym kliknięciem generuje gotowy pakiet Service Blueprint z uchwałą rady gminy i kalkulacją etatów.
+        <div class="p-3 bg-slate-50 rounded border border-slate-200">
+          <h4 class="font-bold text-slate-900 mb-1">Q2: Czym MHIS różni się od dotychczasowych baz innowacji ROPS?</h4>
+          <p class="text-slate-700 leading-relaxed">
+            Dotychczasowe bazy to pasywne pliki PDF. MHIS to aktywny proces: mieszkaniec mówi własnymi słowami, system kojarzy pomoc, a wójt gminy otrzymuje kompletny Service Blueprint z kalkulacją etatów i projektem uchwały rady gminy.
           </p>
         </div>
 
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-          <h4 class="font-bold text-amber-300 text-sm mb-1">Q3: "Jak chronicie dane mieszkańców i zapewniacie zgodność z RODO?"</h4>
-          <p class="text-slate-300 leading-relaxed">
-            <strong>Odp:</strong> Zasada <em>Zero-Real-PII</em>. W backendzie działa lokalny serwis `PIIService`, który automatycznie wykrywa i trwale maskuje numery PESEL, numery telefonów, nazwiska i adresy zanim zapytanie trafi do wektoryzacji.
+        <div class="p-3 bg-slate-50 rounded border border-slate-200">
+          <h4 class="font-bold text-slate-900 mb-1">Q3: Jak zapewniacie zgodność z RODO i bezpieczeństwo danych mieszkańców?</h4>
+          <p class="text-slate-700 leading-relaxed">
+            Zasada <em>Zero-Real-PII</em>. Zanim jakiekolwiek zapytanie trafi do wektoryzacji, lokalny filtr backendowy maskuje numery PESEL, numery telefonów, nazwiska i adresy.
           </p>
         </div>
 
-        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-          <h4 class="font-bold text-amber-300 text-sm mb-1">Q4: "Jaki jest realny koszt i czas wdrożenia w Województwie?"</h4>
-          <p class="text-slate-300 leading-relaxed">
-            <strong>Odp:</strong> Całość w kontenerach Docker. Koszt hostingu w polskiej chmurze to 170-200 zł/miesięcznie, a na serwerach Urzędu Marszałkowskiego – 0 zł licencji. Wdrożenie testowe możemy uruchomić w 48 godzin.
+        <div class="p-3 bg-slate-50 rounded border border-slate-200">
+          <h4 class="font-bold text-slate-900 mb-1">Q4: Jaki jest realny koszt i czas wdrożenia w województwie?</h4>
+          <p class="text-slate-700 leading-relaxed">
+            Całość w kontenerach Docker. Koszt hostingu w polskiej chmurze to 170–200 zł miesięcznie, a na serwerach Urzędu Marszałkowskiego – 0 zł licencji. Wdrożenie testowe możemy uruchomić w 48 godzin.
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Przeglądu 10 Slajdów (Thumbnail Grid) -->
-  <div id="overview-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-8">
-    <div class="max-w-6xl w-full max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-        <h3 class="text-lg font-bold text-white">Przegląd 10 Slajdów (Kliknij, aby przejść)</h3>
-        <button id="overview-close-btn" class="p-1.5 text-slate-400 hover:text-white rounded">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+  <!-- Modal Przeglądu Slajdów -->
+  <div id="overview-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-6">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col p-6 shadow-xl border border-slate-300">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+        <h3 class="text-base font-bold text-slate-800">Przegląd 10 Slajdów</h3>
+        <button id="overview-close-btn" class="text-xs text-slate-500 hover:text-slate-800 font-semibold">Zamknij [Esc]</button>
       </div>
-      <div id="thumbnails-grid" class="grid grid-cols-5 gap-4 overflow-y-auto p-2">
-        <!-- Generowane dynamicznie -->
+      <div id="thumbnails-grid" class="grid grid-cols-5 gap-3 overflow-y-auto p-1">
+        <!-- Renderowane przez JS -->
       </div>
     </div>
   </div>
 
   <script>
-    // Skrypt notatek prezentera przypisany do każdego z 10 slajdów
-    const SPEAKER_NOTES = {
-      1: "Szanowni Jurorzy, Małopolska to lider innowacji społecznych w Polsce – ROPS przetestował ich blisko 200. Jednak największy dramat polega na tym, że sołtys w Gorlicach czy wójt w Dąbrowie Tarnowskiej często nawet nie wie, że rozwiązanie ich problemu już istnieje i leży w Krakowie na półce. Przedstawiamy Małopolski Hub Innowacji Społecznych – cyfrowy pomost, który łączy mieszkańców z gotowymi rozwiązaniami.",
-      2: "Małopolska jest krańcowo zróżnicowana. Gdy wianek krakowski pęka w szwach od nowych mieszkańców, powiaty gorlicki i dąbrowski dramatycznie się starzeją. Gminy mają budżety, ale nie wiedzą, JAK wdrożyć innowację od strony formalno-prawnej. Z kolei mieszkańcy, zwłaszcza seniorzy, nie potrafią przebić się przez urzędowy język. Istniejące narzędzia to statyczne PDF-y i bazy bez inteligencji.",
-      3: "Nasz Hub to nie kolejna wyszukiwarka. To aktywny, inteligentny ekosystem. Mieszkaniec mówi zwykłym językiem, system znajduje rozwiązanie. Samorządowiec otrzymuje gotowy plan wdrożenia z uchwałą rady gminy. A dyrekcja ROPS zyskuje Radar Trendów, widząc w czasie rzeczywistym, gdzie w regionie rośnie kryzys samotności czy wykluczenia transportowego.",
-      4: "[LIVE DEMO 1] Zobaczmy to na żywo. Mieszkaniec mówi naturalnie: 'Mama jest po udarze i nie mamy jak dostosować wanny'. Nasz filtr Zero-PII natychmiast maskuje dane wrażliwe. Silnik hybrydowy zwraca precyzyjnie dopasowaną innowację ROPS – np. 'Łazienka Modułowa' – z jasnym uzasadnieniem dlaczego to pasuje. Jeśli problem jest nowy, 1 kliknięciem przenosimy go do banku pomysłów.",
-      5: "[LIVE DEMO 2] Oto nasz największy game-changer: Middleman Innowacji. Wójt wie, że seniorzy potrzebują pomocy, ale jego urząd nie potrafi napisać programu. W MHIS urzędnik klika 'Wdróż w mojej gminie', a system w 15 sekund generuje kompletny Service Blueprint: od kalkulacji etatów i budżetu na mieszkańca, aż po gotowy projekt uchwały rady gminy!",
-      6: "Innowacje społeczne muszą być dostępne dla każdego. Nasza platforma spełnia rygorystyczne normy WCAG 2.1 AA. Mamy natywny tryb ETR – Easy-to-Read – który urzędowy język automatycznie tłumaczy na prosty, przejrzysty przekaz. Mamy dwa certyfikowane tryby wysokiego kontrastu, pełną obsługę czytników ekranu oraz sterowanie głosem.",
-      7: "Zrealizowaliśmy pełny cykl życia innowacji: od fiszki 24/7 i cyfrowej Canwy, przez bezpieczny moduł testowania z metryką SUS, po giełdę partnerstw międzysektorowych. A dyrekcja ROPS w panelu administracyjnym widzi Radar Trendów – analitykę potrzeb spływających z całego województwa.",
-      8: "Architektura systemu jest lekka, nowoczesna i w 100% odporna na awarie. Jeśli odetniemy połączenie z API sztucznej inteligencji, aplikacja automatycznie przełącza się na deterministyczne szablony regułowe – nic się nie wyłoży. Całość jest zamknięta w kontenerach Docker i przetestowana 18 scenariuszami regresyjnymi.",
-      9: "Ile to kosztuje samorząd? Utrzymanie w polskiej chmurze to zaledwie 170 do 200 złotych miesięcznie! A przy instalacji na serwerach Urzędu Marszałkowskiego – zero opłat licencyjnych. Jesteśmy gotowi podpiąć platformę pod domenę rops.krakow.pl w 48 godzin.",
-      10: "Szanowni Jurorzy, MHIS to nie tylko projekt na hackathon – to gotowe narzędzie, które od poniedziałku może uwalniać potencjał innowacji społecznych w każdym z 22 powiatów Małopolski. Zdobyliśmy 100% kryteriów regulaminowych. Zapraszamy do testów na żywo. Dziękujemy!"
+    const NOTES = {
+      1: "Szanowni Jurorzy, Małopolska to ogólnopolski lider innowacji społecznych – ROPS przetestował ich blisko 200. Największym wyzwaniem jest jednak transfer: sołtys czy dyrektor ośrodka pomocy społecznej w Gorlicach czy Miechowie często nie wie, że gotowe rozwiązanie już istnieje. Przedstawiamy Małopolski Hub Innowacji Społecznych – działający prototyp łączący mieszkańców, samorząd i ekspertów ROPS.",
+      2: "Małopolska ma dwa oblicza. Z jednej strony rosnący wianuszek krakowski, z drugiej szybko starzejące się powiaty wschodnie, gdzie seniorzy zostają sami. Gminy mają chęci i budżety, ale rozbijają się o barierę formalną: nie wiedzą, jak napisać uchwałę i skalkulować koszty usługi. Z kolei mieszkańcy gubią się w urzędowym żargonie. Dotychczasowe bazy to statyczne pliki PDF, z których nikt w kryzysie nie skorzysta.",
+      3: "MHIS to zintegrowana odpowiedź na potrzeby trzech kluczowych grup. Mieszkaniec mówi językiem potocznym lub nagrywa głos, a system kojarzy rozwiązanie. Urzędnik gminny otrzymuje gotowy pakiet adaptacyjny z kalkulacją etatów i uchwałą rady gminy. A dyrekcja ROPS zyskuje Radar Trendów, dzięki któremu widzi na mapie województwa, w których powiatach rosną nierozwiązane problemy. Wszystkie moduły z opisu wyzwania zostały w pełni wdrożone.",
+      4: "[LIVE DEMO 1] Zobaczmy to na żywym systemie. Mieszkaniec nie wpisuje kodów CPV ani numerów ustaw. Mówi zwyczajnie: 'Dziadek ma 82 lata, boimy się, że upadnie w wannie'. Nasz filtr anonimizuje dane wrażliwe. Algorytm w ułamku sekundy łączy zapytanie z kartą 'Łazienka Modułowa' i wyświetla zrozumiałe, 2-zdaniowe uzasadnienie. Co kluczowe: jeśli w bazie nie ma gotowej innowacji, system nie zostawia obywatela z pustym ekranem – jednym kliknięciem przenosi problem do banku pomysłów.",
+      5: "[LIVE DEMO 2] To jest nasz najważniejszy atut merytoryczny – Middleman Innowacji. Rozmawialiśmy z samorządowcami: wójt nie ma czasu czytać 100 stron ewaluacji projektu. Chce wiedzieć: ile to kosztuje, ilu ludzi potrzeba i jak ma brzmieć uchwała na najbliższą sesję rady gminy. W MHIS urzędnik wybiera gminę – powiedzmy Limanową – i system w kilkanaście sekund tworzy kompletny Service Blueprint z kosztorysem, etatami i projektem uchwały. To realne ułatwienie dla 182 gmin.",
+      6: "Dostępność cyfrowa nie jest u nas dodatkiem dodanym na końcu – to fundament. Seniorzy i osoby z niepełnosprawnościami potrzebują prostego języka, dlatego wprowadziliśmy natywny tryb ETR, czyli Easy-to-Read. Mamy certyfikowane tryby wysokiego kontrastu o współczynnikach dochodzących do 21:1, powiększanie tekstu do 150% bez rozjeżdżania układu oraz pełną obsługę czytników ekranu i dyktowania głosem.",
+      7: "Poza matchmakingiem i middlemanem zrealizowaliśmy kompletny cykl inkubacji: od formularza fiszki 24/7 i cyfrowej Canwy, przez bezpieczny moduł testowania z metodologią SUS, aż po giełdę partnerstw międzysektorowych. Z kolei dyrektor ROPS w panelu administracyjnym widzi Radar Trendów i Rejestr Wyzwań JST, dzięki czemu wie, jakie usługi społeczne należy zaplanować w kolejnych naborach.",
+      8: "Od strony inżynieryjnej postawiliśmy na niezawodność. Całość opiera się na Pythonie FastAPI i React TypeScript w kontenerach Docker. Kluczowa kwestia sędziowska: co w sytuacji awarii API zewnętrznego lub halucynacji? Zbudowaliśmy deterministyczny mechanizm awaryjny – jeśli model nie odpowie, system natychmiast serwuje certyfikowane szablony regułowe. Wszystkie kalkulacje są sprawdzane schematami Pydantic, a dane osobowe podlegają lokalnej anonimizacji.",
+      9: "Ile to kosztuje samorząd? Utrzymanie w polskiej chmurze to niespełna 200 złotych miesięcznie. Jeśli Urząd Marszałkowski zechce postawić system na własnych serwerach, koszty licencyjne wynoszą równe zero złotych, bo cały stos jest open-source. Jesteśmy gotowi uruchomić instalację testową w 48 godzin, a w ciągu 30 dni przeprowadzić pilotaż w pierwszych 3 małopolskich gminach.",
+      10: "Szanowni Jurorzy, Małopolski Hub Innowacji Społecznych to nie koncepcja na papierze, lecz działające narzędzie, które od poniedziałku może ułatwić transfer innowacji społecznych do 182 gmin naszego regionu. Zrealizowaliśmy komplet wymagań konkursu. Serdecznie dziękujemy za uwagę i zapraszamy do zadawania pytań oraz testowania prototypu!"
     };
 
-    let currentSlide = 1;
-    const totalSlides = 10;
+    let current = 1;
+    const total = 10;
     const slides = document.querySelectorAll('.slide');
 
-    function updateSlide(index) {
-      if (index < 1) index = 1;
-      if (index > totalSlides) index = totalSlides;
-      currentSlide = index;
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > total) n = total;
+      current = n;
 
-      slides.forEach((slide) => {
-        const slideNum = parseInt(slide.dataset.slide, 10);
-        if (slideNum === currentSlide) {
-          slide.classList.add('active');
+      slides.forEach(s => {
+        if (parseInt(s.dataset.slide, 10) === current) {
+          s.classList.add('active');
         } else {
-          slide.classList.remove('active');
+          s.classList.remove('active');
         }
       });
 
-      // Aktualizacja licznika i paska postępu
-      document.getElementById('slide-counter').textContent = `${currentSlide} / ${totalSlides}`;
-      document.getElementById('progress-bar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+      document.getElementById('slide-counter').textContent = `${current} / ${total}`;
+      document.getElementById('progress-bar').style.width = `${(current / total) * 100}%`;
 
-      // Aktualizacja notatek
-      const activeSlideEl = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
-      const slideTiming = activeSlideEl ? activeSlideEl.dataset.time : '';
-      document.getElementById('notes-slide-indicator').textContent = `Slajd ${currentSlide} (${slideTiming})`;
-      document.getElementById('notes-content').textContent = `„${SPEAKER_NOTES[currentSlide] || ''}”`;
+      const curEl = document.querySelector(`.slide[data-slide="${current}"]`);
+      const timing = curEl ? curEl.dataset.time : '';
+      document.getElementById('notes-timing').textContent = `Slajd ${current} (${timing})`;
+      document.getElementById('notes-text').textContent = NOTES[current] || '';
     }
 
-    // Nawigacja
-    document.getElementById('prev-btn').addEventListener('click', () => updateSlide(currentSlide - 1));
-    document.getElementById('next-btn').addEventListener('click', () => updateSlide(currentSlide + 1));
+    document.getElementById('prev-btn').addEventListener('click', () => showSlide(current - 1));
+    document.getElementById('next-btn').addEventListener('click', () => showSlide(current + 1));
 
-    // Klawiatura
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
-        updateSlide(currentSlide + 1);
+        showSlide(current + 1);
       } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
         e.preventDefault();
-        updateSlide(currentSlide - 1);
+        showSlide(current - 1);
       } else if (e.key === 'Home') {
         e.preventDefault();
-        updateSlide(1);
+        showSlide(1);
       } else if (e.key === 'End') {
         e.preventDefault();
-        updateSlide(totalSlides);
+        showSlide(total);
       } else if (e.key === 'p' || e.key === 'P' || e.key === 'n' || e.key === 'N') {
         toggleNotes();
       } else if (e.key === 'q' || e.key === 'Q') {
         toggleQA();
       } else if (e.key === 'Escape') {
-        const qaModal = document.getElementById('qa-modal');
-        const overviewModal = document.getElementById('overview-modal');
-        if (!qaModal.classList.contains('hidden')) qaModal.classList.add('hidden');
-        else if (!overviewModal.classList.contains('hidden')) overviewModal.classList.add('hidden');
-        else toggleOverview();
-      } else if (e.key === 'f' || e.key === 'F') {
-        toggleFullScreen();
+        closeModals();
       } else if (e.key >= '1' && e.key <= '9') {
-        updateSlide(parseInt(e.key, 10));
+        showSlide(parseInt(e.key, 10));
       } else if (e.key === '0') {
-        updateSlide(10);
+        showSlide(10);
       }
     });
 
-    // Pełny ekran
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
-    }
-    document.getElementById('fullscreen-btn').addEventListener('click', toggleFullScreen);
-
-    // Notatki prezentera
-    const notesPanel = document.getElementById('notes-panel');
+    const notesDrawer = document.getElementById('notes-drawer');
     function toggleNotes() {
-      notesPanel.classList.toggle('translate-y-full');
+      notesDrawer.classList.toggle('translate-y-full');
     }
-    document.getElementById('notes-toggle-btn').addEventListener('click', toggleNotes);
+    document.getElementById('notes-btn').addEventListener('click', toggleNotes);
     document.getElementById('notes-close-btn').addEventListener('click', toggleNotes);
 
-    // Q&A Modal
     const qaModal = document.getElementById('qa-modal');
     function toggleQA() {
       qaModal.classList.toggle('hidden');
       qaModal.classList.toggle('flex');
     }
-    document.getElementById('qa-toggle-btn').addEventListener('click', toggleQA);
+    document.getElementById('qa-btn').addEventListener('click', toggleQA);
     document.getElementById('qa-close-btn').addEventListener('click', toggleQA);
 
-    // Overview modal
     const overviewModal = document.getElementById('overview-modal');
     const thumbnailsGrid = document.getElementById('thumbnails-grid');
     function toggleOverview() {
@@ -881,89 +872,89 @@
     document.getElementById('overview-btn').addEventListener('click', toggleOverview);
     document.getElementById('overview-close-btn').addEventListener('click', toggleOverview);
 
+    function closeModals() {
+      qaModal.classList.add('hidden');
+      qaModal.classList.remove('flex');
+      overviewModal.classList.add('hidden');
+      overviewModal.classList.remove('flex');
+      notesDrawer.classList.add('translate-y-full');
+    }
+
     function renderThumbnails() {
       thumbnailsGrid.innerHTML = '';
-      slides.forEach((slide) => {
-        const num = parseInt(slide.dataset.slide, 10);
-        const heading = slide.querySelector('h1, h2')?.textContent || `Slajd ${num}`;
-        const timing = slide.dataset.time || '';
-        const thumb = document.createElement('button');
-        thumb.className = `p-3 rounded-xl border text-left flex flex-col justify-between transition h-28 ${
-          num === currentSlide ? 'bg-blue-900/60 border-blue-500 shadow-md' : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+      slides.forEach(s => {
+        const num = parseInt(s.dataset.slide, 10);
+        const heading = s.querySelector('h1, h2')?.textContent || `Slajd ${num}`;
+        const timing = s.dataset.time || '';
+        const btn = document.createElement('button');
+        btn.className = `p-2.5 text-left rounded border transition flex flex-col justify-between h-24 ${
+          num === current ? 'border-blue-700 bg-blue-50/70 font-semibold' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
         }`;
-        thumb.innerHTML = `
-          <div class="flex items-center justify-between w-full">
-            <span class="text-xs font-mono font-bold text-amber-400">#${num}</span>
-            <span class="text-[10px] text-slate-400 font-mono">${timing}</span>
+        btn.innerHTML = `
+          <div class="flex justify-between w-full text-[10px] text-slate-500 font-mono">
+            <span>#${num}</span>
+            <span>${timing}</span>
           </div>
-          <div class="text-xs font-semibold text-white line-clamp-2">${heading}</div>
-          <div class="text-[10px] text-slate-400 font-mono">Wybierz slajd</div>
+          <div class="text-[11px] text-slate-800 line-clamp-2 leading-tight">${heading}</div>
+          <div class="text-[9px] text-blue-700 font-semibold">Wybierz →</div>
         `;
-        thumb.addEventListener('click', () => {
-          updateSlide(num);
+        btn.addEventListener('click', () => {
+          showSlide(num);
           toggleOverview();
         });
-        thumbnailsGrid.appendChild(thumb);
+        thumbnailsGrid.appendChild(btn);
       });
     }
 
-    // 3-minutowy timer prezentera
-    let timerSeconds = 180;
-    let timerInterval = null;
-    let isTimerRunning = false;
+    // 3 minuty timer
+    let timerSec = 180;
+    let timerId = null;
     const timerDisplay = document.getElementById('timer-display');
     const timerDot = document.getElementById('timer-dot');
 
-    function formatTime(sec) {
+    function fmt(sec) {
       const m = Math.floor(sec / 60);
       const s = sec % 60;
       return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    function tickTimer() {
-      if (timerSeconds > 0) {
-        timerSeconds--;
-        timerDisplay.textContent = formatTime(timerSeconds);
-
-        if (timerSeconds <= 30) {
-          timerDisplay.classList.remove('text-emerald-400', 'text-amber-400');
-          timerDisplay.classList.add('text-red-400');
-          timerDot.classList.remove('bg-emerald-400', 'bg-amber-400');
-          timerDot.classList.add('bg-red-400');
-        } else if (timerSeconds <= 60) {
-          timerDisplay.classList.remove('text-emerald-400');
-          timerDisplay.classList.add('text-amber-400');
-          timerDot.classList.remove('bg-emerald-400');
-          timerDot.classList.add('bg-amber-400');
+    function tick() {
+      if (timerSec > 0) {
+        timerSec--;
+        timerDisplay.textContent = fmt(timerSec);
+        if (timerSec <= 30) {
+          timerDisplay.className = 'font-mono text-xs font-bold text-red-600';
+          timerDot.className = 'w-2 h-2 rounded-full bg-red-600 animate-pulse';
+        } else if (timerSec <= 60) {
+          timerDisplay.className = 'font-mono text-xs font-bold text-amber-600';
+          timerDot.className = 'w-2 h-2 rounded-full bg-amber-600';
         }
       } else {
-        clearInterval(timerInterval);
-        isTimerRunning = false;
-        timerDisplay.textContent = "00:00 (STOP)";
+        clearInterval(timerId);
+        timerId = null;
+        timerDisplay.textContent = '00:00 (STOP)';
       }
     }
 
     document.getElementById('timer-toggle-btn').addEventListener('click', () => {
-      if (!isTimerRunning) {
-        timerInterval = setInterval(tickTimer, 1000);
-        isTimerRunning = true;
+      if (!timerId) {
+        timerId = setInterval(tick, 1000);
       } else {
-        clearInterval(timerInterval);
-        isTimerRunning = false;
+        clearInterval(timerId);
+        timerId = null;
       }
     });
 
     document.getElementById('timer-reset-btn').addEventListener('click', () => {
-      clearInterval(timerInterval);
-      isTimerRunning = false;
-      timerSeconds = 180;
-      timerDisplay.textContent = "03:00";
-      timerDisplay.className = "font-mono text-sm font-bold text-emerald-400";
-      timerDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+      clearInterval(timerId);
+      timerId = null;
+      timerSec = 180;
+      timerDisplay.textContent = '03:00';
+      timerDisplay.className = 'font-mono text-xs font-bold text-slate-800';
+      timerDot.className = 'w-2 h-2 rounded-full bg-emerald-600';
     });
 
-    // Inicjalizacja
-    updateSlide(1);
+    showSlide(1);
   </script>
 </body>
 </html>
