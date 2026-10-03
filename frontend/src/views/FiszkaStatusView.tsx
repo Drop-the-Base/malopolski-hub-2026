@@ -73,7 +73,7 @@ export const FiszkaStatusView: React.FC = () => {
         {status && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
             <div>
-              <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{status.id}</p>
+              <p className="text-xs font-bold text-slate-600 ">{status.id}</p>
               <h2 className="text-xl font-black text-slate-900">{status.title}</h2>
               <p className="text-sm text-slate-600">
                 Etap realizacji: {IMPLEMENTATION_STAGES.find((s) => s.value === status.implementation_stage)?.label ?? status.implementation_stage}

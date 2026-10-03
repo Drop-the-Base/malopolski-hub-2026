@@ -401,7 +401,7 @@ export const TesterView: React.FC = () => {
             </ul>
           )}
 
-          <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-lg font-black mb-1 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-300" /> Masz własny pomysł na innowację w Małopolsce?
@@ -476,7 +476,7 @@ export const TesterView: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Wybrany pilotaż</span>
+              <span className="text-xs font-bold text-emerald-800 ">Wybrany pilotaż</span>
               <h2 className="text-xl font-black text-slate-900">{selectedCampaign.campaign_name}</h2>
             </div>
             <div className="flex flex-wrap gap-2">

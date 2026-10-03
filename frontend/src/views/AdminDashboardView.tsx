@@ -91,7 +91,7 @@ const LoginForm: React.FC<{ onLoggedIn: () => void }> = ({ onLoggedIn }) => {
 
       {/* Baner szybkiego dostępu dla Sędziego */}
       <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 mb-5 space-y-2">
-        <div className="flex items-center gap-2 text-xs font-black text-amber-900 uppercase tracking-wide">
+        <div className="flex items-center gap-2 text-xs font-black text-amber-900 ">
           <Zap className="w-3.5 h-3.5 text-amber-600" />
           <span>Tryb Jury / Sędziego (Dane Wstępnie Wypełnione)</span>
         </div>
@@ -102,7 +102,7 @@ const LoginForm: React.FC<{ onLoggedIn: () => void }> = ({ onLoggedIn }) => {
           type="button"
           onClick={() => doLogin('sedzia.hackyeah@malopolska.pl', 'rops-demo-2026')}
           disabled={busy}
-          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-2 px-3 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-1.5"
+          className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-black py-2 px-3 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-1.5"
         >
           <Zap className="w-3.5 h-3.5" />
           {busy ? 'Logowanie…' : 'Zaloguj natychmiast jako Sędzia (1-klik)'}
@@ -361,7 +361,7 @@ export const AdminDashboardView: React.FC = () => {
       {radar && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Zgłoszenia na platformie</span>
+            <span className="text-xs font-bold text-slate-600 block mb-1">Zgłoszenia na platformie</span>
             <div className="text-3xl font-black text-blue-700">{radar.platform_cases_count.toLocaleString('pl-PL')}</div>
             <span className="text-xs text-slate-700 flex items-center gap-1 mt-1">
               <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
@@ -369,17 +369,17 @@ export const AdminDashboardView: React.FC = () => {
             </span>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Fiszki do rozpatrzenia</span>
+            <span className="text-xs font-bold text-slate-600 block mb-1">Fiszki do rozpatrzenia</span>
             <div className="text-3xl font-black text-amber-700">{pending.length}</div>
             <span className="text-xs text-slate-700 block mt-1">wszystkich fiszek: {submissions.length}</span>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Nowe powiadomienia</span>
+            <span className="text-xs font-bold text-slate-600 block mb-1">Nowe powiadomienia</span>
             <div className="text-3xl font-black text-rose-700">{unread}</div>
             <span className="text-xs text-slate-700 block mt-1">e-maile w skrzynce nadawczej: {outbox.length}</span>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Powiaty z alertem</span>
+            <span className="text-xs font-bold text-slate-600 block mb-1">Powiaty z alertem</span>
             <div className="text-3xl font-black text-rose-700">{radar.poviat_breakdown.filter((p) => p.alert_level === 'high_critical').length}</div>
             <span className="text-xs text-slate-700 block mt-1">seniorzy &gt; 26% lub zgłoszenia krytyczne</span>
           </div>
@@ -568,7 +568,7 @@ export const AdminDashboardView: React.FC = () => {
                       <div className="pt-3 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                         {/* 1. APPROVE: Szybkie zatwierdzanie */}
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-1">
+                          <span className="text-[11px] font-bold text-slate-500 mr-1">
                             Decyzja:
                           </span>
                           <button
@@ -676,7 +676,7 @@ export const AdminDashboardView: React.FC = () => {
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Edycja Urzędnika (Change)</span>
+                <span className="text-xs font-bold text-blue-700 ">Edycja Urzędnika (Change)</span>
                 <h3 id="edit-prop-title" className="text-lg font-black text-slate-900">
                   Modyfikacja wniosku: {editingProposal.id}
                 </h3>
@@ -1031,7 +1031,7 @@ export const AdminDashboardView: React.FC = () => {
               {radar.most_acute_challenges.map((c) => (
                 <div key={c.category} className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                   <div className="flex justify-between items-center text-xs mb-2">
-                    <span className="font-bold text-amber-300 uppercase tracking-wider">Udział w zgłoszeniach</span>
+                    <span className="font-bold text-amber-300 ">Udział w zgłoszeniach</span>
                     <span className="font-black">{c.impact_score}% ({c.cases_count})</span>
                   </div>
                   <h3 className="font-bold text-sm mb-2">{c.category}</h3>
@@ -1041,7 +1041,7 @@ export const AdminDashboardView: React.FC = () => {
               ))}
             </div>
             <div className="border-t border-slate-700 pt-4">
-              <h3 className="text-xs text-slate-200 uppercase tracking-wider font-bold mb-2">Białe plamy</h3>
+              <h3 className="text-xs text-slate-200 font-bold mb-2">Białe plamy</h3>
               <ul className="space-y-1 text-sm text-slate-100 list-disc pl-5">
                 {radar.systemic_gaps.map((gap, i) => <li key={i}>{gap}</li>)}
               </ul>

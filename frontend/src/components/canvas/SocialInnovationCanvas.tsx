@@ -100,7 +100,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
       {/* Sekcja AI Fast-Track: Uzupełnianie z 1 zdania */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 p-5 rounded-2xl border-2 border-amber-400/40">
+      <div className="bg-amber-50 p-5 rounded-2xl border border-amber-300">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-amber-500 text-white rounded-lg shadow-sm">
@@ -194,7 +194,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
         <button
           onClick={handleAudit}
           disabled={loading}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition-all disabled:opacity-50"
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
           {loading ? 'Audytowanie Canwy...' : 'Audytuj z Asystentem AI'}
@@ -227,10 +227,10 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
 
       {/* Wyniki Audytu Asystenta AI */}
       {audit && (
-        <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-xl border border-indigo-900 animate-fadeIn">
+        <div className="bg-slate-900 text-white rounded-2xl p-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-indigo-800 pb-4 mb-4">
             <div>
-              <span className="text-xs text-amber-400 font-bold uppercase tracking-wider">Raport Audytora AI ROPS</span>
+              <span className="text-xs text-amber-400 font-bold ">Raport Audytora AI ROPS</span>
               <h4 className="text-xl font-black">Ocena Gotowości Innowacji</h4>
             </div>
             <div className="flex items-center gap-3">
@@ -242,7 +242,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Mocne strony */}
             <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-              <h5 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <h5 className="text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
                 Mocne strony Canwy:
               </h5>
@@ -258,7 +258,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
 
             {/* Luki logiczne */}
             <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
-              <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <h5 className="text-xs font-bold text-amber-400 mb-2 flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4" />
                 Luki logiczne do poprawy:
               </h5>
@@ -276,7 +276,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           {/* Koncept wizualizatora prototypu */}
           <div className="bg-indigo-900/60 p-4 rounded-xl border border-indigo-700/60 space-y-3">
             <div className="flex items-center justify-between">
-              <h5 className="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+              <h5 className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-300" />
                 Koncepcja Wizualna Prototypu (Prompt dla Generatora Grafik / Wizualizatora):
               </h5>

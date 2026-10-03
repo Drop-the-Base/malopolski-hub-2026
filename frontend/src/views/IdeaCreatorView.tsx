@@ -283,7 +283,7 @@ export const IdeaCreatorView: React.FC = () => {
         {n}
       </span>
       <span>
-        <span className="block text-xs uppercase font-bold text-slate-600">Krok {n}</span>
+        <span className="block text-xs font-bold text-slate-600">Krok {n}</span>
         <span className="block text-sm font-bold">{title}</span>
       </span>
     </button>

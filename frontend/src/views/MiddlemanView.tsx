@@ -352,7 +352,7 @@ export const MiddlemanView: React.FC = () => {
         <section aria-live="polite" className="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-800">
+              <span className="text-xs font-bold text-indigo-800">
                 Projekt pakietu wdrożeniowego (dokument roboczy)
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
@@ -399,7 +399,7 @@ export const MiddlemanView: React.FC = () => {
           {/* Budżet i Kadry */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100">
-              <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-indigo-900 mb-2 flex items-center gap-1.5">
                 <DollarSign className="w-4 h-4 text-indigo-600" />
                 Szacunkowy Kosztorys Wdrożenia:
               </h3>
@@ -427,14 +427,14 @@ export const MiddlemanView: React.FC = () => {
             </div>
 
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-slate-900 mb-2 flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-slate-600" />
                 Wymagania Kadrowe:
               </h3>
               <p className="text-xs text-slate-700 leading-relaxed mb-3">
                 {blueprint.staffing_requirements}
               </p>
-              <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <h4 className="text-xs font-bold text-amber-900 mb-1 flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
                 Ryzyka i działania:
               </h4>

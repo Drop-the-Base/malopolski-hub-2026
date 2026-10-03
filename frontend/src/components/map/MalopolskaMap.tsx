@@ -56,7 +56,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Kafelkowa Mapa Powiatów Małopolski */}
         <div className="lg:col-span-7 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
+          <div className="text-xs font-semibold text-slate-600 mb-3">
             Wybierz powiat:
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[380px] overflow-y-auto pr-1">
@@ -95,12 +95,12 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
         </div>
 
         {/* Panel Szczegółów Wybranego Powiatu */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-blue-950 text-white p-6 rounded-xl shadow-lg">
+        <div className="lg:col-span-5 bg-slate-900 text-white p-6 rounded-xl">
           {selectedPowiat ? (
             <div>
               <div className="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
                 <div>
-                  <span className="text-[11px] uppercase tracking-wider font-semibold text-amber-400">
+                  <span className="text-[11px] font-semibold text-amber-400">
                     Powiat Małopolski
                   </span>
                   <h4 className="text-2xl font-black">{selectedPowiat.powiat_name}</h4>
@@ -136,7 +136,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat }
 
               {/* Diagnoza społeczna */}
               <div className="bg-slate-800/90 p-4 rounded-lg border border-slate-700 mb-4">
-                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <div className="text-xs font-semibold text-amber-400 mb-1.5 flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Kluczowe wyzwanie społeczne:
                 </div>

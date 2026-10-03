@@ -3,9 +3,44 @@
 @tailwind utilities;
 
 @layer base {
+  /* Fokus: obrys atramentem + żółta poświata – widoczny na jasnym i ciemnym tle */
   :focus-visible {
-    outline: 3px solid #f59e0b !important;
+    outline: 3px solid #17233a !important;
     outline-offset: 2px !important;
+    box-shadow: 0 0 0 6px #ffd100 !important;
+  }
+
+  html {
+    font-feature-settings: 'kern', 'liga';
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* Fiszka: jedyny ozdobny element – kartonik z liniaturą (docs/design_system.md, sekcja 2) */
+  .fiszka {
+    background-color: #ffffff;
+    border: 1px solid #dce0de;
+    border-top: 4px solid #c8102e;
+    border-radius: 2px;
+    box-shadow: 0 1px 0 #dce0de, 0 18px 40px -18px rgb(23 35 58 / 0.35);
+  }
+
+  .fiszka-lines {
+    --line: 2.25rem;
+    line-height: var(--line);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--line) - 1px),
+      #bcd0ea calc(var(--line) - 1px),
+      #bcd0ea var(--line)
+    );
+    background-attachment: local;
   }
 }
 
@@ -29,6 +64,10 @@ body.theme-yellow-black * {
   border-color: #ffff00 !important;
   box-shadow: none !important;
   text-shadow: none !important;
+}
+
+body.theme-yellow-black :focus-visible {
+  outline-color: #ffff00 !important;
 }
 
 body.theme-yellow-black a {
@@ -125,7 +164,7 @@ html.font-huge {
 
 /* Tryb prostego języka (ETR): większe odstępy i krótsze linie ułatwiają czytanie */
 body.etr-mode main p,
-body.etr-mode main li {
+body.etr-mode main li:not(.row-full) {
   line-height: 1.8;
   max-width: 70ch;
 }
