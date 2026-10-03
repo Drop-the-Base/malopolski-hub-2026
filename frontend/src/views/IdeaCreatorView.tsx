@@ -49,6 +49,13 @@ const canvasBlocks: Array<{ key: keyof CanvasData; label: string; hint: string; 
   { num: '09', key: 'scalability', label: 'Skalowanie', hint: 'Jak innowacja trafi do kolejnych gmin Małopolski?' }
 ];
 
+// Tryb demonstracyjny (domyślnie włączony, VITE_DEMO_MODE=false wyłącza): dane kontaktowe wypełnione fikcyjnymi wartościami,
+// aby jury mogło wysłać fiszkę bez wpisywania danych. W produkcji zgoda RODO musi być zaznaczana przez użytkownika.
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE !== 'false';
+const DEMO_CONTACT = DEMO_MODE
+  ? { author_name: 'Jan Przykładowy (dane demo)', author_email: 'jury.demo@example.org', author_type: 'mieszkaniec', rodo_consent: true }
+  : { author_name: '', author_email: '', author_type: 'mieszkaniec', rodo_consent: false };
+
 const juryPresets = [
   {
     label: 'Asystent seniora (Gorlice)',
@@ -92,10 +99,7 @@ export const IdeaCreatorView: React.FC = () => {
     gmina: '',
     target_audience: '',
     implementation_stage: 'pomysl',
-    author_name: '',
-    author_email: '',
-    author_type: 'mieszkaniec',
-    rodo_consent: false
+    ...DEMO_CONTACT
   });
   const [fiszkaSubmitting, setFiszkaSubmitting] = useState(false);
   const [fiszkaResult, setFiszkaResult] = useState<FiszkaPublicStatus | null>(null);
@@ -391,10 +395,7 @@ export const IdeaCreatorView: React.FC = () => {
                       gmina: '',
                       target_audience: '',
                       implementation_stage: 'pomysl',
-                      author_name: '',
-                      author_email: '',
-                      author_type: 'mieszkaniec',
-                      rodo_consent: false
+                      ...DEMO_CONTACT
                     });
                   }}
                   className="text-xs text-slate-600 hover:text-slate-900 underline ml-auto py-2"
@@ -453,7 +454,10 @@ export const IdeaCreatorView: React.FC = () => {
                 </div>
 
                 <fieldset className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
-                  <legend className="text-sm font-bold text-slate-900 mb-2">7. Dane kontaktowe (widoczne tylko dla koordynatora ROPS)</legend>
+                  <legend className="text-sm font-bold text-slate-900 mb-2">
+                    7. Dane kontaktowe (widoczne tylko dla koordynatora ROPS)
+                    {DEMO_MODE && <span className="ml-2 text-xs font-semibold text-amber-900 bg-amber-100 px-2 py-0.5 rounded">wersja demo – wypełnione fikcyjnymi danymi</span>}
+                  </legend>
                   <div>
                     <label htmlFor="f-author" className="block text-sm font-semibold text-slate-800 mb-1">Imię i nazwisko / nazwa organizacji</label>
                     <input id="f-author" type="text" required minLength={2} autoComplete="name" value={step1Form.author_name}

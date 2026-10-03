@@ -90,17 +90,8 @@ export const MatchmakingView: React.FC = () => {
     try {
       const data = await api.matchProblem(text, powiat, category);
       setResult(data);
-      // Fokus bez skoku widoku; płynne przewinięcie tylko, gdy wyniki są poza ekranem (z uwzględnieniem lepkiego nagłówka)
-      requestAnimationFrame(() => {
-        const el = resultsRef.current;
-        if (!el) return;
-        el.focus({ preventScroll: true });
-        const top = el.getBoundingClientRect().top;
-        if (top < 0 || top > window.innerHeight * 0.75) {
-          const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-        }
-      });
+      // Fokus dla czytników ekranu bez przewijania widoku (aria-live ogłasza wyniki)
+      requestAnimationFrame(() => resultsRef.current?.focus({ preventScroll: true }));
     } catch (err) {
       setResult(null);
       setError(apiErrorMessage(err, 'Nie udało się dopasować innowacji. Spróbuj ponownie za chwilę.'));
