@@ -217,7 +217,7 @@ export const CommunicationView: React.FC = () => {
         <div id="panel-threads" role="tabpanel" aria-labelledby="tab-threads" className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-5 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Tematy</h2>
+              <h2 className="text-sm font-bold text-slate-700 ">Tematy</h2>
               <button
                 type="button"
                 onClick={() => { setThreadError(''); setNewThreadModal(true); }}

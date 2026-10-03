@@ -22,107 +22,68 @@ export const Navbar: React.FC = () => {
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
   const navLinks = [
-    {
-      to: '/matchmaking',
-      label: etrMode ? 'Znajdź pomoc' : 'Kojarzenie potrzeb',
-      icon: Sparkles,
-      highlight: true
-    },
-    {
-      to: '/problemy',
-      label: etrMode ? 'Zgłoś problem' : 'Rejestr Wyzwań JST',
-      icon: AlertCircle,
-      badge: 'NOWE'
-    },
-    {
-      to: '/baza-wiedzy',
-      label: etrMode ? 'Lista pomysłów' : 'Baza Innowacji i Mapa',
-      icon: Compass
-    },
-    {
-      to: '/kreator-pomyslow',
-      label: etrMode ? 'Dodaj pomysł' : 'Kreator Pomysłów (Canwa)',
-      icon: Lightbulb
-    },
-    {
-      to: '/middleman',
-      label: etrMode ? 'Dla Gminy' : 'Middleman JST',
-      icon: Building2,
-      badge: 'Dla Samorządów'
-    },
-    {
-      to: '/tester',
-      label: etrMode ? 'Testuj rzeczy' : 'Tester Innowacji',
-      icon: FlaskConical
-    },
-    {
-      to: '/dialog',
-      label: etrMode ? 'Rozmowa i Pomoc' : 'Dialog i Mentorzy',
-      icon: Users
-    },
-    {
-      to: '/admin',
-      label: etrMode ? 'Dla Urzędnika' : 'Dla Urzędnika (Panel ROPS)',
-      icon: ShieldCheck
-    }
+    { to: '/matchmaking', label: etrMode ? 'Znajdź pomoc' : 'Znajdź rozwiązanie', icon: Sparkles, highlight: true },
+    { to: '/problemy', label: etrMode ? 'Zgłoś problem' : 'Rejestr wyzwań', icon: AlertCircle },
+    { to: '/baza-wiedzy', label: etrMode ? 'Lista pomysłów' : 'Baza innowacji', icon: Compass },
+    { to: '/kreator-pomyslow', label: etrMode ? 'Dodaj pomysł' : 'Kreator pomysłów', icon: Lightbulb },
+    { to: '/middleman', label: etrMode ? 'Dla gminy' : 'Middleman dla gmin', icon: Building2 },
+    { to: '/tester', label: etrMode ? 'Testuj rzeczy' : 'Tester', icon: FlaskConical },
+    { to: '/dialog', label: etrMode ? 'Rozmowa i pomoc' : 'Dialog i mentorzy', icon: Users },
+    { to: '/admin', label: etrMode ? 'Dla urzędnika' : 'Panel ROPS', icon: ShieldCheck }
   ];
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo i Nazwa Hubu */}
-          <Link to="/" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded p-1">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-700 to-sky-500 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
+        <div className="flex items-center justify-between gap-6 h-[72px]">
+          {/* Znak: prostokąt w barwie regionu z żółtą belką (jak favicon) */}
+          <Link to="/" className="flex items-center gap-3 rounded p-1 -m-1 shrink-0">
+            <span className="relative w-10 h-10 rounded bg-blue-600 text-white font-extrabold text-base flex items-start justify-center pt-1.5" aria-hidden="true">
               MH
-            </div>
-            <div>
-              <div className="font-extrabold text-slate-900 tracking-tight text-lg leading-tight group-hover:text-blue-700 transition-colors">
-                Małopolski Hub
-              </div>
-              <div className="text-xs font-semibold text-blue-600 flex items-center gap-1">
-                <span>Innowacji Społecznych</span>
-                <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">prototyp</span>
-              </div>
-            </div>
+              <span className="absolute left-1.5 right-1.5 bottom-1.5 h-1 bg-amber-400" />
+            </span>
+            <span className="leading-tight">
+              <span className="block font-extrabold text-slate-900 text-[1.0625rem]">Małopolski Hub</span>
+              <span className="block text-sm text-slate-600">
+                Innowacji Społecznych <span className="text-slate-500">(prototyp)</span>
+              </span>
+            </span>
           </Link>
 
-          {/* Linki Nawigacyjne */}
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Nawigacja główna">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive = location.pathname === link.to;
-
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all relative ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
-                      : link.highlight
-                      ? 'bg-amber-50 text-amber-900 hover:bg-amber-100 font-semibold border border-amber-200'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : link.highlight ? 'text-amber-600' : 'text-slate-500'}`} aria-hidden="true" />
-                  <span>{link.label}</span>
-                  {link.badge && (
-                    <span className="text-[10px] bg-blue-700 text-white font-bold px-1.5 py-0.5 rounded-full ml-1">
-                      JST
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+          {/* Linki nawigacyjne */}
+          <nav className="hidden xl:block" aria-label="Nawigacja główna">
+            <ul className="flex items-stretch">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = location.pathname === link.to;
+                return (
+                  <li key={link.to}>
+                    <Link
+                      to={link.to}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`relative flex items-center gap-1.5 px-2 h-[72px] text-sm whitespace-nowrap transition-colors ${
+                        isActive
+                          ? 'text-slate-900 font-bold'
+                          : link.highlight
+                          ? 'text-blue-700 font-bold hover:text-blue-900'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 hidden 2xl:block" aria-hidden="true" />
+                      <span>{link.label}</span>
+                      {isActive && <span className="absolute left-2 right-2 bottom-0 h-1 bg-amber-400" aria-hidden="true" />}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
 
           {/* Przycisk menu mobilnego */}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
-            className="lg:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 text-slate-800 text-sm font-semibold hover:bg-slate-100"
+            className="xl:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 text-slate-900 text-sm font-semibold hover:bg-slate-100"
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
           >
@@ -133,8 +94,8 @@ export const Navbar: React.FC = () => {
       </div>
       {/* Menu mobilne */}
       {mobileOpen && (
-        <nav id="mobile-nav" aria-label="Nawigacja główna (mobilna)" className="lg:hidden border-t border-slate-200 bg-white px-4 py-3">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+        <nav id="mobile-nav" aria-label="Nawigacja główna (mobilna)" className="xl:hidden border-t border-slate-200 bg-white px-4 py-3">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = location.pathname === link.to;
@@ -143,8 +104,8 @@ export const Navbar: React.FC = () => {
                   <Link
                     to={link.to}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center gap-2 px-3 py-3 rounded-lg text-sm font-semibold ${
-                      isActive ? 'bg-blue-600 text-white' : 'text-slate-800 hover:bg-slate-100'
+                    className={`flex items-center gap-2.5 px-3 py-3 border-l-4 text-base ${
+                      isActive ? 'border-amber-400 bg-slate-50 font-bold text-slate-900' : 'border-transparent text-slate-800 hover:bg-slate-50'
                     }`}
                   >
                     <Icon className="w-4 h-4" aria-hidden="true" />

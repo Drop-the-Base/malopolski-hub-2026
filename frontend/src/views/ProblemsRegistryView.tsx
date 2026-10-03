@@ -382,7 +382,7 @@ export const ProblemsRegistryView: React.FC = () => {
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span
-                            className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                            className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
                               isCritical
                                 ? 'bg-rose-100 text-rose-800 border-rose-300'
                                 : isHigh
@@ -792,7 +792,7 @@ export const ProblemsRegistryView: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-300 shadow-xl p-8 sm:p-12 space-y-8 print:p-0 print:border-none print:shadow-none print:rounded-none max-w-4xl mx-auto">
               <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start">
                 <div>
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 block">
+                  <span className="text-[11px] font-black text-slate-500 block">
                     Regionalny Ośrodek Polityki Społecznej w Krakowie
                   </span>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-950 mt-1">
@@ -826,7 +826,7 @@ export const ProblemsRegistryView: React.FC = () => {
 
               {/* Rekomendowane Innowacje do Natychmiastowej Adaptacji */}
               <div className="space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded">
+                <h3 className="text-xs font-black text-slate-900 bg-slate-100 p-2 rounded">
                   Rekomendowane Gotowe Innowacje ROPS Kraków dla Powiatu {summaryData.powiat}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

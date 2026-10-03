@@ -386,7 +386,7 @@ export const MatchmakingView: React.FC = () => {
           {/* Alerty i podsumowanie analizy */}
           <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
             <div>
-              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold mb-1">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Diagnoza Potrzeby Ukończona</span>
               </div>
@@ -411,13 +411,13 @@ export const MatchmakingView: React.FC = () => {
 
           {/* Styl Ceneo: Inteligentny Koszyk Rozwiązań z empatyczną diagnozą */}
           {result.ceneo_intro && (
-            <div className="bg-gradient-to-br from-amber-50 via-orange-50/50 to-white rounded-2xl border-2 border-amber-300/80 shadow-md p-6 space-y-4">
+            <div className="bg-amber-50 rounded-2xl border border-amber-300 p-6 space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
                   🤖
                 </div>
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 bg-amber-200/80 text-amber-900 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  <div className="inline-flex items-center gap-1.5 bg-amber-200/80 text-amber-900 text-[11px] font-black px-2.5 py-0.5 rounded-full ">
                     <Sparkles className="w-3.5 h-3.5 text-amber-700" />
                     <span>{result.no_match ? 'Co dalej?' : result.ai_generated ? 'Podsumowanie doradcy (AI)' : 'Podsumowanie doradcy'}</span>
                   </div>
@@ -441,7 +441,7 @@ export const MatchmakingView: React.FC = () => {
               {/* 3 Kroki Działania */}
               {result.action_steps && result.action_steps.length > 0 && (
                 <div className="pt-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
+                  <span className="text-xs font-bold text-slate-700 block mb-2">
                     Twój plan działania (3 kroki):
                   </span>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">

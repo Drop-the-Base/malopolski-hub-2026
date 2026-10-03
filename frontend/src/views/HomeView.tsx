@@ -1,18 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  Sparkles,
-  Compass,
-  Lightbulb,
-  Building2,
-  Users,
-  ShieldCheck,
-  ArrowRight,
-  HeartHandshake,
-  CheckCircle2,
-  MapPin,
-  AlertCircle
-} from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 
 export const HomeView: React.FC = () => {
@@ -20,216 +7,211 @@ export const HomeView: React.FC = () => {
   const navigate = useNavigate();
   const [quickInput, setQuickInput] = useState('');
 
+  const goToMatch = (text: string) => navigate(`/matchmaking?q=${encodeURIComponent(text)}`);
+
   const handleQuickSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (quickInput.trim()) {
-      navigate(`/matchmaking?q=${encodeURIComponent(quickInput)}`);
+      goToMatch(quickInput);
+    }
+  };
+
+  // Enter wysyła fiszkę, Shift+Enter dodaje nową linię
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (quickInput.trim()) goToMatch(quickInput);
     }
   };
 
   const sampleQueries = [
-    'Samotni seniorzy w małych wsiach bez dojazdu',
-    'Stany lękowe i depresja u młodzieży w szkole',
-    'Bariery łazienkowe dla osób leżących po udarze',
-    'Wykluczenie cyfrowe osób 75+ przy e-recepcie'
+    { label: 'samotni seniorzy bez dojazdu', q: 'Samotni seniorzy w małych wsiach bez dojazdu' },
+    { label: 'lęk i depresja u młodzieży', q: 'Stany lękowe i depresja u młodzieży w szkole' },
+    { label: 'łazienka dla osoby po udarze', q: 'Bariery łazienkowe dla osób leżących po udarze' },
+    { label: 'e-recepta dla osób 75+', q: 'Wykluczenie cyfrowe osób 75+ przy e-recepcie' }
+  ];
+
+  const paths = [
+    {
+      to: '/matchmaking',
+      who: etrMode ? 'Mieszkańcy' : 'Mieszkańcy i organizacje',
+      what: etrMode
+        ? 'Napisz, co jest trudne. Pokażemy, co już komuś pomogło.'
+        : 'Opisz problem w swojej społeczności i znajdź rozwiązania, które już działają w regionie.',
+      cta: 'Znajdź rozwiązanie'
+    },
+    {
+      to: '/middleman',
+      who: etrMode ? 'Gminy' : 'Gminy i powiaty',
+      what: etrMode
+        ? 'Dostaniesz plan, koszty i projekt uchwały dla gminy.'
+        : 'Przygotuj plan wdrożenia, kosztorys i projekt uchwały dla wybranej innowacji.',
+      cta: 'Zaplanuj wdrożenie'
+    },
+    {
+      to: '/kreator-pomyslow',
+      who: etrMode ? 'Masz pomysł' : 'Autorzy pomysłów',
+      what: etrMode
+        ? 'Opisz swój pomysł krok po kroku. Pomożemy go rozwinąć.'
+        : 'Opisz pomysł na 9 polach Canwy innowacji i przygotuj szkic wniosku do otwartego naboru.',
+      cta: 'Opisz pomysł'
+    },
+    {
+      to: '/admin',
+      who: 'Pracownicy ROPS',
+      what: etrMode
+        ? 'Sprawdzaj zgłoszenia i zobacz, czego brakuje w powiatach.'
+        : 'Przeglądaj zgłoszenia, przydzielaj mentorów i obserwuj potrzeby w 22 powiatach.',
+      cta: 'Otwórz panel'
+    }
   ];
 
   return (
-    <div className="space-y-16">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 sm:p-14 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 border border-blue-400/30 px-3.5 py-1.5 rounded-full text-xs font-bold mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Cyfrowe Serce Małopolskiego Hubu Innowacji Społecznych</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight mb-6">
-            {etrMode
-              ? 'Łączymy ludzi, którzy potrzebują pomocy, z dobrymi rozwiązaniami.'
-              : 'Inteligentne kojarzenie potrzeb z innowacjami społecznymi w Małopolsce.'}
-          </h1>
-
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">
-            {etrMode
-              ? 'Wpisz swój problem lub trudność. Podpowiemy Ci sprawdzony pomysł z katalogu innowacji.'
-              : 'Prototyp platformy, która kojarzy zgłaszane potrzeby z katalogiem sprawdzonych innowacji, pomaga samorządom je wdrażać i łączy mieszkańców z ekspertami.'}
+    <div className="space-y-20 sm:space-y-24">
+      {/* Hero: fiszka, w której mieszkaniec opisuje problem */}
+      <section aria-labelledby="hero-title" className="pt-4 sm:pt-10">
+        <h1
+          id="hero-title"
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.05] tracking-[-0.02em] max-w-[18ch]"
+        >
+          {etrMode ? 'Napisz, co jest trudne. Pomożemy znaleźć rozwiązanie.' : 'Opisz, co dzieje się w Twojej okolicy.'}
+        </h1>
+        {!etrMode && (
+          <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-[46ch] leading-relaxed">
+            Podpowiemy sprawdzone rozwiązanie z katalogu innowacji społecznych Małopolski i pokażemy, kto może pomóc
+            je wdrożyć.
           </p>
+        )}
 
-          {/* Szybka wyszukiwarka RAG */}
-          <form onSubmit={handleQuickSearch} className="bg-white p-2 rounded-2xl shadow-xl flex flex-col sm:flex-row gap-2 mb-4">
-            <input
-              type="text"
-              value={quickInput}
-              onChange={(e) => setQuickInput(e.target.value)}
-              placeholder="Opisz problem (np. W naszej wsi starsze osoby nie mają jak dojechać do apteki...)"
-              className="flex-1 px-4 py-3 text-slate-900 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-slate-500"
-              aria-label="Wpisz problem społeczny"
-            />
+        <form onSubmit={handleQuickSearch} className="fiszka mt-10 max-w-4xl">
+          <div className="flex items-baseline justify-between gap-4 px-5 sm:px-8 pt-4 pb-2 border-b border-blue-200">
+            <label htmlFor="hero-problem" className="font-bold text-slate-900">
+              {etrMode ? 'Twoja sprawa' : 'Fiszka zgłoszenia'}
+            </label>
+            <span className="text-sm text-slate-500 hidden sm:inline">Pisz własnymi słowami</span>
+          </div>
+          <textarea
+            id="hero-problem"
+            rows={3}
+            value={quickInput}
+            onChange={(e) => setQuickInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Na przykład: w naszej wsi starsze osoby nie mają jak dojechać do apteki…"
+            className="fiszka-lines block w-full resize-none bg-transparent border-0 px-5 sm:px-8 pt-1 pb-0 text-[1.3125rem] text-slate-900 placeholder:text-slate-500 focus:ring-0"
+          />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-8 py-4">
+            <span className="text-sm text-slate-500">Dane osobowe zostaną ukryte przed analizą.</span>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm shadow-md"
+              className="bg-blue-600 hover:bg-blue-800 text-white font-bold px-6 py-3 rounded-lg text-base transition-colors"
             >
-              <span>{etrMode ? 'Szukaj pomocy' : 'Dopasuj innowację'}</span>
-              <ArrowRight className="w-4 h-4" />
+              {etrMode ? 'Szukaj pomocy' : 'Dopasuj rozwiązanie'}
             </button>
-          </form>
-
-          {/* Przykładowe zapytania demonstracyjne */}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-            <span className="font-medium text-slate-300">Sprawdź przykłady:</span>
-            {sampleQueries.map((q, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => navigate(`/matchmaking?q=${encodeURIComponent(q)}`)}
-                className="bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg border border-slate-700 transition-colors text-[11px]"
-              >
-                {q}
-              </button>
-            ))}
           </div>
-        </div>
+        </form>
+
+        <p className="mt-5 text-base text-slate-600 max-w-4xl leading-relaxed">
+          <span className="mr-1">Na przykład:</span>
+          {sampleQueries.map((s, idx) => (
+            <React.Fragment key={s.q}>
+              <button
+                type="button"
+                onClick={() => goToMatch(s.q)}
+                className="text-blue-700 underline decoration-blue-300 underline-offset-4 hover:decoration-blue-700 rounded"
+              >
+                {s.label}
+              </button>
+              {idx < sampleQueries.length - 1 ? ', ' : '.'}
+            </React.Fragment>
+          ))}
+        </p>
       </section>
 
-      {/* 4 Kluczowe Bramy Użytkownika */}
-      <section>
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <h2 className="text-2xl font-black text-slate-900 mb-2">Dla kogo jest Małopolski Hub?</h2>
-          <p className="text-sm text-slate-500">
-            Wybierz swoją ścieżkę – od zgłoszenia oddolnej potrzeby po wdrożenie uchwały w gminie.
+      {/* Ścieżki według roli */}
+      <section aria-labelledby="paths-title" className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12">
+        <div>
+          <h2 id="paths-title" className="text-2xl font-bold text-slate-900">
+            Kim jesteś?
+          </h2>
+          <p className="mt-2 text-slate-600 leading-relaxed max-w-[34ch]">
+            Hub łączy mieszkańców, organizacje, samorządy i ROPS. Każdy zaczyna w innym miejscu.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Mieszkaniec / NGO */}
-          <Link
-            to="/matchmaking"
-            className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">Mieszkańcy i NGO</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Opisz problem w swojej społeczności, znajdź gotowe innowacje lub stwórz fiszkę nowego pomysłu.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-blue-600">
-              Przejdź do kojarzenia <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </Link>
-
-          {/* Samorządy JST / CUS */}
-          <Link
-            to="/middleman"
-            className="group bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-2xl border border-indigo-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden"
-          >
-            <span className="absolute top-3 right-3 text-[10px] font-black bg-indigo-600 text-white px-2 py-0.5 rounded-full">
-              Kluczowa
-            </span>
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">Jednostki Samorządu (JST)</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Middleman JST: wygeneruj plan wdrożenia, kosztorys i projekt uchwały dla swojej gminy.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-700">
-              Wdróż innowację w gminie <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </Link>
-
-          {/* Innowatorzy i Canwa */}
-          <Link
-            to="/kreator-pomyslow"
-            className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Lightbulb className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">Innowatorzy i Granty</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Zbuduj 9-elementową Canwę Innowacji z autouzupełnianiem AI i przygotuj szkic wniosku grantowego.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-amber-600">
-              Otwórz Canwę <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </Link>
-
-          {/* Koordynatorzy ROPS */}
-          <Link
-            to="/admin"
-            className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-400 transition-all flex flex-col justify-between"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">Pracownicy ROPS</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Radar Trendów Powiatowych, moderacja zgłoszeń mieszkańców i monitorowanie białych plam.
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-slate-700">
-              Panel Analityczny <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </Link>
-        </div>
+        <ul className="lg:col-span-2 border-t border-slate-300">
+          {paths.map((p) => (
+            <li key={p.to} className="row-full border-b border-slate-300">
+              <Link
+                to={p.to}
+                className="group grid grid-cols-1 sm:grid-cols-[13rem_1fr_auto] gap-x-6 gap-y-1 py-5 px-1 sm:items-baseline hover:bg-white transition-colors"
+              >
+                <span className="text-lg font-bold text-slate-900">{p.who}</span>
+                <span className="text-slate-600 leading-relaxed">{p.what}</span>
+                <span className="font-bold text-blue-700 underline decoration-transparent underline-offset-4 group-hover:decoration-blue-700 whitespace-nowrap">
+                  {p.cta}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* Banner dla Urzędników JST i Pracowników Socjalnych */}
-      <section className="bg-gradient-to-r from-rose-900 via-rose-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-rose-800/40">
-        <div className="space-y-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 bg-rose-500/20 text-rose-300 border border-rose-400/30 px-3 py-1 rounded-full text-xs font-bold">
-            <AlertCircle className="w-3.5 h-3.5" />
-            <span>Nowy Moduł: Panel Diagnozy dla Samorządów</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-black">
-            Jesteś urzędnikiem JST, pracownikiem CUS lub kierownikiem GOPS?
+      {/* Zaproszenie dla urzędników */}
+      <section
+        aria-labelledby="officers-title"
+        className="bg-white border-l-4 border-blue-600 px-6 sm:px-10 py-8 flex flex-col md:flex-row md:items-center justify-between gap-6"
+      >
+        <div className="max-w-2xl">
+          <h2 id="officers-title" className="text-xl sm:text-2xl font-bold text-slate-900">
+            Pracujesz w gminie, CUS lub GOPS?
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Wpisz wyzwania społeczne, z którymi mierzy się Twoja gmina. Zbadaj liczbę dotkniętych mieszkańców,
-            przypisz gotowe innowacje z katalogu i przygotuj raport diagnostyczny dla Rady Gminy.
+          <p className="mt-2 text-slate-600 leading-relaxed">
+            Zapisz wyzwania, z którymi mierzy się Twoja gmina. Zobaczysz, ilu mieszkańców dotyczą, przypiszesz gotowe
+            innowacje z katalogu i przygotujesz raport diagnostyczny dla rady gminy.
           </p>
         </div>
         <Link
           to="/problemy"
-          className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all shrink-0"
+          className="shrink-0 text-center border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white font-bold px-6 py-3 rounded-lg transition-colors"
         >
-          <span>Otwórz Rejestr Wyzwań JST</span>
-          <ArrowRight className="w-4 h-4" />
+          Otwórz rejestr wyzwań
         </Link>
       </section>
 
-      {/* Wskaźniki Wpływu Społecznego */}
-      <section className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-3xl font-black text-blue-600 mb-1">10</div>
-            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Innowacji w wersji demo (docelowo cała Biblioteka ROPS)</div>
+      {/* Fakty o prototypie */}
+      <section aria-labelledby="facts-title">
+        <h2 id="facts-title" className="text-2xl font-bold text-slate-900 mb-6">
+          O prototypie
+        </h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 max-w-5xl">
+          <div className="flex gap-4 items-baseline">
+            <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">10</dt>
+            <dd className="text-slate-600 leading-relaxed">
+              innowacji w wersji demonstracyjnej. Docelowo cała biblioteka ROPS, niemal 200 przetestowanych rozwiązań.
+            </dd>
           </div>
-          <div>
-            <div className="text-3xl font-black text-indigo-600 mb-1">22</div>
-            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Powiaty Małopolski w Bazie</div>
+          <div className="flex gap-4 items-baseline">
+            <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">22</dt>
+            <dd className="text-slate-600 leading-relaxed">
+              powiaty Małopolski z danymi o wyzwaniach demograficznych i społecznych.
+            </dd>
           </div>
-          <div>
-            <div className="text-3xl font-black text-emerald-700 mb-1">WCAG 2.1 AA</div>
-            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-              Cel projektowy – <Link to="/deklaracja-dostepnosci" className="underline text-blue-700">deklaracja dostępności</Link>
-            </div>
+          <div className="flex gap-4 items-baseline">
+            <dt className="text-3xl font-extrabold text-slate-900 w-28 shrink-0">AA</dt>
+            <dd className="text-slate-600 leading-relaxed">
+              poziom WCAG 2.1, do którego projektujemy. Szczegóły w{' '}
+              <Link to="/deklaracja-dostepnosci" className="text-blue-700 underline underline-offset-4">
+                deklaracji dostępności
+              </Link>
+              .
+            </dd>
           </div>
-          <div>
-            <div className="text-3xl font-black text-amber-700 mb-1">ok. 200 zł</div>
-            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Infrastruktura + API LLM / m-c (szacunek TCO)</div>
+          <div className="flex gap-4 items-baseline">
+            <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">200 zł</dt>
+            <dd className="text-slate-600 leading-relaxed">
+              miesięcznie, szacunkowy koszt infrastruktury i modeli językowych.
+            </dd>
           </div>
-        </div>
+        </dl>
       </section>
     </div>
   );
