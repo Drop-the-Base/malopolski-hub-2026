@@ -7,7 +7,8 @@ import {
   Building2,
   Users,
   ShieldCheck,
-  FlaskConical
+  FlaskConical,
+  AlertCircle
 } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 
@@ -21,6 +22,12 @@ export const Navbar: React.FC = () => {
       label: etrMode ? 'Znajdź pomoc' : 'Kojarzenie potrzeb (RAG)',
       icon: Sparkles,
       highlight: true
+    },
+    {
+      to: '/problemy',
+      label: etrMode ? 'Zgłoś problem' : 'Rejestr Wyzwań JST',
+      icon: AlertCircle,
+      badge: 'NOWE'
     },
     {
       to: '/baza-wiedzy',

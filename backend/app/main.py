@@ -17,6 +17,7 @@ from app.api.v1.testing import router as testing_router
 from app.api.v1.communication import router as communication_router
 from app.api.v1.admin import router as admin_router
 from app.api.v1.voice import router as voice_router
+from app.api.v1.problems import router as problems_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mhis_app")
@@ -27,6 +28,29 @@ async def lifespan(app: FastAPI):
     logger.info("Inicjalizacja bazy danych i tabel SQLAlchemy...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        def migrate_sqlite_columns(connection):
+            try:
+                from sqlalchemy import text
+                result = connection.execute(text("PRAGMA table_info(problem_reports)"))
+                cols = [row[1] for row in result.fetchall()]
+                if cols:
+                    migrations = [
+                        ("title", "VARCHAR"),
+                        ("reporter_type", "VARCHAR DEFAULT 'urzednik_jst'"),
+                        ("reporter_name", "VARCHAR"),
+                        ("reporter_role", "VARCHAR"),
+                        ("urgency", "VARCHAR DEFAULT 'standardowy'"),
+                        ("affected_count", "INTEGER DEFAULT 0"),
+                        ("assigned_innovation_id", "VARCHAR"),
+                        ("assigned_notes", "TEXT")
+                    ]
+                    for col_name, col_type in migrations:
+                        if col_name not in cols:
+                            logger.info(f"Dodawanie brakującej kolumny {col_name} do problem_reports...")
+                            connection.execute(text(f"ALTER TABLE problem_reports ADD COLUMN {col_name} {col_type}"))
+            except Exception as e:
+                logger.warning(f"Błąd migracji kolumn SQLite: {e}")
+        await conn.run_sync(migrate_sqlite_columns)
     logger.info("Uruchamianie seedera danych demonstracyjnych ROPS Kraków...")
     await run_seed()
     yield
@@ -73,6 +97,7 @@ app.include_router(testing_router, prefix="/api/v1")
 app.include_router(communication_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(voice_router, prefix="/api/v1")
+app.include_router(problems_router, prefix="/api/v1")
 
 @app.get("/", tags=["Root"])
 async def root():

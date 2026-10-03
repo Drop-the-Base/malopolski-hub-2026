@@ -72,7 +72,7 @@ def run_smoke_tests():
     print("=" * 60)
 
     success_count = 0
-    total_tests = 9
+    total_tests = 12
 
     # 1. Health
     ok, _ = test_endpoint("System Healthcheck", "GET", "/health")
@@ -137,12 +137,44 @@ def run_smoke_tests():
     ok_voice = test_voice_endpoint()
     if ok_voice: success_count += 1
 
+    # 10. Styl Ceneo: Synteza Koszyka Innowacji
+    ok, ceneo_data = test_endpoint("Moduł I: Synteza Koszyka Innowacji w Stylu Ceneo", "POST", "/matchmaking", {
+        "problem_description": "Mój 82-letni dziadek w Limanowej ma trudności z wchodzeniem do wanny i potrzebuje adaptacji łazienki.",
+        "powiat": "limanowski"
+    })
+    if ok and ceneo_data and "ceneo_intro" in ceneo_data:
+        print(f"       -> Diagnoza Ceneo: \"{ceneo_data.get('ceneo_intro')[:70]}...\"")
+        print(f"       -> Liczba kroków działania: {len(ceneo_data.get('action_steps', []))}")
+        success_count += 1
+
+    # 11. Moduł VII: Czat z Doradcą Samorządowym ROPS AI
+    ok, chat_data = test_endpoint("Moduł VII: Czat z Doradcą Samorządowym AI", "POST", "/middleman/chat", {
+        "messages": [{"role": "user", "content": "Jak przekonać radnych do uchwały o innowacji?"}],
+        "innovation_id": "rops-inn-001",
+        "municipality_name": "Gmina Słaboszów",
+        "powiat": "miechowski",
+        "population": 3800,
+        "senior_percentage": 28.5,
+        "has_cus": False,
+        "annual_budget_pln": 80000
+    })
+    if ok and chat_data and "reply" in chat_data:
+        print(f"       -> Odpowiedź doradcy ({chat_data.get('latency_ms')}ms): \"{chat_data.get('reply')[:70]}...\"")
+        print(f"       -> Sugerowane followupy: {len(chat_data.get('suggested_followups', []))}")
+        success_count += 1
+
+    # 12. Moduł VIII: Rejestr Problemów i Panel Urzędnika JST
+    ok, prob_data = test_endpoint("Moduł VIII: Rejestr Problemów JST", "GET", "/problems")
+    if ok and prob_data is not None:
+        print(f"       -> Zarejestrowanych problemów samorządowych: {len(prob_data)}")
+        success_count += 1
+
     print("=" * 60)
     print(f"Wynik Testu Dymnego: {success_count} / {total_tests} testów zaliczonych pomyślnie.")
     print("=" * 60)
 
     if success_count == total_tests:
-        print("WSZYSTKIE MODUŁY WYMAGANE PRZEZ ROPS KRAKÓW DZIAŁAJĄ POPRAWNIE!")
+        print("WSZYSTKIE 12 MODUŁÓW I FUNKCJONALNOŚCI ROPS KRAKÓW DZIAŁAJĄ POPRAWNIE!")
         sys.exit(0)
     else:
         sys.exit(1)

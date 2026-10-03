@@ -27,3 +27,7 @@ class MatchmakingResponse(BaseModel):
     matches: List[InnovationMatchItem]
     similar_cases_count: int
     trend_alert: Optional[str] = None
+    ceneo_intro: str = Field(..., description="Ceneo-style conversational empathic summary of the problem")
+    ceneo_bundle_rationale: str = Field(..., description="Explanation of why these innovations form a synergistic bundle")
+    action_steps: List[str] = Field(default_factory=list, description="Immediate 3-step action checklist")
+

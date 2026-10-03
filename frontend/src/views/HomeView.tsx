@@ -10,7 +10,8 @@ import {
   ArrowRight,
   HeartHandshake,
   CheckCircle2,
-  MapPin
+  MapPin,
+  AlertCircle
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 
@@ -181,6 +182,30 @@ export const HomeView: React.FC = () => {
             </div>
           </Link>
         </div>
+      </section>
+
+      {/* Banner dla Urzędników JST i Pracowników Socjalnych */}
+      <section className="bg-gradient-to-r from-rose-900 via-rose-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-rose-800/40">
+        <div className="space-y-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 bg-rose-500/20 text-rose-300 border border-rose-400/30 px-3 py-1 rounded-full text-xs font-bold">
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span>Nowy Moduł: Panel Diagnozy dla Samorządów</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black">
+            Jesteś urzędnikiem JST, pracownikiem CUS lub kierownikiem GOPS?
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Wpisz wyzwania społeczne, z którymi mierzy się Twoja gmina. Zbadaj liczbę dotkniętych mieszkańców,
+            przypisz gotowe innowacje ROPS Kraków i wygeneruj oficjalny Raport Diagnostyczny dla Rady Gminy.
+          </p>
+        </div>
+        <Link
+          to="/problemy"
+          className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-6 py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all shrink-0"
+        >
+          <span>Otwórz Rejestr Wyzwań JST</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </section>
 
       {/* Wskaźniki Wpływu Społecznego */}

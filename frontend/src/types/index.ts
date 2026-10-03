@@ -34,7 +34,11 @@ export interface MatchmakingResult {
   matches: MatchmakingMatch[];
   similar_cases_count: number;
   trend_alert?: string;
+  ceneo_intro?: string;
+  ceneo_bundle_rationale?: string;
+  action_steps?: string[];
 }
+
 
 export interface RegionalChallenge {
   powiat_code: string;
@@ -81,6 +85,25 @@ export interface CanvasAutofillResult {
   scalability: string;
   ai_powered: boolean;
   latency_ms: number;
+}
+
+export interface GrantApplication {
+  application_id: string;
+  call_title: string;
+  submission_date: string;
+  applicant_name: string;
+  powiat: string;
+  gmina?: string;
+  target_group: string;
+  idea_title: string;
+  executive_summary: string;
+  problem_diagnosis: string;
+  detailed_methodology: string;
+  budget_breakdown: Record<string, number>;
+  total_budget_pln: number;
+  monitoring_indicators: string[];
+  risk_assessment: Array<{ risk: string; action: string }>;
+  declarations: string[];
 }
 
 export interface ServiceBlueprint {
@@ -165,3 +188,33 @@ export interface TrendRadarData {
   }>;
   systemic_gaps: string[];
 }
+
+export interface ProblemReportItem {
+  id: string;
+  title?: string;
+  raw_text: string;
+  clean_text: string;
+  category?: string;
+  powiat?: string;
+  gmina?: string;
+  reporter_type: string;
+  reporter_name?: string;
+  reporter_role?: string;
+  urgency: 'krytyczny' | 'wysoki' | 'standardowy' | string;
+  affected_count: number;
+  matched_innovations: string[];
+  assigned_innovation_id?: string;
+  assigned_notes?: string;
+  status: 'nowy' | 'w_analizie' | 'przypisana_innowacja' | 'wdrazany' | 'rozwiazany' | string;
+  created_at: string;
+}
+
+export interface MunicipalReportSummary {
+  powiat: string;
+  total_challenges: number;
+  critical_challenges: number;
+  total_affected_residents: number;
+  top_categories: Array<{ category: string; count: number }>;
+  recommended_innovations: Array<{ id: string; title: string; tagline: string; category: string }>;
+}
+

@@ -13,6 +13,7 @@ import { MiddlemanView } from './views/MiddlemanView';
 import { TesterView } from './views/TesterView';
 import { CommunicationView } from './views/CommunicationView';
 import { AdminDashboardView } from './views/AdminDashboardView';
+import { ProblemsRegistryView } from './views/ProblemsRegistryView';
 
 export const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomeView />} />
             <Route path="/matchmaking" element={<MatchmakingView />} />
+            <Route path="/problemy" element={<ProblemsRegistryView />} />
             <Route path="/baza-wiedzy" element={<KnowledgeView />} />
             <Route path="/kreator-pomyslow" element={<IdeaCreatorView />} />
             <Route path="/middleman" element={<MiddlemanView />} />

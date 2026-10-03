@@ -207,6 +207,148 @@ async def generate_groq_match_rationale(problem_text: str, innovation_title: str
         max_tokens=150
     )
 
+def _generate_fallback_ceneo_synthesis(
+    problem_text: str,
+    powiat: Optional[str],
+    matched_innovations: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Wysokiej jakości deterministyczna synteza dopasowania w stylu Ceneo/Allegro."""
+    p_lower = problem_text.lower()
+    loc = f"w powiecie {powiat}" if powiat else "w Twojej miejscowości"
+
+    if any(k in p_lower for k in ["senior", "starsz", "wanna", "łazienk", "dziad", "babci", "emeryt", "opiek"]):
+        intro = (
+            f"Jasne 👵 Zdiagnozowałem sytuację: {loc} mierzysz się z barierami w codziennym funkcjonowaniu osoby starszej, "
+            f"trudnościami w higienie lub odcięciem od opieki. Przygotowałem dla Ciebie zgrany zestaw sprawdzonych innowacji ROPS Kraków, "
+            f"które kompleksowo zabezpieczają potrzeby seniora i odciążają rodzinę."
+        )
+        rationale = (
+            "Dlaczego ten zestaw tworzy idealny pakiet: Zamiast pojedynczego doraźnego działania łączymy bezpieczną adaptację przestrzeni "
+            "(np. Modularna Łazienka / Terapeuta Przestrzeni) z mobilnym wsparciem asystenckim i teleopieką. "
+            "Dzięki temu senior zyskuje samodzielność domową, a gmina – gotowy schemat wdrożenia bez budowania drogich ośrodków stacjonarnych."
+        )
+        steps = [
+            "Krok 1: Pobierz bezpłatny podręcznik innowacji i obejrzyj instruktaż wideo w Bazie Wiedzy.",
+            "Krok 2: Użyj modułu 'Adaptuj dla Gminy', aby wygenerować kalkulację kosztów i projekt uchwały dla CUS/GOPS.",
+            "Krok 3: Zgłoś się do mentora ROPS w zakładce Komunikacja w celu pozyskania grantu do 50 000 zł na pilotaż."
+        ]
+    elif any(k in p_lower for k in ["psych", "lęk", "depresj", "młodzie", "nastolat", "szkoł", "stres"]):
+        intro = (
+            f"Jasne 🧠 Rozumiem powagę wyzwania: kryzysy emocjonalne i poczucie osamotnienia młodzieży {loc} "
+            f"wymagają szybkiej, środowiskowej interwencji bez stygmatyzacji gabinetowej i wielomiesięcznych kolejek NFZ. "
+            f"Skomponowałem dla Ciebie zestaw narzędzi ROPS stworzonych specjalnie do pracy w społeczności lokalnej."
+        )
+        rationale = (
+            "Dlaczego ten zestaw działa komplementarnie: Łączymy narracyjne techniki komiksowo-terapeutyczne (koMIX Życiowy) "
+            "z bezpiecznymi strefami wytchnienia oraz tutoringiem rówieśniczym. Młody człowiek nie czuje się etykietowany jako 'chory', "
+            "lecz otrzymuje bezpieczne ujście emocji i kontakt z wykwalifikowanym moderatorem."
+        )
+        steps = [
+            "Krok 1: Pobierz pakiety komiksowe i scenariusze zajęć z Bazy Wiedzy ROPS.",
+            "Krok 2: Zaangażuj szkołę, bibliotekę lub dom kultury jako partnera lokalnej strefy wsparcia.",
+            "Krok 3: Złóż fiszkę w Kreatorze Pomysłów, by otrzymać mikrogrant na pilotażowe warsztaty w Twojej gminie."
+        ]
+    elif any(k in p_lower for k in ["cyfrow", "komputer", "smartfon", "internet", "bankow"]):
+        intro = (
+            f"Jasne 💻 Wykryłem barierę cyfrową: {loc} mieszkańcy (zwłaszcza seniorzy) czują się zagubieni "
+            f"w obliczu cyfryzacji urzędów, e-recept i bankowości online. Przygotowałem pakiet innowacji ROPS "
+            f"przywracających cyfrową samodzielność w przyjaznym tempie."
+        )
+        rationale = (
+            "Dlaczego ten pakiet: Połączyliśmy model międzypokoleniowego mentoringu (młodzież uczy seniorów) "
+            "z uproszczonymi instrukcjami w standardzie ETR (Łatwy Tekst do Czytania) oraz mobilnymi punktami wsparcia cyfrowego."
+        )
+        steps = [
+            "Krok 1: Wykorzystaj narzędzie upraszczania tekstów ETR dostępne w menu platformy.",
+            "Krok 2: Skontaktuj się z biblioteką publiczną lub CUS w sprawie udostępnienia stanowiska komputerowego.",
+            "Krok 3: Zgłoś inicjatywę do inkubatora ROPS – pomożemy przeszkolić wolontariuszy cyfrowych."
+        ]
+    else:
+        intro = (
+            f"Jasne 🤝 Zdiagnozowałem Twoje zgłoszenie: {loc} istnieje pilna potrzeba oddolnego rozwiązania wyzwania społecznego. "
+            f"Zamiast wyważać otwarte drzwi, wyselekcjonowałem zestaw innowacji ROPS Kraków, które zostały przetestowane w Małopolsce "
+            f"i posiadają wysoki wskaźnik skuteczności."
+        )
+        rationale = (
+            "Dlaczego ten pakiet: Rekomendowane innowacje tworzą synergię – angażują zasoby sąsiedzkie (OSP, KGW, wolontariat), "
+            "a jednocześnie opierają się na procedurach akceptowalnych dla samorządu terytorialnego i centrów usług społecznych."
+        )
+        steps = [
+            "Krok 1: Zapoznaj się ze szczegółowymi kartami innowacji i podręcznikami wdrożeniowymi.",
+            "Krok 2: Skonsultuj pomysł z Wirtualnym Doradcą w module Middleman JST.",
+            "Krok 3: Wygeneruj wniosek grantowy w 3-krokowym Kreatorze Pomysłów."
+        ]
+
+    return {
+        "ceneo_intro": intro,
+        "ceneo_bundle_rationale": rationale,
+        "action_steps": steps
+    }
+
+async def generate_ceneo_match_synthesis(
+    problem_text: str,
+    powiat: Optional[str],
+    matched_innovations: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """
+    Generuje syntezę dopasowania w stylu inteligentnego asystenta zakupowego Ceneo:
+    - Empatyczne podsumowanie problemu z emoji
+    - Uzasadnienie dlaczego proponowane innowacje tworzą spójny, komplementarny koszyk
+    - Natychmiastowa 3-krokowa lista działań
+    """
+    titles = [f"'{m['title']}' ({m['category']})" for m in matched_innovations[:4]]
+    titles_str = ", ".join(titles)
+    loc_str = f"w powiecie {powiat}" if powiat else "w Małopolsce"
+
+    system_prompt = (
+        "Jesteś empatycznym, fachowym doradcą Małopolskiego Hubu Innowacji Społecznych ROPS Kraków. "
+        "Działasz jak nowoczesny asystent zakupowy w stylu Ceneo, który przyjaznym, profesjonalnym tonem "
+        "podsumowuje problem zgłaszającego (np. 'Jasne 🤝 Zdiagnozowałem sytuację...'), "
+        "wyjaśnia dlaczego polecane innowacje tworzą wzajemnie uzupełniający się 'koszyk rozwiązań' (bundle), "
+        "oraz proponuje konkretne 3 ponumerowane kroki działania. "
+        "Zwróć odpowiedź WYŁĄCZNIE jako obiekt JSON w formacie:\n"
+        "```json\n"
+        "{\n"
+        '  "ceneo_intro": "Jasne 🤝 [emocjonalna diagnoza i powitanie w 2-3 zdaniach]",\n'
+        '  "ceneo_bundle_rationale": "Dlaczego ten zestaw: [wyjaśnienie synergii pakietu w 2-3 zdaniach]",\n'
+        '  "action_steps": [\n'
+        '    "Krok 1: [krótka wskazówka]",\n'
+        '    "Krok 2: [krótka wskazówka]",\n'
+        '    "Krok 3: [krótka wskazówka]"\n'
+        '  ]\n'
+        "}\n"
+        "```\n"
+        "Pisz po polsku, życzliwie, profesjonalnie. Domknij poprawnie blok JSON."
+    )
+
+    user_prompt = (
+        f"Problem zgłoszony: \"{problem_text}\". Lokalizacja: {loc_str}.\n"
+        f"Dopasowane innowacje ROPS Kraków: {titles_str}."
+    )
+
+    raw = await groq_chat_completion(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.3,
+        max_tokens=900
+    )
+
+    if raw:
+        parsed = _extract_json_from_text(raw)
+        if parsed and "ceneo_intro" in parsed and "ceneo_bundle_rationale" in parsed:
+            steps = parsed.get("action_steps") or []
+            if isinstance(steps, list) and len(steps) >= 2:
+                return {
+                    "ceneo_intro": parsed["ceneo_intro"],
+                    "ceneo_bundle_rationale": parsed["ceneo_bundle_rationale"],
+                    "action_steps": steps
+                }
+
+    return _generate_fallback_ceneo_synthesis(problem_text, powiat, matched_innovations)
+
+
 async def transcribe_audio(file_bytes: bytes, filename: str = "audio.wav", language: str = "pl") -> Optional[str]:
     """
     Transkrybuje nagranie mowy na tekst za pomocą Groq Whisper (whisper-large-v3-turbo).
@@ -248,3 +390,126 @@ async def transcribe_audio(file_bytes: bytes, filename: str = "audio.wav", langu
     except Exception as e:
         logger.error(f"Wyjątek podczas transkrypcji Whisper: {e}")
         return None
+
+def _generate_fallback_middleman_chat(
+    user_query: str,
+    municipality_name: str,
+    has_cus: bool,
+    latency_ms: int
+) -> Dict[str, Any]:
+    """Deterministyczny fallback dla czatu doradcy samorządowego ROPS."""
+    q_lower = user_query.lower()
+    if any(k in q_lower for k in ["rada", "radn", "uchwał", "przekon"]):
+        reply = (
+            f"Dla samorządu {municipality_name} kluczowym argumentem dla Radnych Gminy jest fakt, że innowacja została już "
+            f"przetestowana w Małopolsce w pilotażu ROPS Kraków i nie niesie ryzyka nieudanego wdrożenia od zera. "
+            f"Zamiast tworzyć kosztowny nowy etat urzędniczy, proponujemy zlecenie usługi w trybie pożytku publicznego (Ustawa o pożytku) "
+            f"lub rozszerzenie zadań {'istniejącego Centrum Usług Społecznych' if has_cus else 'Ośrodka Pomocy Społecznej'}. "
+            f"Koszty pilotażu mogą być w 100% sfinansowane z mikrograntu ROPS."
+        )
+        followups = [
+            "Jak przygotować uzasadnienie finansowe do projektu uchwały?",
+            "Czy możemy skorzystać ze wzoru uchwały wygenerowanego w Service Blueprint?",
+            "Jakie wskaźniki przedstawić na komisji budżetowej Rady Gminy?"
+        ]
+    elif any(k in q_lower for k in ["finans", "fem", "środk", "pfron", "pieniądz", "grant", "budżet"]):
+        reply = (
+            f"Wdrożenie usługi w {municipality_name} można sfinansować z kilku komplementarnych źródeł: "
+            f"1) Mikrogrant pilotażowy ROPS Kraków do 50 000 zł (100% dofinansowania na 3-6 miesięcy testów); "
+            f"2) Program Fundusze Europejskie dla Małopolski 2021-2027 (Działanie 6.18 Usługi Społeczne i Zdrowotne); "
+            f"3) Środki PFRON na likwidację barier i asystenturę osób z niepełnosprawnościami; "
+            f"4) Gminny Program Profilaktyki i Rozwiązywania Problemów Alkoholowych (część działań integracyjnych)."
+        )
+        followups = [
+            "Kiedy rusza najbliższy nabór grantowy w ROPS Kraków?",
+            "Jaki jest wymagany wkład własny gminy?",
+            "Czy wydatki na sprzęt i adaptację są w 100% kwalifikowalne w FEM?"
+        ]
+    elif any(k in q_lower for k in ["kadr", "etat", "kwalifikacj", "kto", "pracownik"]):
+        reply = (
+            f"Do uruchomienia usługi w {municipality_name} nie jest wymagane tworzenie nowego etatu urzędowego. "
+            f"Standard ROPS dopuszcza umowę zlecenie lub porozumienie wolontariackie (np. 0.5 etatu koordynatora środowiskowego). "
+            f"Wymagane kwalifikacje: wykształcenie średnie lub wyższe z zakresu pracy socjalnej, pedagogiki, animacji lub zdrowia publicznego. "
+            f"ROPS Kraków zapewnia bezpłatne 16-godzinne szkolenie wdrożeniowe dla kadry gminy oraz komplet podręczników metodycznych."
+        )
+        followups = [
+            "Czy ROPS wystawia certyfikaty ze szkolenia wdrożeniowego?",
+            "Jak skonstruować bezpieczną umowę powierzenia zadań asystentowi?",
+            "Kto odpowiada za ubezpieczenie NNW i OC wolontariusza?"
+        ]
+    else:
+        reply = (
+            f"Jako doradca ROPS Kraków rekomenduję dla {municipality_name} rozpoczęcie od formalnego powołania gminnego zespołu wdrożeniowego "
+            f"(przedstawiciel wójta, kierownik {'CUS' if has_cus else 'OPS'}, lokalne NGO/OSP). "
+            f"W kolejnym kroku przyjmujemy wygenerowaną uchwałę intencyjną i składamy wniosek o dofinansowanie pilotażu. "
+            f"Eksperci ROPS Kraków oferują bezpłatne konsultacje prawne i operacyjne na każdym etapie adaptacji."
+        )
+        followups = [
+            "Jak zorganizować konsultacje społeczne z mieszkańcami gminy?",
+            "Jakie są kluczowe ryzyka wdrożenia w gminie wiejskiej?",
+            "Czy możemy dostosować zakres wsparcia do mniejszej grupy mieszkańców?"
+        ]
+
+    return {
+        "reply": reply,
+        "suggested_followups": followups,
+        "latency_ms": latency_ms
+    }
+
+async def middleman_consultant_chat(
+    messages: List[Dict[str, str]],
+    context: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Interaktywny Asystent AI dla Wójtów, Burmistrzów i Dyrektorów CUS/OPS.
+    Doradza w procedurach samorządowych, uchwałach, montażu finansowym i kadrach.
+    """
+    t0 = time.time()
+    last_user_msg = messages[-1]["content"] if messages else "Jak wdrożyć tę innowację?"
+    mun = context.get("municipality_name", "Gmina Małopolska")
+    powiat = context.get("powiat", "małopolski")
+    pop = context.get("population", 5000)
+    sen = context.get("senior_percentage", 25.0)
+    has_cus = context.get("has_cus", False)
+    blueprint_sum = context.get("blueprint_summary") or ""
+
+    system_prompt = (
+        f"Jesteś starszym doradcą samorządowym Regionalnego Ośrodka Polityki Społecznej (ROPS) w Krakowie. "
+        f"Prowadzisz profesjonalną konsultację wdrożeniową dla władz i kadry samorządowej: {mun} (powiat {powiat}, "
+        f"mieszkańców: {pop}, seniorzy: {sen}%, CUS: {'TAK' if has_cus else 'NIE (GOPS/MOPS)'}). "
+        f"Kontekst wdrożenia: {blueprint_sum[:300]}. "
+        f"Odpowiadaj konkretnie, profesjonalnie, powołując się na polskie ramy prawne (Uchwała Rady Gminy, Ustawa o CUS, fundusze FEM 2021-2027). "
+        "Zwróć odpowiedź WYŁĄCZNIE jako obiekt JSON w formacie:\n"
+        "```json\n"
+        "{\n"
+        '  "reply": "[Twoja merytoryczna, fachowa odpowiedź dla wójta/dyrektora w 2-4 zwięzłych akapitach]",\n'
+        '  "suggested_followups": [\n'
+        '    "[Pytanie uzupełniające 1]",\n'
+        '    "[Pytanie uzupełniające 2]",\n'
+        '    "[Pytanie uzupełniające 3]"\n'
+        '  ]\n'
+        "}\n"
+        "```\n"
+        "Dbaj o poprawny format JSON i domknięcie klamry }."
+    )
+
+    conv_messages = [{"role": "system", "content": system_prompt}]
+    for m in messages[-6:]:
+        conv_messages.append({"role": m["role"], "content": m["content"]})
+
+    raw = await groq_chat_completion(conv_messages, temperature=0.3, max_tokens=1000)
+    t1 = time.time()
+    latency_ms = int((t1 - t0) * 1000)
+
+    if raw:
+        parsed = _extract_json_from_text(raw)
+        if parsed and "reply" in parsed:
+            followups = parsed.get("suggested_followups") or []
+            return {
+                "reply": parsed["reply"],
+                "suggested_followups": followups[:3],
+                "latency_ms": latency_ms
+            }
+
+    return _generate_fallback_middleman_chat(last_user_msg, mun, has_cus, latency_ms)
+

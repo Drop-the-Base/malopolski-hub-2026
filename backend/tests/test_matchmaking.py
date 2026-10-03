@@ -23,3 +23,10 @@ async def test_matchmaking_endpoint():
         assert "innovation_id" in first_match
         assert "why_matched" in first_match
         assert first_match["match_score"] > 0.5
+        # Weryfikacja syntezy Ceneo
+        assert "ceneo_intro" in data
+        assert len(data["ceneo_intro"]) > 10
+        assert "ceneo_bundle_rationale" in data
+        assert "action_steps" in data
+        assert len(data["action_steps"]) >= 2
+

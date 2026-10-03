@@ -61,9 +61,11 @@ def evaluate_canvas(canvas: CanvasSubmission) -> CanvasAuditResponse:
         visual_concept_prompt=visual_concept_prompt
     )
 
+from datetime import datetime
+
 def generate_grant_application(req: GrantApplicationRequest) -> GrantApplicationResponse:
     """Generuje profesjonalny wniosek grantowy na nabór ROPS Kraków."""
-    app_id = f"grant-{uuid.uuid4().hex[:8]}"
+    app_id = f"ROPS-IS-2026/{uuid.uuid4().hex[:6].upper()}"
     budget_total = req.requested_budget_pln
 
     # Podział budżetu wg standardów grantów na innowacje ROPS
@@ -72,25 +74,64 @@ def generate_grant_application(req: GrantApplicationRequest) -> GrantApplication
     b_testing = int(budget_total * 0.15)
     b_admin = int(budget_total * 0.10)
 
+    canvas = req.canvas_data or {}
+    prob_diag = canvas.get("problem") or req.summary
+    value_prop = canvas.get("value_proposition") or "Oddolne, elastyczne wsparcie środowiskowe"
+    test_plan = canvas.get("testing_plan") or "Realizacja w 3 etapach: dopracowanie prototypu, testy w społeczności lokalnej, ewaluacja SUS"
+    barrier = canvas.get("barriers") or "Trudności rekrutacyjne i bariery komunikacyjne"
+
+    diagnosis_text = (
+        f"Zdiagnozowana potrzeba: {prob_diag}. "
+        f"Projekt odpowiada na brak dostępnych alternatyw publicznych w powiecie {req.powiat or 'małopolskim'}. "
+        f"Wartość dodana innowacji: {value_prop}."
+    )
+
+    methodology_text = (
+        f"Metodyka wdrażania i prototypowania: {test_plan}. "
+        f"Współpraca lokalna oparta na zasobach: {canvas.get('resources', 'infrastruktura sołecka i kadry CUS/OPS')}. "
+        f"Partnerzy wdrożeniowi: {canvas.get('partners', 'OPS, Koło Gospodyń Wiejskich, OSP')}."
+    )
+
+    indicators = [
+        f"Opracowanie i przetestowanie 1 gotowego prototypu innowacji społecznej: '{req.idea_title}'",
+        f"Objęcie bezpośrednimi testami minimum 25 przedstawicieli grupy docelowej ({req.target_group})",
+        f"Uzyskanie satysfakcji użytkowników w skali SUS powyżej 80 punktów (standard ROPS Kraków)",
+        f"Przygotowanie podręcznika skalowania dla innych gmin powiatu {req.powiat or 'małopolskiego'}"
+    ]
+
+    risks = [
+        {"risk": f"Bariery wdrożeniowe: {barrier[:80]}", "action": "Bezpośrednia współpraca z sołtysem, parafią i lokalnym CUS"},
+        {"risk": "Ryzyko rotacji testerów lub brak zaufania seniorów", "action": "Wdrożenie asystentów sąsiedzkich oraz uproszczonych materiałów ETR"},
+        {"risk": "Ryzyko przekroczenia harmonogramu prototypowania", "action": "Bieżący monitoring postępów przez opiekuna merytorycznego z ramienia ROPS"}
+    ]
+
+    declarations = [
+        "Oświadczam, że zapoznałem/-am się z Regulaminem Naboru Innowacji Społecznych ROPS Kraków 2026.",
+        "Potwierdzam, że wnioskowane wsparcie nie stanowi podwójnego finansowania tych samych wydatków.",
+        "Zobowiązuję się do udostępnienia wypracowanych materiałów i podręcznika innowacji na licencji otwartej (Creative Commons).",
+        "Wszystkie podane we wniosku informacje są zgodne ze stanem faktycznym i prawnym."
+    ]
+
     return GrantApplicationResponse(
         application_id=app_id,
         call_title=req.call_title,
-        executive_summary=f"Projekt '{req.idea_title}' stanowi odpowiedź na zidentyfikowane potrzeby grupy: {req.target_group}. Celem jest opracowanie, pilotaż i ewaluacja innowacyjnego mikrorozwiązania społecznego.",
-        problem_diagnosis=f"Wnioskowana innowacja adresuje barierę: {req.summary}. Badania i dane ROPS Kraków potwierdzają wysokie zapotrzebowanie na oddolne formy wsparcia w tym obszarze.",
-        detailed_methodology="Realizacja w 3 etapach: 1. Dopracowanie Canwy Innowacji (miesiące 1-2), 2. Budowa i warsztaty prototypu (miesiące 3-5), 3. Testy w środowisku rzeczywistym z ankietami SUS i ewaluacją (miesiące 6-8).",
+        submission_date=datetime.utcnow().strftime("%d.%m.%Y"),
+        applicant_name=req.author_name or "Obywatel / Lider Społeczny Małopolski",
+        powiat=req.powiat or "Kraków",
+        gmina=req.gmina or "Gmina zgłaszająca",
+        target_group=req.target_group,
+        idea_title=req.idea_title,
+        executive_summary=f"Projekt '{req.idea_title}' stanowi oddolną odpowiedź na potrzeby: {req.target_group}. Celem jest opracowanie, 3-miesięczny pilotaż i ewaluacja innowacji społecznej o wysokim potencjale replikacji.",
+        problem_diagnosis=diagnosis_text,
+        detailed_methodology=methodology_text,
         budget_breakdown={
-            "Wynagrodzenia zespołu innowacyjnego i ekspertów (40%)": b_staff,
-            "Materiały, prototypowanie i adaptacja narzędzi (35%)": b_prototyping,
-            "Koszty testowania z użytkownikami końcowymi (15%)": b_testing,
-            "Koordynacja, promocja i zarządzanie projektem (10%)": b_admin
+            "Wynagrodzenia zespołu innowatorów i animatorów (40%)": b_staff,
+            "Materiały, wyposażenie prototypu i adaptacja (35%)": b_prototyping,
+            "Organizacja testów z użytkownikami i warsztaty (15%)": b_testing,
+            "Obsługa administracyjna, ewaluacja i promocja (10%)": b_admin
         },
-        monitoring_indicators=[
-            f"Opracowanie 1 kompletnego modelu innowacji społecznej",
-            f"Objęcie testami minimum 20 przedstawicieli grupy docelowej ({req.target_group})",
-            f"Osiągnięcie wskaźnika użyteczności SUS > 75 punktów w ewaluacji końcowej"
-        ],
-        risk_assessment=[
-            {"risk": "Trudności z rekrutacją grupy do testów", "action": "Współpraca z lokalnym OPS/CUS i liderami sołeckimi"},
-            {"risk": "Bariery cyfrowe beneficjentów", "action": "Zastosowanie piktogramów oraz wsparcie asystenta wolontariusza"}
-        ]
+        total_budget_pln=budget_total,
+        monitoring_indicators=indicators,
+        risk_assessment=risks,
+        declarations=declarations
     )

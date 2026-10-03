@@ -50,17 +50,29 @@ class GrantApplicationRequest(BaseModel):
     idea_title: str
     summary: str
     target_group: str
+    powiat: Optional[str] = "Kraków"
+    gmina: Optional[str] = None
+    author_name: Optional[str] = "Wnioskodawca Małopolski"
     requested_budget_pln: int = 50000
+    canvas_data: Optional[Dict[str, str]] = None
 
 class GrantApplicationResponse(BaseModel):
     application_id: str
     call_title: str
+    submission_date: str
+    applicant_name: str
+    powiat: str
+    gmina: Optional[str] = None
+    target_group: str
+    idea_title: str
     executive_summary: str
     problem_diagnosis: str
     detailed_methodology: str
     budget_breakdown: Dict[str, int]
+    total_budget_pln: int
     monitoring_indicators: List[str]
     risk_assessment: List[Dict[str, str]]
+    declarations: List[str]
 
 class CanvasAutofillRequest(BaseModel):
     prompt: str = Field(..., min_length=4, description="Krótki opis lub jedno zdanie o pomyśle")

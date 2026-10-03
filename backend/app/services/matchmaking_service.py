@@ -139,11 +139,22 @@ async def process_matchmaking(req: MatchmakingRequest, db: AsyncSession) -> Matc
     if req.powiat:
         trend_alert = f"W powiecie {req.powiat} odnotowano wzrost zapotrzebowania na innowacje z obszaru '{detected_topics[0]}' o 24% w skali kwartału."
 
+    # 5. Generowanie syntezy w stylu asystenta zakupowego Ceneo (diagnoza + uzasadnienie koszyka + 3 kroki)
+    matched_dicts = [
+        {"title": m.title, "category": m.category, "why_matched": m.why_matched}
+        for m in matches
+    ]
+    from app.services.groq_client import generate_ceneo_match_synthesis
+    ceneo_synthesis = await generate_ceneo_match_synthesis(clean_text, req.powiat, matched_dicts)
+
     return MatchmakingResponse(
         clean_query=clean_text,
         detected_topics=detected_topics,
         powiat=req.powiat,
         matches=matches,
         similar_cases_count=len(matches) * 4 + 3,
-        trend_alert=trend_alert
+        trend_alert=trend_alert,
+        ceneo_intro=ceneo_synthesis["ceneo_intro"],
+        ceneo_bundle_rationale=ceneo_synthesis["ceneo_bundle_rationale"],
+        action_steps=ceneo_synthesis["action_steps"]
     )

@@ -9,7 +9,10 @@ import {
   TestingCampaignItem,
   CommunicationThreadItem,
   MentorItem,
-  TrendRadarData
+  TrendRadarData,
+  GrantApplication,
+  ProblemReportItem,
+  MunicipalReportSummary
 } from '../types';
 
 const API_BASE = '/api/v1';
@@ -97,9 +100,13 @@ export const api = {
     idea_title: string;
     summary: string;
     target_group: string;
+    powiat?: string;
+    gmina?: string;
+    author_name?: string;
     requested_budget_pln: number;
+    canvas_data?: Partial<CanvasData>;
   }) => {
-    const res = await client.post('/grant-applications/generate', data);
+    const res = await client.post<GrantApplication>('/grant-applications/generate', data);
     return res.data;
   },
 
@@ -115,6 +122,24 @@ export const api = {
   }) => {
     const res = await client.post<{ blueprint: ServiceBlueprint; generated_at: string }>('/middleman/adapt', params);
     return res.data.blueprint;
+  },
+
+  chatWithMiddlemanConsultant: async (params: {
+    messages: Array<{ role: string; content: string }>;
+    innovation_id: string;
+    municipality_name: string;
+    powiat: string;
+    population: number;
+    senior_percentage: number;
+    has_cus: boolean;
+    annual_budget_pln: number;
+    blueprint_summary?: string;
+  }) => {
+    const res = await client.post<{ reply: string; suggested_followups: string[]; latency_ms: number }>(
+      '/middleman/chat',
+      params
+    );
+    return res.data;
   },
 
   simplifyTextETR: async (source_text: string) => {
@@ -191,6 +216,59 @@ export const api = {
   // Moduł VI: Panel Admina
   getTrendRadar: async () => {
     const res = await client.get<TrendRadarData>('/admin/trends');
+    return res.data;
+  },
+
+  // Moduł VIII: Rejestr Problemów i Panel Urzędnika JST
+  getProblems: async (params?: {
+    powiat?: string;
+    category?: string;
+    urgency?: string;
+    status?: string;
+    reporter_type?: string;
+  }) => {
+    const res = await client.get<ProblemReportItem[]>('/problems', { params });
+    return res.data;
+  },
+
+  createProblem: async (data: {
+    title: string;
+    raw_text: string;
+    category?: string;
+    powiat: string;
+    gmina?: string;
+    reporter_type?: string;
+    reporter_name?: string;
+    reporter_role?: string;
+    urgency?: string;
+    affected_count?: number;
+  }) => {
+    const res = await client.post<ProblemReportItem>('/problems', data);
+    return res.data;
+  },
+
+  updateProblem: async (id: string, data: {
+    status?: string;
+    urgency?: string;
+    assigned_innovation_id?: string;
+    assigned_notes?: string;
+  }) => {
+    const res = await client.patch<ProblemReportItem>(`/problems/${id}`, data);
+    return res.data;
+  },
+
+  assignInnovationToProblem: async (problemId: string, innovationId: string, notes?: string) => {
+    const res = await client.post<ProblemReportItem>(`/problems/${problemId}/assign-innovation`, {
+      innovation_id: innovationId,
+      notes
+    });
+    return res.data;
+  },
+
+  getMunicipalSummary: async (powiat: string) => {
+    const res = await client.get<MunicipalReportSummary>('/problems/summary/regional', {
+      params: { powiat }
+    });
     return res.data;
   }
 };

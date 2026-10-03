@@ -12,9 +12,22 @@ import {
   Calendar,
   DollarSign,
   AlertTriangle,
-  Users
+  Users,
+  MessageSquare,
+  Send,
+  Bot,
+  User,
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
+
+interface ChatMsg {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  latencyMs?: number;
+}
 
 export const MiddlemanView: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -34,6 +47,77 @@ export const MiddlemanView: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<ServiceBlueprint | null>(null);
+
+  // Stan Czatu Doradcy Samorządowego AI
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
+    {
+      id: 'init-1',
+      role: 'assistant',
+      content: 'Dzień dobry! Jestem Wirtualnym Doradcą Samorządowym ROPS Kraków ds. Wdrożeń. Pomagam władzom gmin i dyrektorom CUS/OPS w praktycznej adaptacji innowacji: w kwestiach prawnych, uchwale rady gminy, montażu finansowym FEM 2021-2027 oraz kadrach. O co chciałbyś zapytać?'
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>([
+    'Jak przekonać Radnych Gminy do uchwały?',
+    'Z jakich środków (FEM / PFRON) sfinansować wkład własny?',
+    'Jakie są wymogi formalne dla kadry asystenckiej?',
+    'Czy możemy zlecić usługę do OSP lub KGW?'
+  ]);
+
+  const handleSendChatMessage = async (customText?: string) => {
+    const textToSend = customText || chatInput;
+    if (!textToSend.trim() || chatLoading) return;
+
+    const userMsg: ChatMsg = {
+      id: 'usr-' + Date.now(),
+      role: 'user',
+      content: textToSend
+    };
+
+    const newHistory = [...chatMessages, userMsg];
+    setChatMessages(newHistory);
+    if (!customText) setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const resp = await api.chatWithMiddlemanConsultant({
+        messages: newHistory.map(m => ({ role: m.role, content: m.content })),
+        innovation_id: form.innovation_id,
+        municipality_name: form.municipality_name,
+        powiat: form.powiat,
+        population: form.population,
+        senior_percentage: form.senior_percentage,
+        has_cus: form.has_cus,
+        annual_budget_pln: form.annual_budget_pln,
+        blueprint_summary: blueprint?.summary
+      });
+
+      const assistantMsg: ChatMsg = {
+        id: 'ast-' + Date.now(),
+        role: 'assistant',
+        content: resp.reply,
+        latencyMs: resp.latency_ms
+      };
+
+      setChatMessages(prev => [...prev, assistantMsg]);
+      if (resp.suggested_followups && resp.suggested_followups.length > 0) {
+        setSuggestedFollowups(resp.suggested_followups);
+      }
+    } catch (err) {
+      console.error(err);
+      setChatMessages(prev => [
+        ...prev,
+        {
+          id: 'err-' + Date.now(),
+          role: 'assistant',
+          content: 'Przepraszam, wystąpił chwilowy błąd połączenia z serwerem doradcy. Proszę spróbować ponownie.'
+        }
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -317,6 +401,124 @@ export const MiddlemanView: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Sekcja: Wirtualny Doradca Samorządowy ROPS Kraków ds. Wdrożeń (Czat AI) */}
+      <section className="bg-white rounded-2xl border border-indigo-200 shadow-md p-6 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-slate-900">
+                  Wirtualny Doradca Samorządowy ROPS Kraków ds. Wdrożeń
+                </h3>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-300">
+                  Aktywny (Groq AI)
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Zapytaj o procedury samorządowe, argumentację dla Radnych Gminy, montaż finansowy FEM 2021-2027 oraz kadrę dla {form.municipality_name}.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sugerowane Pytania (Szybkie Prompty dla Wójta / Urzędnika / Jury) */}
+        {suggestedFollowups.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+              <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+              Szybkie pytania doradcze (kliknij, aby zapytać):
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {suggestedFollowups.map((q, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSendChatMessage(q)}
+                  disabled={chatLoading}
+                  className="text-xs bg-indigo-50/80 hover:bg-indigo-100 text-indigo-900 font-medium px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors disabled:opacity-50 text-left"
+                >
+                  💬 {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Okno Rozmowy */}
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-96 overflow-y-auto space-y-3">
+          {chatMessages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex items-start gap-2.5 ${
+                msg.role === 'user' ? 'justify-end' : 'justify-start'
+              }`}
+            >
+              {msg.role === 'assistant' && (
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+                  <Bot className="w-4 h-4" />
+                </div>
+              )}
+
+              <div
+                className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-indigo-600 text-white font-medium rounded-tr-none'
+                    : 'bg-white text-slate-800 border border-slate-200 shadow-xs rounded-tl-none space-y-1'
+                }`}
+              >
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+                {msg.latencyMs && (
+                  <span className="block text-[10px] text-slate-400 text-right font-mono">
+                    odpowiedź w {msg.latencyMs}ms
+                  </span>
+                )}
+              </div>
+
+              {msg.role === 'user' && (
+                <div className="w-7 h-7 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+                  <User className="w-4 h-4" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {chatLoading && (
+            <div className="flex items-center gap-2 text-xs text-indigo-700 bg-indigo-50 p-3 rounded-xl border border-indigo-100 animate-pulse">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <span>Doradca ROPS analizuje zapytanie w kontekście {form.municipality_name}...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Pole Wprowadzania Wiadomości */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendChatMessage();
+          }}
+          className="flex items-center gap-2 pt-1"
+        >
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder={`Zadaj pytanie doradcy (np. Jak sfinansować wdrożenie w ${form.municipality_name}?)...`}
+            className="flex-1 text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+          />
+          <button
+            type="submit"
+            disabled={!chatInput.trim() || chatLoading}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all disabled:opacity-50 shrink-0"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Wyślij</span>
+          </button>
+        </form>
+      </section>
     </div>
   );
 };

@@ -17,7 +17,9 @@ import {
   MicOff,
   Volume2,
   Zap,
-  RefreshCw
+  RefreshCw,
+  PackageCheck,
+  MessageSquare
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 
@@ -395,6 +397,59 @@ export const MatchmakingView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Styl Ceneo: Inteligentny Koszyk Rozwiązań z empatyczną diagnozą */}
+          {result.ceneo_intro && (
+            <div className="bg-gradient-to-br from-amber-50 via-orange-50/50 to-white rounded-2xl border-2 border-amber-300/80 shadow-md p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                  🤖
+                </div>
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 bg-amber-200/80 text-amber-900 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Doradca Społeczny AI • Rekomendacja w Stylu Ceneo</span>
+                  </div>
+                  <p className="text-sm sm:text-base font-semibold text-slate-900 leading-relaxed">
+                    {result.ceneo_intro}
+                  </p>
+                </div>
+              </div>
+
+              {/* Uzasadnienie Komplementarnego Koszyka (Bundle Rationale) */}
+              <div className="bg-white/95 rounded-xl p-4 border border-amber-200 text-xs sm:text-sm text-slate-800 space-y-1.5 shadow-xs">
+                <div className="font-bold text-amber-900 flex items-center gap-1.5">
+                  <PackageCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Dlaczego ten zestaw (bundle) innowacji tworzy spójne rozwiązanie:</span>
+                </div>
+                <p className="leading-relaxed text-slate-700">
+                  {result.ceneo_bundle_rationale}
+                </p>
+              </div>
+
+              {/* 3 Kroki Działania */}
+              {result.action_steps && result.action_steps.length > 0 && (
+                <div className="pt-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
+                    📋 Twój natychmiastowy plan działania (3 proste kroki):
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    {result.action_steps.map((step, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white/90 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 flex items-start gap-2 shadow-xs"
+                      >
+                        <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-900 font-black text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="leading-snug font-medium">{step.replace(/^Krok \d+:\s*/, '')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Karty Dopasowanych Innowacji */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

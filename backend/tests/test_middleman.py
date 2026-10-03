@@ -31,3 +31,23 @@ async def test_middleman_adaptation_and_etr():
         etr_data = etr_res.json()
         assert "pomoc chorym w ich własnym domu" in etr_data["simple_text"]
         assert len(etr_data["key_points"]) > 0
+
+        # 3. Test Czatu Doradcy Samorządowego AI
+        chat_payload = {
+            "messages": [{"role": "user", "content": "Jak przekonać radnych gminy do uchwały?"}],
+            "innovation_id": "rops-inn-001",
+            "municipality_name": "Gmina Słaboszów",
+            "powiat": "miechowski",
+            "population": 3800,
+            "senior_percentage": 28.5,
+            "has_cus": False,
+            "annual_budget_pln": 80000
+        }
+        chat_res = await ac.post("/api/v1/middleman/chat", json=chat_payload)
+        assert chat_res.status_code == 200
+        chat_data = chat_res.json()
+        assert "reply" in chat_data
+        assert len(chat_data["reply"]) > 20
+        assert "suggested_followups" in chat_data
+        assert len(chat_data["suggested_followups"]) > 0
+
