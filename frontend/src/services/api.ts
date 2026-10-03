@@ -33,6 +33,19 @@ export const api = {
     return res.data;
   },
 
+  transcribeVoice: async (audioBlob: Blob) => {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.webm');
+    const res = await client.post<{ text: string; latency_ms: number; model: string; is_fallback: boolean }>(
+      '/voice/transcribe',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    );
+    return res.data;
+  },
+
   // Moduł II: Zasobnik Wiedzy
   getInnovations: async (category?: string, search?: string) => {
     const res = await client.get<InnovationItem[]>('/knowledge/innovations', {

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Compass,
-  FileSpreadsheet,
   Building2,
   Accessibility,
   Activity,
@@ -11,7 +10,9 @@ import {
   ChevronUp,
   Sparkles,
   Zap,
-  Info
+  Play,
+  Pause,
+  Square
 } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 import { RoadmapModal } from './RoadmapModal';
@@ -19,9 +20,15 @@ import { RoadmapModal } from './RoadmapModal';
 export const JuryFastTrackBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { etrMode, toggleEtrMode, contrastMode, toggleHighContrast } = useAccessibility();
+  const { etrMode, toggleEtrMode } = useAccessibility();
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
+  // Stan Auto-Touru
+  const [isAutoTourRunning, setIsAutoTourRunning] = useState(false);
+  const [autoTourStep, setAutoTourStep] = useState(0);
+  const [secondsLeftInStep, setSecondsLeftInStep] = useState(12);
+  const tourIntervalRef = useRef<any>(null);
 
   const steps = [
     {
@@ -72,12 +79,71 @@ export const JuryFastTrackBar: React.FC = () => {
     }
   ];
 
+  // Obsługa Auto-Touru
+  const executeStep = (index: number) => {
+    const s = steps[index];
+    if (s.isAction && s.action) {
+      s.action();
+    } else if (s.path) {
+      navigate(s.path);
+    }
+  };
+
+  const startAutoTour = () => {
+    setIsAutoTourRunning(true);
+    setAutoTourStep(0);
+    setSecondsLeftInStep(12);
+    executeStep(0);
+  };
+
+  const pauseAutoTour = () => {
+    setIsAutoTourRunning(false);
+    clearInterval(tourIntervalRef.current);
+  };
+
+  const stopAutoTour = () => {
+    setIsAutoTourRunning(false);
+    setAutoTourStep(0);
+    setSecondsLeftInStep(12);
+    clearInterval(tourIntervalRef.current);
+  };
+
+  useEffect(() => {
+    if (isAutoTourRunning) {
+      tourIntervalRef.current = setInterval(() => {
+        setSecondsLeftInStep((prev) => {
+          if (prev <= 1) {
+            // Przejdź do następnego kroku
+            setAutoTourStep((curStep) => {
+              const nextStep = curStep + 1;
+              if (nextStep < steps.length) {
+                executeStep(nextStep);
+                return nextStep;
+              } else {
+                // Koniec touru -> pokaż modal z Roadmapą
+                setIsAutoTourRunning(false);
+                setIsRoadmapOpen(true);
+                return 0;
+              }
+            });
+            return 12;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      clearInterval(tourIntervalRef.current);
+    }
+
+    return () => clearInterval(tourIntervalRef.current);
+  }, [isAutoTourRunning]);
+
   return (
     <>
       <aside aria-label="Szybka prezentacja dla Jury" className="bg-slate-950 text-white border-b-2 border-amber-500 shadow-xl transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          {/* Belka tytułowa z przełącznikiem zwijania */}
-          <div className="flex items-center justify-between">
+          {/* Belka tytułowa z przełącznikiem zwijania i Auto-Tourem */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider shadow">
                 <Zap className="w-3 h-3 fill-slate-950" />
@@ -89,6 +155,41 @@ export const JuryFastTrackBar: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Przycisk Auto-Touru */}
+              {!isAutoTourRunning ? (
+                <button
+                  type="button"
+                  onClick={startAutoTour}
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-3 py-1 rounded-lg text-xs shadow transition-all flex items-center gap-1.5"
+                  title="Uruchom automatyczny 60-sekundowy pokaz hands-free"
+                >
+                  <Play className="w-3 h-3 fill-slate-950" />
+                  <span>Auto-Tour (60s)</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1 bg-amber-500/20 border border-amber-400 px-2 py-0.5 rounded-lg text-xs">
+                  <span className="text-amber-300 font-bold text-[11px] mr-1">
+                    Krok {autoTourStep + 1}/5 ({secondsLeftInStep}s)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={pauseAutoTour}
+                    className="p-1 hover:text-amber-300 text-white"
+                    title="Pauza"
+                  >
+                    <Pause className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={stopAutoTour}
+                    className="p-1 hover:text-red-400 text-white"
+                    title="Zatrzymaj"
+                  >
+                    <Square className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => setIsRoadmapOpen(true)}
@@ -113,26 +214,34 @@ export const JuryFastTrackBar: React.FC = () => {
           {/* Siatka 5 kroków demonstracyjnych */}
           {!collapsed && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2 pt-2 border-t border-slate-800">
-              {steps.map((s) => {
+              {steps.map((s, idx) => {
                 const Icon = s.icon;
+                const isAutoActive = isAutoTourRunning && autoTourStep === idx;
                 const isActive = s.path ? location.pathname === s.path.split('?')[0] : false;
 
                 return (
                   <button
                     key={s.id}
                     onClick={() => {
-                      if (s.isAction && s.action) {
-                        s.action();
-                      } else if (s.path) {
-                        navigate(s.path);
-                      }
+                      if (isAutoTourRunning) pauseAutoTour();
+                      executeStep(idx);
                     }}
-                    className={`flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all group ${
-                      isActive
-                        ? 'bg-slate-800 border-amber-400 shadow-inner'
+                    className={`flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all group relative overflow-hidden ${
+                      isAutoActive
+                        ? 'bg-amber-950/80 border-amber-400 ring-2 ring-amber-400/50 shadow-lg'
+                        : isActive
+                        ? 'bg-slate-800 border-amber-400/70 shadow-inner'
                         : 'bg-slate-900/80 border-slate-800 hover:bg-slate-800/90'
                     } ${s.color}`}
                   >
+                    {/* Wskaźnik postępu w kroku Auto-Tour */}
+                    {isAutoActive && (
+                      <div
+                        className="absolute bottom-0 left-0 h-1 bg-amber-400 transition-all duration-1000"
+                        style={{ width: `${((12 - secondsLeftInStep) / 12) * 100}%` }}
+                      />
+                    )}
+
                     <span className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 group-hover:border-amber-400 group-hover:text-amber-300 flex items-center justify-center text-xs font-black text-amber-400 transition-colors">
                       {s.num}
                     </span>

@@ -206,3 +206,45 @@ async def generate_groq_match_rationale(problem_text: str, innovation_title: str
         temperature=0.3,
         max_tokens=150
     )
+
+async def transcribe_audio(file_bytes: bytes, filename: str = "audio.wav", language: str = "pl") -> Optional[str]:
+    """
+    Transkrybuje nagranie mowy na tekst za pomocą Groq Whisper (whisper-large-v3-turbo).
+    Funkcja wspiera seniorów i osoby mające trudności z pisaniem na klawiaturze.
+    """
+    api_key = settings.GROQ_API_KEY
+    if not api_key:
+        logger.warning("GROQ_API_KEY brak – transkrypcja niedostępna.")
+        return None
+
+    url = "https://api.groq.com/openai/v1/audio/transcriptions"
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    # Określ content type na podstawie rozszerzenia
+    content_type = "audio/wav"
+    if filename.endswith(".webm"):
+        content_type = "audio/webm"
+    elif filename.endswith(".mp3"):
+        content_type = "audio/mpeg"
+    elif filename.endswith(".ogg"):
+        content_type = "audio/ogg"
+
+    files = {"file": (filename, file_bytes, content_type)}
+    data = {
+        "model": "whisper-large-v3-turbo",
+        "language": language,
+        "temperature": "0.0"
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(url, headers=headers, files=files, data=data)
+            if resp.status_code == 200:
+                result = resp.json()
+                return result.get("text", "").strip()
+            else:
+                logger.error(f"Błąd Whisper API {resp.status_code}: {resp.text}")
+                return None
+    except Exception as e:
+        logger.error(f"Wyjątek podczas transkrypcji Whisper: {e}")
+        return None

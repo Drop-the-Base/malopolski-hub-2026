@@ -31,13 +31,48 @@ def test_endpoint(name: str, method: str, path: str, payload: dict = None):
         print(f"[ERROR] {name} ({method} {path}) -> {str(e)}")
         return False, None
 
+def test_voice_endpoint():
+    import io, wave, struct
+    buf = io.BytesIO()
+    with wave.open(buf, 'wb') as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(16000)
+        data = struct.pack('<' + ('h'*16000), *([0]*16000))
+        wav.writeframes(data)
+    buf.seek(0)
+    wav_bytes = buf.read()
+
+    boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="senior_test.wav"\r\n'
+        f"Content-Type: audio/wav\r\n\r\n"
+    ).encode("utf-8") + wav_bytes + f"\r\n--{boundary}--\r\n".encode("utf-8")
+
+    req = urllib.request.Request(
+        f"{BASE_URL}/voice/transcribe",
+        data=body,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            print(f"[PASS] Asystent Głosowy Seniora: Groq Whisper (POST /voice/transcribe) -> HTTP {resp.getcode()}")
+            print(f"       -> Rozpoznana treść: \"{data.get('text')[:60]}...\" ({data.get('latency_ms')}ms)")
+            return True
+    except Exception as e:
+        print(f"[FAIL] Asystent Głosowy: {e}")
+        return False
+
 def run_smoke_tests():
     print("=" * 60)
     print("SMOKE TEST: Małopolski Hub Innowacji Społecznych (ROPS Kraków)")
     print("=" * 60)
 
     success_count = 0
-    total_tests = 8
+    total_tests = 9
 
     # 1. Health
     ok, _ = test_endpoint("System Healthcheck", "GET", "/health")
@@ -97,6 +132,10 @@ def run_smoke_tests():
     # 8. Moduł VI: Panel Admina & Radar Trendów
     ok, _ = test_endpoint("Moduł VI: Radar Trendów ROPS", "GET", "/admin/trends")
     if ok: success_count += 1
+
+    # 9. Asystent Głosowy Seniora (Groq Whisper)
+    ok_voice = test_voice_endpoint()
+    if ok_voice: success_count += 1
 
     print("=" * 60)
     print(f"Wynik Testu Dymnego: {success_count} / {total_tests} testów zaliczonych pomyślnie.")

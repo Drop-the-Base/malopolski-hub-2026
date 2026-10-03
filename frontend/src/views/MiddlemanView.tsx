@@ -63,6 +63,27 @@ export const MiddlemanView: React.FC = () => {
     { id: 'rops-inn-006', name: 'Spółdzielnia Cyfrowa Senior+' }
   ];
 
+  const municipalPresets = [
+    { name: 'Gmina Słaboszów', powiat: 'miechowski', pop: 3800, sen: 28.5, inn: 'rops-inn-001', cus: false },
+    { name: 'Gmina Miechów', powiat: 'miechowski', pop: 11800, sen: 24.0, inn: 'rops-inn-002', cus: true },
+    { name: 'Gmina Sękowa', powiat: 'gorlicki', pop: 4900, sen: 23.0, inn: 'rops-inn-001', cus: false },
+    { name: 'Gmina Krościenko n/D', powiat: 'nowotarski', pop: 6800, sen: 21.5, inn: 'rops-inn-004', cus: true },
+  ];
+
+  const handleSelectPreset = (p: typeof municipalPresets[0]) => {
+    const updated = {
+      innovation_id: p.inn,
+      municipality_name: p.name,
+      powiat: p.powiat,
+      population: p.pop,
+      senior_percentage: p.sen,
+      annual_budget_pln: 85000,
+      has_cus: p.cus
+    };
+    setForm(updated);
+    api.adaptService(updated).then(setBlueprint).catch(console.error);
+  };
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Nagłówek */}
@@ -79,10 +100,30 @@ export const MiddlemanView: React.FC = () => {
         </p>
       </div>
 
+      {/* Szybkie profile gmin dla Jury */}
+      <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+        <div className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+          <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+          <span>Szybkie profile małopolskich gmin (1 kliknięcie adaptuje usługę):</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {municipalPresets.map((p, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleSelectPreset(p)}
+              className="text-xs bg-white hover:bg-indigo-50 hover:border-indigo-400 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-all"
+            >
+              🏛️ {p.name} ({p.pop.toLocaleString('pl-PL')} mieszk., {p.sen}% seniorów)
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Formularz Parametrów Gminy */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <h3 className="text-base font-bold text-slate-900 mb-2">1. Wybierz innowację i spersonalizuj dane gminy:</h3>
+          <h3 className="text-base font-bold text-slate-900 mb-2">Parametry wdrożenia i specyfika samorządu:</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

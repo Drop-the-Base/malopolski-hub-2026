@@ -16,6 +16,7 @@ from app.api.v1.middleman import router as middleman_router
 from app.api.v1.testing import router as testing_router
 from app.api.v1.communication import router as communication_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.voice import router as voice_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mhis_app")
@@ -71,6 +72,7 @@ app.include_router(middleman_router, prefix="/api/v1")
 app.include_router(testing_router, prefix="/api/v1")
 app.include_router(communication_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
+app.include_router(voice_router, prefix="/api/v1")
 
 @app.get("/", tags=["Root"])
 async def root():

@@ -274,14 +274,33 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           </div>
 
           {/* Koncept wizualizatora prototypu */}
-          <div className="bg-indigo-900/60 p-4 rounded-xl border border-indigo-700/60">
-            <h5 className="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              Koncepcja Wizualna Prototypu (Prompt dla Wizualizatora):
-            </h5>
+          <div className="bg-indigo-900/60 p-4 rounded-xl border border-indigo-700/60 space-y-3">
+            <div className="flex items-center justify-between">
+              <h5 className="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                Koncepcja Wizualna Prototypu (Prompt dla Generatora Grafik / Wizualizatora):
+              </h5>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(audit.visual_concept_prompt);
+                  alert('Skopiowano prompt wizualizatora prototypu do schowka!');
+                }}
+                className="bg-indigo-800 hover:bg-indigo-700 text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-indigo-600 transition-colors flex items-center gap-1"
+                title="Kopiuj prompt do schowka"
+              >
+                <span>Kopiuj Prompt AI</span>
+              </button>
+            </div>
             <p className="text-xs text-slate-200 italic leading-relaxed">
               "{audit.visual_concept_prompt}"
             </p>
+
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-indigo-800 text-[11px]">
+              <span className="bg-indigo-950 px-2 py-0.5 rounded text-indigo-300">Poziom dojrzałości: TRL 4 (Prototyp w skali laboratoryjnej/mikrospołecznej)</span>
+              <span className="bg-indigo-950 px-2 py-0.5 rounded text-emerald-300">Zgodność: Inkubator Włączenia Społecznego ROPS Kraków</span>
+            </div>
           </div>
         </div>
       )}
