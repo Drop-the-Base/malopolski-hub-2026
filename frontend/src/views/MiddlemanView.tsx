@@ -361,10 +361,10 @@ export const MiddlemanView: React.FC = () => {
             </div>
             <button
               onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow self-start"
+              className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow self-start print:hidden"
             >
               <Printer className="w-3.5 h-3.5 text-amber-400" />
-              <span>Drukuj / Pobierz PDF</span>
+              <span>Drukuj / Zapisz PDF</span>
             </button>
           </div>
 

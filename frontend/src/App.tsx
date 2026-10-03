@@ -52,16 +52,22 @@ export const App: React.FC = () => {
       <RouteEffects />
       <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 transition-colors">
         {/* Pasek dostępności WCAG 2.1 AA & ETR */}
-        <AccessibilityBar />
+        <div className="print:hidden">
+          <AccessibilityBar />
+        </div>
 
         {/* Nawigacja główna */}
-        <Navbar />
+        <div className="print:hidden">
+          <Navbar />
+        </div>
 
         {/* Szybka ścieżka demonstracyjna dla Jury (domyślnie zwinięta) */}
-        <JuryFastTrackBar />
+        <div className="print:hidden">
+          <JuryFastTrackBar />
+        </div>
 
         {/* Zawartość główna z kotwicą skip-link */}
-        <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 focus:outline-none">
+        <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 focus:outline-none print:p-0 print:m-0 print:max-w-none">
           <Routes>
             <Route path="/" element={<HomeView />} />
             <Route path="/matchmaking" element={<MatchmakingView />} />
@@ -81,7 +87,9 @@ export const App: React.FC = () => {
         </main>
 
         {/* Stopka */}
-        <Footer />
+        <div className="print:hidden">
+          <Footer />
+        </div>
       </div>
     </Router>
   );

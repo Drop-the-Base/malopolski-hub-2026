@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, apiErrorMessage } from '../services/api';
 import { CanvasData, CanvasAudit, GrantApplication, GrantCall, FiszkaPublicStatus } from '../types';
@@ -8,6 +8,8 @@ import {
   ArrowRight,
   ArrowLeft,
   Printer,
+  Download,
+  Loader2,
   CheckCircle2,
   AlertCircle,
   Zap,
@@ -18,6 +20,8 @@ import {
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { AUTHOR_TYPES, IMPLEMENTATION_STAGES, POWIATY, powiatLabel, formatPLN } from '../constants/domain';
+import { OfficialGrantApplicationDocument } from '../components/documents/OfficialGrantApplicationDocument';
+import { downloadPdfFromElement } from '../utils/pdfExport';
 
 const EMPTY_CANVAS: CanvasData = {
   problem: '',
@@ -110,6 +114,9 @@ export const IdeaCreatorView: React.FC = () => {
   const [grantApplication, setGrantApplication] = useState<GrantApplication | null>(null);
   const [grantLoading, setGrantLoading] = useState(false);
   const [grantError, setGrantError] = useState('');
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [pdfSuccessMessage, setPdfSuccessMessage] = useState('');
+  const documentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api
@@ -223,6 +230,27 @@ export const IdeaCreatorView: React.FC = () => {
       setGrantError(apiErrorMessage(err, 'Nie udało się przygotować szkicu wniosku.'));
     } finally {
       setGrantLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!documentRef.current || !grantApplication) return;
+    setPdfExporting(true);
+    setPdfSuccessMessage('');
+    try {
+      const sanitizedId = (grantApplication.application_id || '2026').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `Wniosek_Grantowy_ROPS_${sanitizedId}.pdf`;
+      await downloadPdfFromElement(documentRef.current, {
+        filename,
+        title: `Wniosek Grantowy ROPS - ${grantApplication.idea_title}`
+      });
+      setPdfSuccessMessage(`Pobrano oficjalny plik: ${filename}`);
+      setTimeout(() => setPdfSuccessMessage(''), 6000);
+    } catch (err) {
+      console.error('Błąd generowania pliku PDF:', err);
+      alert('Nie udało się bezpośrednio wygenerować pliku PDF. Możesz skorzystać z opcji "Drukuj wniosek (A4)", aby zapisać dokument jako PDF za pomocą systemowego dialogu.');
+    } finally {
+      setPdfExporting(false);
     }
   };
 
@@ -558,15 +586,44 @@ export const IdeaCreatorView: React.FC = () => {
               <button type="button" onClick={() => setCurrentStep(2)} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
                 ← Edytuj Canwę
               </button>
-              <button type="button" onClick={() => window.print()} disabled={!grantApplication}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-5 py-2 rounded-lg text-sm flex items-center gap-2 disabled:opacity-60">
-                <Printer className="w-4 h-4" aria-hidden="true" /> Drukuj / zapisz PDF
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={!grantApplication || pdfExporting}
+                aria-busy={pdfExporting}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-5 py-2 rounded-lg text-sm flex items-center gap-2 shadow-md hover:shadow-emerald-900/30 transition-all disabled:opacity-60"
+              >
+                {pdfExporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                    <span>Generowanie pliku PDF…</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" aria-hidden="true" />
+                    <span>Pobierz oficjalny PDF (.pdf)</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                disabled={!grantApplication}
+                className="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-600 font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow transition-all disabled:opacity-60"
+              >
+                <Printer className="w-4 h-4" aria-hidden="true" /> Drukuj wniosek (A4)
               </button>
             </div>
             {selectedCall && (
               <p className="text-xs text-slate-200">
                 Nabór otwarty od {selectedCall.opens_on} do {selectedCall.closes_on}. Kryteria: {selectedCall.criteria.join('; ')}.
               </p>
+            )}
+            {pdfSuccessMessage && (
+              <div role="status" className="bg-emerald-950/80 border border-emerald-500 text-emerald-200 text-xs py-2 px-3 rounded-lg flex items-center gap-2 font-medium print:hidden">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                <span>{pdfSuccessMessage}</span>
+              </div>
             )}
           </div>
 
@@ -582,94 +639,10 @@ export const IdeaCreatorView: React.FC = () => {
           )}
 
           {grantApplication && (
-            <article className="bg-white rounded-2xl border border-slate-300 shadow-xl p-8 sm:p-12 space-y-8 print:p-0 print:border-none print:shadow-none print:rounded-none max-w-4xl mx-auto">
-              <header className="border-b-2 border-slate-900 pb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div>
-                  <span className="text-xs font-black uppercase tracking-widest text-slate-600 block">Szkic wygenerowany w Małopolskim Hubie Innowacji Społecznych</span>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-950 mt-1">SZKIC WNIOSKU O GRANT</h2>
-                  <p className="text-sm text-slate-700 font-medium">{grantApplication.call_title}</p>
-                </div>
-                <dl className="sm:text-right bg-slate-50 p-3 rounded-xl border border-slate-200 print:bg-transparent print:border-none text-sm">
-                  <div><dt className="inline text-slate-600">Nr szkicu: </dt><dd className="inline font-mono font-bold text-slate-900">{grantApplication.application_id}</dd></div>
-                  <div><dt className="inline text-slate-600">Data: </dt><dd className="inline font-bold text-slate-900">{grantApplication.submission_date}</dd></div>
-                  <div><dt className="inline text-slate-600">Status: </dt><dd className="inline font-bold text-amber-800">szkic – do złożenia w systemie naboru</dd></div>
-                </dl>
-              </header>
-
-              <section>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded mb-3">A. Metryka</h3>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div><dt className="text-slate-600">Tytuł innowacji</dt><dd className="font-bold text-slate-900">{grantApplication.idea_title}</dd></div>
-                  <div><dt className="text-slate-600">Wnioskodawca</dt><dd className="font-bold text-slate-900">{grantApplication.applicant_name}</dd></div>
-                  <div><dt className="text-slate-600">Lokalizacja</dt><dd className="font-bold text-slate-900">{grantApplication.gmina ? `${grantApplication.gmina}, ` : ''}powiat {grantApplication.powiat}</dd></div>
-                  <div><dt className="text-slate-600">Grupa docelowa</dt><dd className="font-bold text-slate-900">{grantApplication.target_group}</dd></div>
-                </dl>
-              </section>
-
-              <section className="space-y-3 text-sm leading-relaxed text-slate-800">
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded">B. Streszczenie i diagnoza</h3>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200 print:bg-transparent">{grantApplication.executive_summary}</p>
-                <p className="bg-slate-50 p-3 rounded-lg border border-slate-200 print:bg-transparent">{grantApplication.problem_diagnosis}</p>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded mb-3">C. Plan pilotażu i partnerstwo</h3>
-                <p className="text-sm leading-relaxed text-slate-800 p-3 bg-slate-50 rounded-lg border border-slate-200 print:bg-transparent">{grantApplication.detailed_methodology}</p>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded mb-3">D. Kosztorys</h3>
-                <table className="w-full text-sm border border-slate-300">
-                  <caption className="sr-only">Podział budżetu grantu</caption>
-                  <thead className="bg-slate-100 text-slate-900">
-                    <tr>
-                      <th scope="col" className="p-2.5 text-left font-bold border-b border-slate-300">Kategoria kosztów</th>
-                      <th scope="col" className="p-2.5 text-right font-bold border-b border-slate-300 w-36">Kwota</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 text-slate-800">
-                    {Object.entries(grantApplication.budget_breakdown).map(([cat, amount]) => (
-                      <tr key={cat}><td className="p-2.5">{cat}</td><td className="p-2.5 text-right font-mono font-bold">{formatPLN(amount)}</td></tr>
-                    ))}
-                    <tr className="bg-amber-50 font-black text-slate-950">
-                      <td className="p-2.5">Razem</td><td className="p-2.5 text-right font-mono">{formatPLN(grantApplication.total_budget_pln)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded mb-3">E. Wskaźniki rezultatu</h3>
-                <ul className="space-y-2 text-sm text-slate-800">
-                  {grantApplication.monitoring_indicators.map((ind, idx) => (
-                    <li key={idx} className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" /><span>{ind}</span></li>
-                  ))}
-                </ul>
-              </section>
-
-              <section>
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded mb-3">F. Ryzyka</h3>
-                <ul className="space-y-2 text-sm">
-                  {grantApplication.risk_assessment.map((r, idx) => (
-                    <li key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 print:bg-transparent">
-                      <strong className="text-amber-950">Ryzyko: </strong>{r.risk}
-                      <div className="mt-1 text-slate-700"><strong className="text-emerald-900">Działanie: </strong>{r.action}</div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <section className="pt-4 border-t-2 border-slate-200 space-y-4">
-                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 bg-slate-100 p-2 rounded">G. Oświadczenia</h3>
-                <ol className="list-decimal pl-5 space-y-1.5 text-sm text-slate-700">
-                  {grantApplication.declarations.map((dec, idx) => <li key={idx}>{dec}</li>)}
-                </ol>
-                <div className="grid grid-cols-2 gap-8 pt-8 text-sm text-center">
-                  <div className="border-t border-slate-400 pt-2"><span className="text-slate-600 block">Miejscowość i data</span></div>
-                  <div className="border-t border-slate-400 pt-2"><span className="text-slate-600 block">Podpis wnioskodawcy</span></div>
-                </div>
-              </section>
-            </article>
+            <OfficialGrantApplicationDocument
+              application={grantApplication}
+              documentRef={documentRef}
+            />
           )}
         </div>
       )}

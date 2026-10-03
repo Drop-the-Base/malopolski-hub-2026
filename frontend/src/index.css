@@ -138,3 +138,60 @@ body.etr-mode main li {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============ Style Wydruku i Generowania PDF (Format A4) ============ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 12mm 15mm;
+  }
+
+  /* Wymuszenie wiernego drukowania tła, obramowań i kolorów urzędowych */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Bezwzględne ukrycie wszystkich elementów interfejsu portalu MHIS */
+  aside,
+  nav,
+  footer,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset układu strony - usunięcie marginesów i tła portalu */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    font-size: 11pt !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Zapobieganie nienaturalnemu łamaniu wierszy tabel i bloków urzędowych */
+  .pdf-avoid-break,
+  tr,
+  table,
+  .official-signature-box,
+  .official-header {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+}
