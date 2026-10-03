@@ -95,6 +95,62 @@ async def run_seed():
             ))
             logger.info("Załadowano startowy wątek dyskusyjny.")
 
+        # 7. Startowe fiszki pomysłów (z klastrami i głosami dla modułu testera i panelu urzędnika)
+        if (await session.execute(select(func.count(IdeaFiszka.id)))).scalar() == 0:
+            demo_fiszkas = [
+                IdeaFiszka(
+                    id="fiszka-sen-01",
+                    title="Sąsiedzka sieć asystentów seniora",
+                    summary="Seniorzy w odległych sołectwach powiatu gorlickiego mają trudności z dojazdem do ośrodka zdrowia i apteki. Tworzymy sieć przeszkolonych sąsiadów-asystentów.",
+                    target_audience="Seniorzy 70+ mieszkający samotnie i ich rodziny",
+                    implementation_stage="pilotaz",
+                    author_name="Stowarzyszenie 'Pomocna Dłoń'",
+                    author_email="kontakt@pomocnadlon.example.org",
+                    author_type="ngo",
+                    powiat="gorlicki",
+                    status="in_testing",
+                    cluster_group="Pakiet Senioralny 2026",
+                    votes_count=24,
+                    admin_notes="Projekt skierowany do testów w gminach wiejskich. Rekomendacja włączenia do naboru ROPS.",
+                    rodo_consent_at=datetime.utcnow()
+                ),
+                IdeaFiszka(
+                    id="fiszka-eco-02",
+                    title="Międzypokoleniowa kawiarenka naprawcza",
+                    summary="Młodzież i seniorzy w gminie Miechów wspólnie naprawiają sprzęt codziennego użytku i rowery. Integracja pokoleń i mniej elektrośmieci.",
+                    target_audience="Seniorzy oraz młodzież szkolna",
+                    implementation_stage="prototyp",
+                    author_name="Jan Kowalski (Grupa Mieszkańców)",
+                    author_email="jan.kowalski@example.org",
+                    author_type="mieszkaniec",
+                    powiat="miechowski",
+                    status="submitted",
+                    cluster_group="Ekologia i Integracja",
+                    votes_count=18,
+                    admin_notes="Ciekawa inicjatywa oddolna, czeka na przydział mentora z obszaru animacji społecznej.",
+                    rodo_consent_at=datetime.utcnow()
+                ),
+                IdeaFiszka(
+                    id="fiszka-mlo-03",
+                    title="Klubowa strefa wytchnienia i mentoringu rówieśniczego",
+                    summary="Młodzież w Oświęcimiu przeżywa kryzysy emocjonalne i potrzebuje bezpiecznego miejsca do rozmowy. Strefa w domu kultury z dyżurem psychologa.",
+                    target_audience="Młodzież 13–19 lat oraz rodzice",
+                    implementation_stage="pomysl",
+                    author_name="Anna Nowak",
+                    author_email="anna.nowak@example.org",
+                    author_type="mieszkaniec",
+                    powiat="oświęcimski",
+                    status="approved",
+                    cluster_group="Zdrowie Psychiczne i Młodzież",
+                    votes_count=37,
+                    admin_notes="Zaakceptowano do wsparcia mentorskiego i przygotowania wniosku grantowego.",
+                    rodo_consent_at=datetime.utcnow()
+                )
+            ]
+            for f in demo_fiszkas:
+                session.add(f)
+            logger.info("Załadowano startowe fiszki pomysłów do głosowania i klastrów.")
+
         await session.commit()
 
     await sync_reference_data()

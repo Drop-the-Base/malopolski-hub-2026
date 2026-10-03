@@ -21,6 +21,8 @@ import {
   MunicipalReportSummary,
   FiszkaAdminItem,
   FiszkaPublicStatus,
+  FiszkaUpdatePayload,
+  IdeaVoteResponse,
   NotificationItem,
   EducationalMaterial
 } from '../types';
@@ -80,8 +82,11 @@ export const isUnauthorized = (err: unknown) => axios.isAxiosError(err) && err.r
 
 export const api = {
   // Uwierzytelnianie
-  login: async (password: string) => {
-    const res = await client.post<{ access_token: string }>('/auth/login', { password });
+  login: async (password: string, username?: string) => {
+    const res = await client.post<{ access_token: string; user_name?: string; user_role?: string }>('/auth/login', {
+      password,
+      username: username || 'sedzia.hackyeah@malopolska.pl'
+    });
     authStore.set(res.data.access_token);
     return res.data;
   },
@@ -165,6 +170,21 @@ export const api = {
 
   getFiszkaStatus: async (id: string) => {
     const res = await client.get<FiszkaPublicStatus>(`/ideas/${encodeURIComponent(id)}/status`);
+    return res.data;
+  },
+
+  getVotingIdeas: async () => {
+    const res = await client.get<FiszkaPublicStatus[]>('/ideas/voting');
+    return res.data;
+  },
+
+  voteForIdea: async (fiszkaId: string) => {
+    const res = await client.post<IdeaVoteResponse>(`/ideas/${encodeURIComponent(fiszkaId)}/vote`);
+    return res.data;
+  },
+
+  updateIdeaFull: async (fiszkaId: string, data: FiszkaUpdatePayload) => {
+    const res = await client.patch<FiszkaAdminItem>(`/ideas/${encodeURIComponent(fiszkaId)}`, data);
     return res.data;
   },
 

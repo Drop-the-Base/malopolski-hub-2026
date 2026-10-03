@@ -275,6 +275,8 @@ export interface FiszkaAdminItem {
   status: string;
   admin_notes?: string | null;
   assigned_mentor_id?: string | null;
+  cluster_group?: string | null;
+  votes_count?: number;
   created_at: string;
   updated_at?: string | null;
 }
@@ -282,13 +284,37 @@ export interface FiszkaAdminItem {
 export interface FiszkaPublicStatus {
   id: string;
   title: string;
+  summary?: string | null;
+  powiat?: string | null;
+  target_audience?: string | null;
   status: string;
   status_label: string;
   implementation_stage: string;
   admin_notes?: string | null;
   mentor_name?: string | null;
+  cluster_group?: string | null;
+  votes_count?: number;
   created_at: string;
   updated_at?: string | null;
+}
+
+export interface FiszkaUpdatePayload {
+  title?: string;
+  summary?: string;
+  target_audience?: string;
+  implementation_stage?: string;
+  powiat?: string;
+  cluster_group?: string | null;
+  status?: string;
+  admin_notes?: string | null;
+  assigned_mentor_id?: string | null;
+}
+
+export interface IdeaVoteResponse {
+  id: string;
+  title: string;
+  votes_count: number;
+  message: string;
 }
 
 export interface NotificationItem {

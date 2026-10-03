@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api, apiErrorMessage } from '../services/api';
-import { TestingCampaignItem, EvaluationReport } from '../types';
-import { FlaskConical, CheckCircle2, X } from 'lucide-react';
+import { TestingCampaignItem, EvaluationReport, FiszkaPublicStatus } from '../types';
+import {
+  FlaskConical,
+  CheckCircle2,
+  X,
+  ThumbsUp,
+  Search,
+  Filter,
+  Lightbulb,
+  Sparkles,
+  Award,
+  Tag,
+  Users
+} from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { useDialog } from '../hooks/useDialog';
-import { TESTER_ROLES } from '../constants/domain';
+import { TESTER_ROLES, POWIATY, powiatLabel, IMPLEMENTATION_STAGES } from '../constants/domain';
 
 // Kwestionariusz System Usability Scale (Brooke, 1996) – polska adaptacja treści pytań
 const SUS_ITEMS = [
@@ -39,6 +52,20 @@ const emptySus = {
 
 export const TesterView: React.FC = () => {
   const { etrMode } = useAccessibility();
+  const [activeTab, setActiveTab] = useState<'voting' | 'campaigns'>('voting');
+  const [votingIdeas, setVotingIdeas] = useState<FiszkaPublicStatus[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPowiat, setFilterPowiat] = useState('');
+  const [voteLoading, setVoteLoading] = useState<string | null>(null);
+  const [votedIds, setVotedIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('mhis_voted_ideas');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
   const [campaigns, setCampaigns] = useState<TestingCampaignItem[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<TestingCampaignItem | null>(null);
   const [report, setReport] = useState<EvaluationReport | null>(null);
@@ -55,6 +82,15 @@ export const TesterView: React.FC = () => {
   const regRef = useDialog<HTMLDivElement>(registerModal, () => setRegisterModal(false));
   const susRef = useDialog<HTMLDivElement>(feedbackModal, () => setFeedbackModal(false));
 
+  const loadVotingIdeas = async () => {
+    try {
+      const list = await api.getVotingIdeas();
+      setVotingIdeas(list);
+    } catch {
+      /* ciche niepowodzenie wczytywania */
+    }
+  };
+
   const loadCampaigns = async (keepId?: string) => {
     try {
       const data = await api.getTestingCampaigns();
@@ -66,8 +102,32 @@ export const TesterView: React.FC = () => {
   };
 
   useEffect(() => {
+    loadVotingIdeas();
     loadCampaigns();
   }, []);
+
+  const handleVote = async (ideaId: string) => {
+    if (votedIds.has(ideaId) || voteLoading) return;
+    setVoteLoading(ideaId);
+    try {
+      const res = await api.voteForIdea(ideaId);
+      setVotingIdeas((prev) =>
+        prev.map((item) => (item.id === ideaId ? { ...item, votes_count: res.votes_count } : item))
+      );
+      const nextVoted = new Set(votedIds).add(ideaId);
+      setVotedIds(nextVoted);
+      try {
+        localStorage.setItem('mhis_voted_ideas', JSON.stringify(Array.from(nextVoted)));
+      } catch {
+        /* ignoruj */
+      }
+      setNotice(res.message);
+    } catch (err) {
+      setNotice(apiErrorMessage(err, 'Nie udało się zarejestrować głosu.'));
+    } finally {
+      setVoteLoading(null);
+    }
+  };
 
   useEffect(() => {
     if (!selectedCampaign) return;
@@ -150,8 +210,220 @@ export const TesterView: React.FC = () => {
         )}
       </div>
 
-      {/* Lista Kampanii Testowych */}
-      <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" aria-label="Kampanie testowe">
+      {/* Przełącznik zakładek modułu Testera */}
+      <nav aria-label="Wybór trybu testowania" className="flex border-b border-slate-200 gap-2 sm:gap-4 overflow-x-auto pb-px">
+        <button
+          type="button"
+          onClick={() => setActiveTab('voting')}
+          className={`pb-3.5 px-4 font-bold text-sm border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'voting'
+              ? 'border-blue-700 text-blue-700 font-black'
+              : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <ThumbsUp className="w-4 h-4 text-blue-600" aria-hidden="true" />
+          <span>1. Głosowanie mieszkańców (Prototypy)</span>
+          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-black">
+            {votingIdeas.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('campaigns')}
+          className={`pb-3.5 px-4 font-bold text-sm border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+            activeTab === 'campaigns'
+              ? 'border-emerald-700 text-emerald-700 font-black'
+              : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <FlaskConical className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+          <span>2. Pilotaże instytucjonalne i ankiety SUS</span>
+          <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-black">
+            {campaigns.length}
+          </span>
+        </button>
+      </nav>
+
+      {/* ZAKŁADKA 1: Głosowanie Społeczności */}
+      {activeTab === 'voting' && (
+        <section aria-labelledby="voting-title" className="space-y-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="w-full md:max-w-md relative">
+              <label htmlFor="search-ideas" className="sr-only">Wyszukaj zgłoszony pomysł</label>
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" aria-hidden="true" />
+              <input
+                id="search-ideas"
+                type="text"
+                placeholder="Szukaj innowacji, problemu lub klastra…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600"
+              />
+            </div>
+
+            <div className="w-full md:w-auto flex flex-wrap items-center gap-2">
+              <label htmlFor="filter-powiat" className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                <Filter className="w-3.5 h-3.5" /> Powiat:
+              </label>
+              <select
+                id="filter-powiat"
+                value={filterPowiat}
+                onChange={(e) => setFilterPowiat(e.target.value)}
+                className="text-sm p-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-blue-600"
+              >
+                <option value="">Wszystkie powiaty (Małopolska)</option>
+                {POWIATY.map((p) => (
+                  <option key={p} value={p}>
+                    {powiatLabel(p)}
+                  </option>
+                ))}
+              </select>
+
+              {(searchQuery || filterPowiat) && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchQuery(''); setFilterPowiat(''); }}
+                  className="text-xs text-rose-700 hover:text-rose-900 font-bold px-2 py-1 underline"
+                >
+                  Wyczyść filtry
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Lista zgłoszonych innowacji w głosowaniu */}
+          {votingIdeas.length === 0 ? (
+            <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 space-y-4">
+              <Sparkles className="w-8 h-8 text-blue-600 mx-auto" />
+              <h2 className="text-lg font-black text-slate-900">Brak zgłoszeń w module testowania</h2>
+              <p className="text-sm text-slate-600 max-w-md mx-auto">
+                Bądź pierwszą osobą, która zgłosi innowację społeczną do testów i oceny mieszkańców!
+              </p>
+              <Link
+                to="/kreator-pomyslow"
+                className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl text-sm"
+              >
+                <Lightbulb className="w-4 h-4" /> Zgłoś pomysł w Kreatorze
+              </Link>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6" aria-label="Wnioski poddane głosowaniu">
+              {votingIdeas
+                .filter((idea) => {
+                  const matchesPowiat = !filterPowiat || idea.powiat?.toLowerCase() === filterPowiat.toLowerCase();
+                  const q = searchQuery.trim().toLowerCase();
+                  const matchesQuery =
+                    !q ||
+                    idea.title.toLowerCase().includes(q) ||
+                    (idea.summary && idea.summary.toLowerCase().includes(q)) ||
+                    (idea.cluster_group && idea.cluster_group.toLowerCase().includes(q));
+                  return matchesPowiat && matchesQuery;
+                })
+                .map((idea) => {
+                  const hasVoted = votedIds.has(idea.id);
+                  const isVotingThis = voteLoading === idea.id;
+
+                  return (
+                    <li
+                      key={idea.id}
+                      className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {idea.powiat && (
+                            <span className="text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                              {powiatLabel(idea.powiat)}
+                            </span>
+                          )}
+                          {idea.cluster_group && (
+                            <span className="text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                              <Tag className="w-3 h-3" /> {idea.cluster_group}
+                            </span>
+                          )}
+                          <span className="text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            {idea.status_label || 'W testach'}
+                          </span>
+                        </div>
+
+                        <h3 className="text-lg font-black text-slate-900 leading-snug">
+                          {idea.title}
+                        </h3>
+
+                        {idea.target_audience && (
+                          <p className="text-xs text-slate-600 flex items-center gap-1">
+                            <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span><strong>Odbiorcy:</strong> {idea.target_audience}</span>
+                          </p>
+                        )}
+
+                        <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+                          {idea.summary}
+                        </p>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-1.5 text-blue-900 font-black text-sm">
+                          <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 font-bold">
+                            <ThumbsUp className="w-3.5 h-3.5 text-blue-700" />
+                            <span>{idea.votes_count || 0} głosów poparcia</span>
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleVote(idea.id)}
+                          disabled={hasVoted || isVotingThis}
+                          className={`text-sm font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+                            hasVoted
+                              ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 cursor-default'
+                              : 'bg-blue-700 hover:bg-blue-800 text-white shadow hover:scale-[1.02] active:scale-95 disabled:opacity-50'
+                          }`}
+                        >
+                          {hasVoted ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                              <span>Twój głos oddany</span>
+                            </>
+                          ) : isVotingThis ? (
+                            <span>Zapisywanie…</span>
+                          ) : (
+                            <>
+                              <ThumbsUp className="w-4 h-4" />
+                              <span>Popieram ten pomysł</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+
+          <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-8 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-black mb-1 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-amber-300" /> Masz własny pomysł na innowację w Małopolsce?
+              </h3>
+              <p className="text-sm text-blue-100 max-w-xl">
+                Wypełnij 3-krokowy Kreator Pomysłów. Twoje zgłoszenie natychmiast trafi do tego modułu głosowania oraz do koordynatorów ROPS.
+              </p>
+            </div>
+            <Link
+              to="/kreator-pomyslow"
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-5 py-3 rounded-xl text-sm whitespace-nowrap shadow-lg transition-transform hover:scale-105"
+            >
+              Zgłoś pomysł w Kreatorze →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ZAKŁADKA 2: Pilotaże i Ankiety SUS */}
+      {activeTab === 'campaigns' && (
+        <section aria-labelledby="campaigns-title" className="space-y-6">
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" aria-label="Kampanie testowe">
         {campaigns.map((camp) => {
           const isSelected = selectedCampaign?.id === camp.id;
           const pctTaken = Math.min(100, Math.round((camp.slots_taken / camp.slots_total) * 100));
@@ -251,6 +523,8 @@ export const TesterView: React.FC = () => {
           </div>
         </div>
       )}
+    </section>
+  )}
 
       {/* Rejestracja testera */}
       {registerModal && selectedCampaign && (

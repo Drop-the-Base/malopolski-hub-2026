@@ -62,7 +62,7 @@ export const Navbar: React.FC = () => {
     },
     {
       to: '/admin',
-      label: etrMode ? 'Dla Urzędnika' : 'Panel ROPS',
+      label: etrMode ? 'Dla Urzędnika' : 'Dla Urzędnika (Panel ROPS)',
       icon: ShieldCheck
     }
   ];

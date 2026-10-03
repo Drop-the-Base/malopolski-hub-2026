@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -62,15 +63,31 @@ async def startup_self_test():
         logger.info(f"SELF-TEST matchmaking OK: {ranked[0]['meta']['title']} ({ranked[0]['score']})")
 
 
+_initialized = False
+_init_lock = asyncio.Lock()
+
+
+async def ensure_initialized():
+    """Tabele, migracja kolumn, seed i self-test – raz na proces (przy starcie lub przy pierwszym żądaniu)."""
+    global _initialized
+    if _initialized:
+        return
+    async with _init_lock:
+        if _initialized:
+            return
+        logger.info("Inicjalizacja bazy danych i tabel SQLAlchemy...")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(migrate_sqlite_columns)
+        logger.info("Uruchamianie seedera danych demonstracyjnych...")
+        await run_seed()
+        await startup_self_test()
+        _initialized = True
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Inicjalizacja bazy danych i tabel SQLAlchemy...")
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        await conn.run_sync(migrate_sqlite_columns)
-    logger.info("Uruchamianie seedera danych demonstracyjnych...")
-    await run_seed()
-    await startup_self_test()
+    await ensure_initialized()
     yield
     logger.info("Zamykanie zasobów aplikacji MHIS...")
 
@@ -103,6 +120,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def init_on_first_request(request: Request, call_next):
+    """Środowiska serverless (Vercel) nie zawsze wywołują lifespan – inicjalizujemy przy pierwszym żądaniu."""
+    await ensure_initialized()
+    return await call_next(request)
 
 
 @app.exception_handler(RequestValidationError)

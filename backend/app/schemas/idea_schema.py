@@ -15,6 +15,7 @@ AUTHOR_TYPES = {"mieszkaniec", "ngo", "grupa_nieformalna", "jst", "ekspert"}
 FISZKA_STATUSES = {
     "submitted": "Złożona",
     "in_review": "W weryfikacji ROPS",
+    "in_testing": "W fazie testów i głosowania",
     "needs_changes": "Do uzupełnienia",
     "approved": "Zaakceptowana – mentor przydzielony",
     "rejected": "Odrzucona",
@@ -70,18 +71,25 @@ class FiszkaResponse(BaseModel):
     status: str
     admin_notes: Optional[str] = None
     assigned_mentor_id: Optional[str] = None
+    cluster_group: Optional[str] = None
+    votes_count: int = 0
     created_at: datetime
     updated_at: Optional[datetime] = None
 
 class FiszkaPublicStatus(BaseModel):
-    """Publiczny podgląd statusu fiszki dla autora (bez danych osobowych)."""
+    """Publiczny podgląd statusu fiszki dla autora i modułu głosowania."""
     id: str
     title: str
+    summary: Optional[str] = None
+    powiat: Optional[str] = None
+    target_audience: Optional[str] = None
     status: str
     status_label: str
     implementation_stage: str
     admin_notes: Optional[str] = None
     mentor_name: Optional[str] = None
+    cluster_group: Optional[str] = None
+    votes_count: int = 0
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -96,6 +104,31 @@ class FiszkaModeration(BaseModel):
         if v not in FISZKA_STATUSES:
             raise ValueError(f"Nieznany status. Dozwolone: {', '.join(FISZKA_STATUSES)}")
         return v
+
+class FiszkaUpdate(BaseModel):
+    """Pełna aktualizacja wniosku przez koordynatora/urzędnika ROPS."""
+    title: Optional[str] = Field(None, min_length=3, max_length=160)
+    summary: Optional[str] = Field(None, min_length=10, max_length=4000)
+    target_audience: Optional[str] = Field(None, min_length=2, max_length=300)
+    implementation_stage: Optional[str] = None
+    powiat: Optional[str] = None
+    cluster_group: Optional[str] = None
+    status: Optional[str] = None
+    admin_notes: Optional[str] = None
+    assigned_mentor_id: Optional[str] = None
+
+    @field_validator("status")
+    @classmethod
+    def _validate_status(cls, v):
+        if v is not None and v not in FISZKA_STATUSES:
+            raise ValueError(f"Nieznany status. Dozwolone: {', '.join(FISZKA_STATUSES)}")
+        return v
+
+class IdeaVoteResponse(BaseModel):
+    id: str
+    title: str
+    votes_count: int
+    message: str
 
 class CanvasSubmission(BaseModel):
     fiszka_id: Optional[str] = None

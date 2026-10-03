@@ -18,6 +18,8 @@ class IdeaFiszka(Base):
     status = Column(String, default="submitted")  # 'submitted', 'in_review', 'approved', 'needs_changes', 'rejected'
     admin_notes = Column(Text, nullable=True)
     assigned_mentor_id = Column(String, nullable=True)
+    cluster_group = Column(String, nullable=True)  # np. 'Pakiet Senioralny', 'Dostępność Cyfrowa', 'Młodzież i Edukacja'
+    votes_count = Column(Integer, default=0, nullable=False)
     rodo_consent_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

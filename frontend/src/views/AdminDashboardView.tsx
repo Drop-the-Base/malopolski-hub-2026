@@ -1,17 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { api, apiErrorMessage, authStore, isUnauthorized } from '../services/api';
-import { FiszkaAdminItem, InnovationItem, InnovationUpsert, MentorItem, NotificationItem, TrendRadarData } from '../types';
-import { ShieldCheck, TrendingUp, AlertTriangle, BarChart3, FileCheck, Bell, LogOut, Lock, Pencil, Plus, Mail } from 'lucide-react';
+import { FiszkaAdminItem, InnovationItem, InnovationUpsert, MentorItem, NotificationItem, TrendRadarData, FiszkaUpdatePayload } from '../types';
+import {
+  ShieldCheck,
+  TrendingUp,
+  AlertTriangle,
+  BarChart3,
+  FileCheck,
+  Bell,
+  LogOut,
+  Lock,
+  Pencil,
+  Plus,
+  Mail,
+  Printer,
+  CheckCircle2,
+  XCircle,
+  Tag,
+  Layers,
+  Filter,
+  Sparkles,
+  Building,
+  Edit3,
+  X,
+  User,
+  Zap
+} from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDateTime, powiatLabel } from '../constants/domain';
 
 const STATUS_STYLES: Record<string, string> = {
-  submitted: 'bg-amber-100 text-amber-950',
-  in_review: 'bg-blue-100 text-blue-950',
-  needs_changes: 'bg-orange-100 text-orange-950',
-  approved: 'bg-emerald-100 text-emerald-950',
-  rejected: 'bg-rose-100 text-rose-950'
+  submitted: 'bg-amber-100 text-amber-950 border border-amber-300',
+  in_review: 'bg-blue-100 text-blue-950 border border-blue-300',
+  in_testing: 'bg-indigo-100 text-indigo-950 border border-indigo-300',
+  needs_changes: 'bg-orange-100 text-orange-950 border border-orange-300',
+  approved: 'bg-emerald-100 text-emerald-950 border border-emerald-300',
+  rejected: 'bg-rose-100 text-rose-950 border border-rose-300'
 };
 
 const EMPTY_INNOVATION: InnovationUpsert = {
@@ -30,42 +55,120 @@ const EMPTY_INNOVATION: InnovationUpsert = {
 };
 
 const LoginForm: React.FC<{ onLoggedIn: () => void }> = ({ onLoggedIn }) => {
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('sedzia.hackyeah@malopolska.pl');
+  const [password, setPassword] = useState('rops-demo-2026');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const doLogin = async (usr: string, pwd: string) => {
+    setBusy(true);
+    setError('');
+    try {
+      await api.login(pwd, usr);
+      onLoggedIn();
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Nie udało się zalogować.'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleClear = () => {
+    setUsername('');
+    setPassword('');
+    setError('');
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+    <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-slate-200 shadow-md">
       <div className="flex items-center gap-2 mb-2">
         <Lock className="w-5 h-5 text-slate-800" aria-hidden="true" />
-        <h1 className="text-xl font-black text-slate-900">Panel ROPS – logowanie</h1>
+        <h1 className="text-xl font-black text-slate-900">Dla Urzędnika – Panel ROPS</h1>
       </div>
       <p className="text-sm text-slate-600 mb-4">
-        Panel zawiera dane kontaktowe autorów zgłoszeń, dlatego jest dostępny tylko dla koordynatorów.
-        W wersji produkcyjnej logowanie odbywa się przez konto służbowe (SSO).
+        Dostęp chroniony do bazy wniosków, grupowania, moderacji i wydruków urzędowych.
       </p>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError('');
-          try {
-            await api.login(password);
-            onLoggedIn();
-          } catch (err) {
-            setError(apiErrorMessage(err, 'Nie udało się zalogować.'));
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className="space-y-3"
-      >
-        <label htmlFor="admin-password" className="block text-sm font-bold text-slate-800">Hasło koordynatora</label>
-        <input id="admin-password" type="password" required autoComplete="current-password" value={password}
-          onChange={(e) => setPassword(e.target.value)} className="w-full text-sm p-2.5 rounded-lg border border-slate-300" />
-        {error && <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-2 rounded-lg">{error}</p>}
-        <button type="submit" disabled={busy} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-sm disabled:opacity-60">
-          {busy ? 'Logowanie…' : 'Zaloguj'}
+
+      {/* Baner szybkiego dostępu dla Sędziego */}
+      <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 mb-5 space-y-2">
+        <div className="flex items-center gap-2 text-xs font-black text-amber-900 uppercase tracking-wide">
+          <Zap className="w-3.5 h-3.5 text-amber-600" />
+          <span>Tryb Jury / Sędziego (Dane Wstępnie Wypełnione)</span>
+        </div>
+        <p className="text-xs text-amber-950 leading-relaxed">
+          Dla potrzeb sprawnej weryfikacji konkursowej login i hasło zostały uzupełnione automatycznie. Kliknij przycisk poniżej, aby od razu wejść do panelu:
+        </p>
+        <button
+          type="button"
+          onClick={() => doLogin('sedzia.hackyeah@malopolska.pl', 'rops-demo-2026')}
+          disabled={busy}
+          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-2 px-3 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-1.5"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          {busy ? 'Logowanie…' : 'Zaloguj natychmiast jako Sędzia (1-klik)'}
         </button>
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          doLogin(username, password);
+        }}
+        className="space-y-4 pt-2 border-t border-slate-100"
+      >
+        <div>
+          <label htmlFor="admin-username" className="block text-xs font-bold text-slate-800 mb-1">
+            Identyfikator / Login urzędnika
+          </label>
+          <input
+            id="admin-username"
+            type="text"
+            required
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full text-sm p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="admin-password" className="block text-xs font-bold text-slate-800 mb-1">
+            Hasło służbowe
+          </label>
+          <input
+            id="admin-password"
+            type="password"
+            required
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full text-sm p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600"
+          />
+        </div>
+
+        {error && (
+          <p role="alert" className="text-sm text-rose-900 bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
+            {error}
+          </p>
+        )}
+
+        <div className="space-y-2 pt-1">
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-sm disabled:opacity-60 transition-colors shadow"
+          >
+            {busy ? 'Logowanie…' : 'Zaloguj do Panelu Urzędnika'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleClear}
+            className="w-full text-xs text-slate-500 hover:text-slate-800 py-1 font-semibold"
+          >
+            Wyczyść dane (ręczne logowanie pracownika ROPS)
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -84,6 +187,84 @@ export const AdminDashboardView: React.FC = () => {
   const [drafts, setDrafts] = useState<Record<string, { status: string; admin_notes: string; assigned_mentor_id: string }>>({});
   const [editing, setEditing] = useState<{ id: string | null; data: InnovationUpsert } | null>(null);
   const [editError, setEditError] = useState('');
+
+  const [groupBy, setGroupBy] = useState<'cluster' | 'powiat' | 'status' | 'none'>('cluster');
+  const [editingProposal, setEditingProposal] = useState<FiszkaAdminItem | null>(null);
+  const [editProposalError, setEditProposalError] = useState('');
+  const [printProposal, setPrintProposal] = useState<FiszkaAdminItem | null>(null);
+
+  const groupedSubmissions = useMemo(() => {
+    if (groupBy === 'none') {
+      return [{ groupName: 'Wszystkie wnioski', items: submissions }];
+    }
+    const map = new Map<string, FiszkaAdminItem[]>();
+    for (const item of submissions) {
+      let key = 'Bez przypisanego klastra';
+      if (groupBy === 'cluster') {
+        key = item.cluster_group?.trim() || 'Bez przypisanego klastra';
+      } else if (groupBy === 'powiat') {
+        key = item.powiat ? powiatLabel(item.powiat) : 'Brak powiatu';
+      } else if (groupBy === 'status') {
+        key = FISZKA_STATUSES[item.status] || item.status;
+      }
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      map.get(key)!.push(item);
+    }
+    return Array.from(map.entries()).map(([groupName, items]) => ({ groupName, items }));
+  }, [submissions, groupBy]);
+
+  const handleQuickStatus = async (f: FiszkaAdminItem, newStatus: string) => {
+    try {
+      await api.updateIdeaFull(f.id, { status: newStatus });
+      setStatus(`Zmieniono status wniosku „${f.title}” na: ${FISZKA_STATUSES[newStatus] || newStatus}. Autor otrzymał powiadomienie.`);
+      loadAll();
+    } catch (err) {
+      setStatus(apiErrorMessage(err, 'Nie udało się zmienić statusu.'));
+    }
+  };
+
+  const handleAssignCluster = async (f: FiszkaAdminItem, cluster: string) => {
+    try {
+      await api.updateIdeaFull(f.id, { cluster_group: cluster.trim() || null });
+      setStatus(`Zaktualizowano klaster wniosku „${f.title}”: ${cluster || 'Brak'}.`);
+      loadAll();
+    } catch (err) {
+      setStatus(apiErrorMessage(err, 'Nie udało się przypisać klastra.'));
+    }
+  };
+
+  const handleSaveProposalEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProposal) return;
+    setEditProposalError('');
+    try {
+      await api.updateIdeaFull(editingProposal.id, {
+        title: editingProposal.title,
+        summary: editingProposal.summary,
+        target_audience: editingProposal.target_audience,
+        implementation_stage: editingProposal.implementation_stage,
+        powiat: editingProposal.powiat,
+        cluster_group: editingProposal.cluster_group || null,
+        status: editingProposal.status,
+        admin_notes: editingProposal.admin_notes || null,
+        assigned_mentor_id: editingProposal.assigned_mentor_id || null
+      });
+      setStatus(`Zapisano zmiany we wniosku „${editingProposal.title}”.`);
+      setEditingProposal(null);
+      loadAll();
+    } catch (err) {
+      setEditProposalError(apiErrorMessage(err, 'Nie udało się zapisać zmian wniosku.'));
+    }
+  };
+
+  const triggerPrint = (f?: FiszkaAdminItem) => {
+    setPrintProposal(f || null);
+    setTimeout(() => {
+      window.print();
+    }, 200);
+  };
 
   const logout = () => {
     authStore.clear();
@@ -248,54 +429,550 @@ export const AdminDashboardView: React.FC = () => {
         </details>
       </section>
 
-      {/* Kolejka fiszek */}
-      <section aria-labelledby="queue-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 id="queue-title" className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <FileCheck className="w-5 h-5 text-indigo-700" aria-hidden="true" /> Fiszki pomysłów ({submissions.length})
-        </h2>
-        {submissions.length === 0 && <p className="text-sm text-slate-600">Brak zgłoszonych fiszek.</p>}
-        <ul className="space-y-4">
-          {submissions.map((f) => {
-            const d = drafts[f.id] ?? { status: f.status, admin_notes: '', assigned_mentor_id: '' };
-            return (
-              <li key={f.id} className="border border-slate-200 p-4 rounded-xl space-y-3">
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <strong className="text-slate-900">{f.title}</strong>
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold ${STATUS_STYLES[f.status] ?? 'bg-slate-100'}`}>{FISZKA_STATUSES[f.status] ?? f.status}</span>
-                  <span className="text-slate-600 text-xs">{f.id} · {powiatLabel(f.powiat)} · {IMPLEMENTATION_STAGES.find((s) => s.value === f.implementation_stage)?.label} · {formatDateTime(f.created_at)}</span>
+      {/* Panel Zarządzania Wnioskami Innowacji (Approve, Group, Change, Print) */}
+      <section aria-labelledby="proposals-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6 print:hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+          <div>
+            <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 text-xs font-bold px-2.5 py-0.5 rounded-full mb-1">
+              <FileCheck className="w-3.5 h-3.5 text-blue-700" />
+              <span>Moduł Urzędnika ROPS</span>
+            </div>
+            <h2 id="proposals-title" className="text-xl font-black text-slate-900 flex items-center gap-2">
+              Baza i ocena wniosków innowacji ({submissions.length})
+            </h2>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Zatwierdzaj wnioski (Approve), łącz je w klastry strategiczne (Group), modyfikuj treść (Change) oraz generuj oficjalne karty A4 (Print).
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => triggerPrint()}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow flex items-center gap-1.5 transition-all"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-300" />
+              <span>Drukuj całe zestawienie (A4)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Pasek narzędzi grupowania (Group) */}
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-800 font-bold">
+            <Layers className="w-4 h-4 text-blue-700" />
+            <span>Tryb prezentacji / Grupowanie:</span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { key: 'cluster', label: 'Klastry tematyczne', icon: Tag },
+              { key: 'powiat', label: 'Wg Powiatów', icon: Building },
+              { key: 'status', label: 'Wg Statusu', icon: Filter },
+              { key: 'none', label: 'Płaska lista', icon: Layers }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const active = groupBy === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setGroupBy(tab.key as any)}
+                  className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-colors ${
+                    active
+                      ? 'bg-blue-700 text-white shadow-sm'
+                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {submissions.length === 0 ? (
+          <p className="text-sm text-slate-600 py-6 text-center">Brak zgłoszonych wniosków innowacji.</p>
+        ) : (
+          <div className="space-y-6">
+            {groupedSubmissions.map(({ groupName, items }) => (
+              <div key={groupName} className="space-y-3">
+                <div className="flex items-center justify-between bg-slate-100/80 px-4 py-2 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                    <h3 className="font-black text-slate-900 text-sm">{groupName}</h3>
+                    <span className="text-xs bg-white text-slate-700 font-bold px-2 py-0.5 rounded-full border border-slate-300">
+                      {items.length} {items.length === 1 ? 'wniosek' : 'wnioski'}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-600">
+                    Łącznie głosów poparcia: <strong className="text-blue-900">{items.reduce((acc, curr) => acc + (curr.votes_count || 0), 0)}</strong>
+                  </span>
                 </div>
-                <p className="text-sm text-slate-800">{f.summary}</p>
-                <p className="text-xs text-slate-700">Odbiorcy: {f.target_audience} · Autor: {f.author_name} ({f.author_email})</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label htmlFor={`st-${f.id}`} className="block text-xs font-bold text-slate-800 mb-1">Status</label>
-                    <select id={`st-${f.id}`} value={d.status} onChange={(e) => setDrafts({ ...drafts, [f.id]: { ...d, status: e.target.value } })} className={fieldCls}>
-                      {Object.entries(FISZKA_STATUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor={`mt-${f.id}`} className="block text-xs font-bold text-slate-800 mb-1">Mentor</label>
-                    <select id={`mt-${f.id}`} value={d.assigned_mentor_id} onChange={(e) => setDrafts({ ...drafts, [f.id]: { ...d, assigned_mentor_id: e.target.value } })} className={fieldCls}>
-                      <option value="">— bez mentora —</option>
-                      {mentors.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-                    </select>
-                  </div>
-                  <div className="md:row-span-2">
-                    <label htmlFor={`nt-${f.id}`} className="block text-xs font-bold text-slate-800 mb-1">Komentarz dla autora</label>
-                    <textarea id={`nt-${f.id}`} rows={3} maxLength={4000} value={d.admin_notes}
-                      onChange={(e) => setDrafts({ ...drafts, [f.id]: { ...d, admin_notes: e.target.value } })} className={fieldCls} />
-                  </div>
-                  <div className="md:col-span-2 flex items-end">
-                    <button type="button" onClick={() => saveModeration(f)} className="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold px-4 py-2 rounded-lg">
-                      Zapisz i powiadom autora
-                    </button>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+
+                <ul className="space-y-4">
+                  {items.map((f) => (
+                    <li
+                      key={f.id}
+                      className="border border-slate-200 bg-white hover:border-slate-300 p-5 rounded-2xl shadow-sm transition-all space-y-4"
+                    >
+                      {/* Nagłówek karty wniosku */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div className="space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-mono font-bold bg-slate-100 text-slate-800 px-2 py-0.5 rounded">
+                              {f.id}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${STATUS_STYLES[f.status] ?? 'bg-slate-100'}`}>
+                              {FISZKA_STATUSES[f.status] ?? f.status}
+                            </span>
+                            <span className="text-xs text-slate-600">
+                              Powiat: <strong>{powiatLabel(f.powiat)}</strong> · Etap: {IMPLEMENTATION_STAGES.find((s) => s.value === f.implementation_stage)?.label}
+                            </span>
+                          </div>
+                          <h4 className="text-base font-black text-slate-900 leading-tight">
+                            {f.title}
+                          </h4>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
+                            <span>👍</span> {f.votes_count || 0} głosów
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Treść merytoryczna */}
+                      <div className="space-y-2 text-sm">
+                        <p className="text-slate-800 leading-relaxed">{f.summary}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+                          <span><strong>Odbiorcy:</strong> {f.target_audience}</span>
+                          <span><strong>Autor:</strong> {f.author_name} ({f.author_email}) · {f.author_type}</span>
+                          <span><strong>Złożono:</strong> {formatDateTime(f.created_at)}</span>
+                        </div>
+                        {f.admin_notes && (
+                          <div className="bg-amber-50/70 border border-amber-200 text-amber-950 p-2.5 rounded-xl text-xs">
+                            <strong>Komentarz ROPS:</strong> {f.admin_notes}
+                          </div>
+                        )}
+                        {f.assigned_mentor_id && (
+                          <div className="text-xs text-emerald-800 font-semibold flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Mentor: {mentors.find(m => m.id === f.assigned_mentor_id)?.full_name || f.assigned_mentor_id}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pasek narzędziowy operacji urzędnika: Approve, Group, Change, Print */}
+                      <div className="pt-3 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        {/* 1. APPROVE: Szybkie zatwierdzanie */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-1">
+                            Decyzja:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickStatus(f, 'approved')}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              f.status === 'approved'
+                                ? 'bg-emerald-700 text-white shadow'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300'
+                            }`}
+                          >
+                            ✓ Zatwierdź
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickStatus(f, 'in_testing')}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              f.status === 'in_testing'
+                                ? 'bg-indigo-700 text-white shadow'
+                                : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300'
+                            }`}
+                          >
+                            🔬 Do testów
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickStatus(f, 'needs_changes')}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              f.status === 'needs_changes'
+                                ? 'bg-orange-700 text-white shadow'
+                                : 'bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-300'
+                            }`}
+                          >
+                            ⚠️ Do poprawy
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickStatus(f, 'rejected')}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              f.status === 'rejected'
+                                ? 'bg-rose-700 text-white shadow'
+                                : 'bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-300'
+                            }`}
+                          >
+                            ✕ Odrzuć
+                          </button>
+                        </div>
+
+                        {/* 2. GROUP, CHANGE, PRINT */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {/* Szybkie przypisanie klastra (Group) */}
+                          <select
+                            value={f.cluster_group || ''}
+                            onChange={(e) => handleAssignCluster(f, e.target.value)}
+                            aria-label={`Przypisz klaster dla ${f.title}`}
+                            className="text-xs p-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 focus:outline-none focus:border-blue-600 max-w-[170px]"
+                          >
+                            <option value="">— Klaster tematyczny —</option>
+                            <option value="Pakiet Senioralny 2026">Pakiet Senioralny 2026</option>
+                            <option value="Ekologia i Integracja">Ekologia i Integracja</option>
+                            <option value="Zdrowie Psychiczne i Młodzież">Zdrowie Psychiczne i Młodzież</option>
+                            <option value="Dostępność Cyfrowa">Dostępność Cyfrowa</option>
+                            <option value="Wsparcie Wytchnieniowe">Wsparcie Wytchnieniowe</option>
+                          </select>
+
+                          {/* CHANGE: Modyfikacja wniosku */}
+                          <button
+                            type="button"
+                            onClick={() => { setEditProposalError(''); setEditingProposal({ ...f }); }}
+                            className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-300 flex items-center gap-1 transition-colors"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-blue-700" />
+                            <span>Edytuj wniosek</span>
+                          </button>
+
+                          {/* PRINT: Wydruk karty A4 */}
+                          <button
+                            type="button"
+                            onClick={() => triggerPrint(f)}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold text-xs px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-1 transition-colors"
+                          >
+                            <Printer className="w-3.5 h-3.5 text-blue-700" />
+                            <span>Drukuj (A4)</span>
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
+
+      {/* Modal edycji wniosku przez urzędnika (CHANGE) */}
+      {editingProposal && (
+        <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4 print:hidden" onClick={() => setEditingProposal(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-prop-title"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Edycja Urzędnika (Change)</span>
+                <h3 id="edit-prop-title" className="text-lg font-black text-slate-900">
+                  Modyfikacja wniosku: {editingProposal.id}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingProposal(null)}
+                aria-label="Zamknij formularz edycji"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProposalEdit} className="space-y-4 text-sm">
+              <div>
+                <label htmlFor="edit-title" className="block text-xs font-bold text-slate-800 mb-1">Tytuł roboczy</label>
+                <input
+                  id="edit-title"
+                  type="text"
+                  required
+                  value={editingProposal.title}
+                  onChange={(e) => setEditingProposal({ ...editingProposal, title: e.target.value })}
+                  className={fieldCls}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="edit-summary" className="block text-xs font-bold text-slate-800 mb-1">Opis problemu i pomysłu</label>
+                <textarea
+                  id="edit-summary"
+                  rows={3}
+                  required
+                  value={editingProposal.summary}
+                  onChange={(e) => setEditingProposal({ ...editingProposal, summary: e.target.value })}
+                  className={fieldCls}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="edit-powiat" className="block text-xs font-bold text-slate-800 mb-1">Powiat</label>
+                  <select
+                    id="edit-powiat"
+                    value={editingProposal.powiat}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, powiat: e.target.value })}
+                    className={fieldCls}
+                  >
+                    {POWIATY.map((p) => (
+                      <option key={p} value={p}>{powiatLabel(p)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="edit-stage" className="block text-xs font-bold text-slate-800 mb-1">Etap realizacji</label>
+                  <select
+                    id="edit-stage"
+                    value={editingProposal.implementation_stage}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, implementation_stage: e.target.value })}
+                    className={fieldCls}
+                  >
+                    {IMPLEMENTATION_STAGES.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="edit-cluster" className="block text-xs font-bold text-slate-800 mb-1">
+                    Klaster tematyczny (Group)
+                  </label>
+                  <input
+                    id="edit-cluster"
+                    type="text"
+                    placeholder="np. Pakiet Senioralny 2026"
+                    value={editingProposal.cluster_group || ''}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, cluster_group: e.target.value })}
+                    className={fieldCls}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-status" className="block text-xs font-bold text-slate-800 mb-1">Status wniosku</label>
+                  <select
+                    id="edit-status"
+                    value={editingProposal.status}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, status: e.target.value })}
+                    className={fieldCls}
+                  >
+                    {Object.entries(FISZKA_STATUSES).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="edit-target" className="block text-xs font-bold text-slate-800 mb-1">Grupa docelowa</label>
+                <input
+                  id="edit-target"
+                  type="text"
+                  value={editingProposal.target_audience}
+                  onChange={(e) => setEditingProposal({ ...editingProposal, target_audience: e.target.value })}
+                  className={fieldCls}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="edit-mentor" className="block text-xs font-bold text-slate-800 mb-1">Przydzielony mentor ROPS</label>
+                  <select
+                    id="edit-mentor"
+                    value={editingProposal.assigned_mentor_id || ''}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, assigned_mentor_id: e.target.value || null })}
+                    className={fieldCls}
+                  >
+                    <option value="">— Brak mentora —</option>
+                    {mentors.map((m) => (
+                      <option key={m.id} value={m.id}>{m.full_name} ({m.specialization})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="edit-notes" className="block text-xs font-bold text-slate-800 mb-1">Notatka koordynatora (widoczna dla autora)</label>
+                  <textarea
+                    id="edit-notes"
+                    rows={2}
+                    value={editingProposal.admin_notes || ''}
+                    onChange={(e) => setEditingProposal({ ...editingProposal, admin_notes: e.target.value })}
+                    className={fieldCls}
+                  />
+                </div>
+              </div>
+
+              {editProposalError && (
+                <p role="alert" className="text-xs text-rose-900 bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
+                  {editProposalError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingProposal(null)}
+                  className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 text-xs font-bold hover:bg-slate-50"
+                >
+                  Anuluj
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2 rounded-xl text-xs shadow"
+                >
+                  Zapisz zmiany wniosku
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DOKUMENT WYDRUKU A4 DLA PROPOZYCJI / KLASTRA */}
+      {printProposal ? (
+        <div className="hidden print:block fixed inset-0 bg-white p-8 z-[99999] text-black font-serif text-xs leading-relaxed">
+          <div className="border-b-2 border-black pb-3 mb-4 flex justify-between items-start">
+            <div>
+              <h1 className="text-base font-black uppercase tracking-tight font-sans">
+                URZĄD MARSZAŁKOWSKI WOJEWÓDZTWA MAŁOPOLSKIEGO
+              </h1>
+              <h2 className="text-xs font-bold text-slate-700 font-sans">
+                Departament Zdrowia, Rodziny, Równego Traktowania i Polityki Społecznej
+              </h2>
+              <h3 className="text-xs font-semibold text-slate-600 font-sans">
+                Regionalny Ośrodek Polityki Społecznej w Krakowie
+              </h3>
+            </div>
+            <div className="text-right font-sans">
+              <span className="font-mono font-bold border border-black px-2 py-0.5 inline-block text-xs">
+                {printProposal.id}
+              </span>
+              <p className="text-[10px] text-slate-500 mt-1">
+                Data wydruku: {new Date().toLocaleDateString('pl-PL')}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center my-4 font-sans">
+            <h2 className="text-sm font-black uppercase tracking-wider border-y border-slate-400 py-1.5 inline-block px-8">
+              Oficjalna Karta Weryfikacji Innowacji Społecznej (ROPS Kraków)
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            <table className="w-full border-collapse border border-slate-400 text-xs">
+              <tbody>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold w-1/3 bg-slate-50">Tytuł wniosku:</td>
+                  <td className="p-2 font-semibold">{printProposal.title}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold bg-slate-50">Powiat / Obszar:</td>
+                  <td className="p-2">{powiatLabel(printProposal.powiat)}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold bg-slate-50">Klaster tematyczny:</td>
+                  <td className="p-2 font-bold">{printProposal.cluster_group || 'Brak przypisanego klastra'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold bg-slate-50">Etap gotowości:</td>
+                  <td className="p-2">{IMPLEMENTATION_STAGES.find((s) => s.value === printProposal.implementation_stage)?.label || printProposal.implementation_stage}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold bg-slate-50">Poparcie mieszkańców w testach:</td>
+                  <td className="p-2 font-black">{printProposal.votes_count || 0} głosów poparcia</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2 font-bold bg-slate-50">Wnioskodawca:</td>
+                  <td className="p-2">{printProposal.author_name} ({printProposal.author_email}) · Kategoria: {printProposal.author_type}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div className="border border-slate-400 p-3 rounded space-y-1">
+              <h3 className="font-bold uppercase tracking-wider text-[11px] font-sans">Opis problemu społecznego i metodyki:</h3>
+              <p className="text-justify">{printProposal.summary}</p>
+            </div>
+
+            <div className="border border-slate-400 p-3 rounded space-y-1">
+              <h3 className="font-bold uppercase tracking-wider text-[11px] font-sans">Grupa odbiorców (beneficjenci):</h3>
+              <p>{printProposal.target_audience}</p>
+            </div>
+
+            <div className="border border-slate-400 p-3 rounded space-y-1">
+              <h3 className="font-bold uppercase tracking-wider text-[11px] font-sans">Rozstrzygnięcie Urzędnika / Koordynatora ROPS:</h3>
+              <p><strong>Status decyzji:</strong> {FISZKA_STATUSES[printProposal.status] || printProposal.status}</p>
+              <p><strong>Uzasadnienie / Wytyczne:</strong> {printProposal.admin_notes || 'Wniosek spełnia wymogi formalne i merytoryczne.'}</p>
+              {printProposal.assigned_mentor_id && (
+                <p><strong>Przydzielony ekspert/mentor:</strong> {mentors.find(m => m.id === printProposal.assigned_mentor_id)?.full_name || printProposal.assigned_mentor_id}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-12 pt-12 mt-12 font-sans text-center">
+              <div>
+                <div className="border-b border-dotted border-black h-8"></div>
+                <p className="mt-1 text-[10px] uppercase font-bold text-slate-700">Pieczęć Regionalnego Ośrodka Polityki Społecznej</p>
+              </div>
+              <div>
+                <div className="border-b border-dotted border-black h-8"></div>
+                <p className="mt-1 text-[10px] uppercase font-bold text-slate-700">Podpis Koordynatora / Urzędnika ds. Innowacji</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Wydruk zbiorczy tabeli (gdy żaden pojedynczy wniosek nie jest wybrany) */
+        <div className="hidden print:block fixed inset-0 bg-white p-8 z-[99999] text-black font-sans text-xs">
+          <div className="border-b-2 border-black pb-2 mb-4 flex justify-between items-start">
+            <div>
+              <h1 className="text-base font-black uppercase">URZĄD MARSZAŁKOWSKI WOJEWÓDZTWA MAŁOPOLSKIEGO – ROPS KRAKÓW</h1>
+              <h2 className="text-xs font-semibold text-slate-600">Zestawienie zbiorcze zgłoszonych wniosków innowacji społecznych</h2>
+            </div>
+            <div className="text-right text-[11px]">
+              <p>Data wydruku: {new Date().toLocaleDateString('pl-PL')}</p>
+              <p>Liczba wniosków: {submissions.length}</p>
+            </div>
+          </div>
+
+          <table className="w-full border-collapse border border-slate-300 text-left text-[11px]">
+            <thead>
+              <tr className="bg-slate-100 border-b border-slate-400 font-bold">
+                <th className="p-1.5 border border-slate-300">ID</th>
+                <th className="p-1.5 border border-slate-300">Tytuł wniosku</th>
+                <th className="p-1.5 border border-slate-300">Powiat</th>
+                <th className="p-1.5 border border-slate-300">Klaster tematyczny</th>
+                <th className="p-1.5 border border-slate-300">Głosy</th>
+                <th className="p-1.5 border border-slate-300">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((item) => (
+                <tr key={item.id} className="border-b border-slate-200">
+                  <td className="p-1.5 border border-slate-300 font-mono font-bold">{item.id}</td>
+                  <td className="p-1.5 border border-slate-300 font-semibold">{item.title}</td>
+                  <td className="p-1.5 border border-slate-300">{powiatLabel(item.powiat)}</td>
+                  <td className="p-1.5 border border-slate-300">{item.cluster_group || '—'}</td>
+                  <td className="p-1.5 border border-slate-300 font-bold">{item.votes_count || 0}</td>
+                  <td className="p-1.5 border border-slate-300 font-semibold">{FISZKA_STATUSES[item.status] || item.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {radar && (
         <>

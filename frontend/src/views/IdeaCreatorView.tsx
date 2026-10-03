@@ -16,7 +16,9 @@ import {
   RefreshCw,
   ShieldCheck,
   Send,
-  Copy
+  Copy,
+  FlaskConical,
+  ShieldAlert
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { AUTHOR_TYPES, IMPLEMENTATION_STAGES, POWIATY, powiatLabel, formatPLN } from '../constants/domain';
@@ -159,6 +161,11 @@ export const IdeaCreatorView: React.FC = () => {
         rodo_consent: step1Form.rodo_consent
       });
       setFiszkaResult(res);
+      try {
+        window.history.replaceState(null, '', window.location.pathname);
+      } catch {
+        /* ignoruj */
+      }
     } catch (err) {
       setStep1Error(apiErrorMessage(err, 'Nie udało się wysłać fiszki.'));
     } finally {
@@ -326,20 +333,73 @@ export const IdeaCreatorView: React.FC = () => {
           </div>
 
           {fiszkaResult ? (
-            <div role="status" className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 space-y-3">
-              <h2 className="text-lg font-black text-emerald-950 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" aria-hidden="true" /> Fiszka wysłana do ROPS
-              </h2>
-              <p className="text-sm text-emerald-950">
-                Numer zgłoszenia: <strong className="font-mono">{fiszkaResult.id}</strong>. Koordynator dostał powiadomienie w Panelu ROPS,
-                a na Twój e-mail wysłaliśmy potwierdzenie. Odpowiedź i ewentualny przydział mentora zobaczysz na stronie statusu.
+            <div role="status" className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h2 className="text-lg font-black text-emerald-950 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-700" aria-hidden="true" /> Fiszka wysłana do ROPS i modułu testowania
+                </h2>
+                <span className="text-xs bg-emerald-200 text-emerald-900 font-bold px-2.5 py-1 rounded-full">
+                  ID: {fiszkaResult.id}
+                </span>
+              </div>
+
+              <p className="text-sm text-emerald-950 leading-relaxed">
+                Dziękujemy za zgłoszenie pomysłu <strong>„{fiszkaResult.title}”</strong>. Twój wniosek trafił natychmiast do bazy ROPS oraz 
+                <strong> do modułu testowania i głosowania mieszkańców</strong>, gdzie inni użytkownicy mogą poprzeć Twoją innowację!
               </p>
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/status/${fiszkaResult.id}`} className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-4 py-2 rounded-lg text-sm">
-                  Sprawdź status zgłoszenia
+
+              {/* Baner ulotności zgłoszenia */}
+              <div className="bg-amber-100/80 border border-amber-300 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-amber-950">
+                <ShieldAlert className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="leading-relaxed">
+                  <strong>Ochrona prywatności i sesyjność:</strong> Szczegóły tego potwierdzenia są widoczne wyłącznie podczas tej aktywnej wizyty na podstronie. Jeśli przejdziesz do innego modułu lub odświeżysz okno, ze względów bezpieczeństwa powrót do formularza z tymi danymi nie będzie możliwy.
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <Link
+                  to="/tester"
+                  className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2.5 rounded-xl text-sm inline-flex items-center gap-2 shadow"
+                >
+                  <FlaskConical className="w-4 h-4" aria-hidden="true" />
+                  Przejdź do głosowania w Testerze →
                 </Link>
-                <button type="button" onClick={handleProceedToStep2} className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm">
+
+                <button
+                  type="button"
+                  onClick={handleProceedToStep2}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm"
+                >
                   Rozwiń pomysł w Canwie →
+                </button>
+
+                <Link
+                  to={`/status/${fiszkaResult.id}`}
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-3.5 py-2.5 rounded-xl text-sm"
+                >
+                  Śledź status
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFiszkaResult(null);
+                    setStep1Form({
+                      title: '',
+                      summary: '',
+                      powiat: '',
+                      gmina: '',
+                      target_audience: '',
+                      implementation_stage: 'pomysl',
+                      author_name: '',
+                      author_email: '',
+                      author_type: 'mieszkaniec',
+                      rodo_consent: false
+                    });
+                  }}
+                  className="text-xs text-slate-600 hover:text-slate-900 underline ml-auto py-2"
+                >
+                  Zgłoś kolejny pomysł
                 </button>
               </div>
             </div>
