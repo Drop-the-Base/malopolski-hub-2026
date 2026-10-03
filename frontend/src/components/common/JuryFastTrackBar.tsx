@@ -80,6 +80,15 @@ export const JuryFastTrackBar: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="/presentation/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-semibold px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition"
+              title="Otwórz 10-slajdową prezentację finałową dla sędziów"
+            >
+              <span>📊 Prezentacja (10 slajdów)</span>
+            </a>
             <button
               type="button"
               onClick={() => setCollapsed(!collapsed)}
