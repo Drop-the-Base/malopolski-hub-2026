@@ -61,3 +61,22 @@ class GrantApplicationResponse(BaseModel):
     budget_breakdown: Dict[str, int]
     monitoring_indicators: List[str]
     risk_assessment: List[Dict[str, str]]
+
+class CanvasAutofillRequest(BaseModel):
+    prompt: str = Field(..., min_length=4, description="Krótki opis lub jedno zdanie o pomyśle")
+    powiat: Optional[str] = "Kraków"
+    target_group: Optional[str] = None
+
+class CanvasAutofillResponse(BaseModel):
+    idea_title: str
+    problem: str
+    target_group: str
+    value_proposition: str
+    barriers: str
+    resources: str
+    partners: str
+    testing_plan: str
+    metrics: str
+    scalability: str
+    ai_powered: bool
+    latency_ms: int

@@ -14,6 +14,8 @@ services:
       - PROJECT_NAME=Malopolski Hub Innowacji Spolecznych
       - DATABASE_URL=sqlite+aiosqlite:////data/mhis.db
       - VECTOR_STORE_DIR=/data/vector_store
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - CORS_ORIGINS=["http://localhost", "http://localhost:3000", "http://localhost:80"]

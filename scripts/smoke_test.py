@@ -3,6 +3,10 @@ import json
 import urllib.request
 import urllib.error
 
+# Zabezpieczenie przed błędem charmap w terminalu Windows
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
+
 BASE_URL = "http://localhost:8000/api/v1"
 
 def test_endpoint(name: str, method: str, path: str, payload: dict = None):
@@ -33,7 +37,7 @@ def run_smoke_tests():
     print("=" * 60)
 
     success_count = 0
-    total_tests = 7
+    total_tests = 8
 
     # 1. Health
     ok, _ = test_endpoint("System Healthcheck", "GET", "/health")
@@ -68,7 +72,17 @@ def run_smoke_tests():
     })
     if ok: success_count += 1
 
-    # 6. Moduł VII: Middleman Innowacji dla JST
+    # 6. Moduł III: Groq AI Auto-Fill Canwy (Jury Fast Track)
+    ok, autofill_data = test_endpoint("Moduł III: Groq AI Auto-Fill Canwy", "POST", "/canvas/autofill", {
+        "prompt": "Kawiarenka naprawcza dla seniorów i młodzieży w Nowym Sączu",
+        "powiat": "nowosądecki"
+    })
+    if ok:
+        print(f"       -> AI Tytuł: {autofill_data.get('idea_title')}")
+        print(f"       -> Czas generowania: {autofill_data.get('latency_ms')}ms (ai_powered: {autofill_data.get('ai_powered')})")
+        success_count += 1
+
+    # 7. Moduł VII: Middleman Innowacji dla JST
     ok, _ = test_endpoint("Moduł VII: Middleman AI Blueprint", "POST", "/middleman/adapt", {
         "innovation_id": "rops-inn-001",
         "municipality_name": "Gmina Słaboszów",
@@ -80,7 +94,7 @@ def run_smoke_tests():
     })
     if ok: success_count += 1
 
-    # 7. Moduł VI: Panel Admina & Radar Trendów
+    # 8. Moduł VI: Panel Admina & Radar Trendów
     ok, _ = test_endpoint("Moduł VI: Radar Trendów ROPS", "GET", "/admin/trends")
     if ok: success_count += 1
 

@@ -89,5 +89,9 @@ export function useAccessibility() {
     setContrastMode: (mode: ContrastMode) => accessibilityStore.setContrastMode(mode),
     setFontSize: (size: FontSize) => accessibilityStore.setFontSize(size),
     toggleEtrMode: () => accessibilityStore.toggleEtrMode(),
+    toggleHighContrast: () => {
+      const cur = accessibilityStore.getContrastMode();
+      accessibilityStore.setContrastMode(cur === 'default' ? 'yellow-black' : 'default');
+    }
   };
 }

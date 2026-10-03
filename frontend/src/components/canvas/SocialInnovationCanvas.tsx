@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CanvasData, CanvasAudit } from '../../types';
 import { api } from '../../services/api';
-import { Sparkles, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertCircle, Zap, RefreshCw, ArrowRight } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 
 interface CanvasProps {
@@ -24,7 +24,48 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
   });
 
   const [loading, setLoading] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+  const [promptInput, setPromptInput] = useState('');
+  const [generationInfo, setGenerationInfo] = useState<{ title: string; latencyMs: number; aiPowered: boolean } | null>(null);
   const [audit, setAudit] = useState<CanvasAudit | null>(null);
+
+  const presets = [
+    { label: '☕ Kawiarenka Naprawcza (Nowy Sącz)', prompt: 'Kawiarenka naprawcza dla seniorów i młodzieży w Nowym Sączu' },
+    { label: '🚐 Asystent Seniora (Podhale)', prompt: 'Mobilny asystent seniora i transport medyczny w gminach tatrzańskich' },
+    { label: '⚡ Spółdzielnia Energetyczna (Miechów)', prompt: 'Sąsiedzka spółdzielnia energetyczna i walka z ubóstwem energetycznym w Miechowie' }
+  ];
+
+  const handleAutofill = async (customPrompt?: string) => {
+    const textToUse = customPrompt || promptInput;
+    if (!textToUse.trim()) return;
+
+    setAutofilling(true);
+    try {
+      const res = await api.autofillCanvas(textToUse);
+      setCanvas({
+        problem: res.problem,
+        target_group: res.target_group,
+        value_proposition: res.value_proposition,
+        barriers: res.barriers,
+        resources: res.resources,
+        partners: res.partners,
+        testing_plan: res.testing_plan,
+        metrics: res.metrics,
+        scalability: res.scalability
+      });
+      setGenerationInfo({
+        title: res.idea_title,
+        latencyMs: res.latency_ms,
+        aiPowered: res.ai_powered
+      });
+      if (customPrompt) setPromptInput(customPrompt);
+    } catch (err) {
+      console.error(err);
+      alert('Nie udało się wygenerować Canwy z AI.');
+    } finally {
+      setAutofilling(false);
+    }
+  };
 
   const handleChange = (field: keyof CanvasData, value: string) => {
     setCanvas((prev) => ({ ...prev, [field]: value }));
@@ -57,15 +98,96 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+      {/* Sekcja AI Fast-Track: Uzupełnianie z 1 zdania */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 p-5 rounded-2xl border-2 border-amber-400/40">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-amber-500 text-white rounded-lg shadow-sm">
+              <Zap className="w-4 h-4 fill-white" />
+            </span>
+            <div>
+              <h4 className="text-sm font-black text-slate-900 tracking-tight">
+                AI Auto-Fill Canwy (1-Click Groq Fast-Track dla Jury)
+              </h4>
+              <p className="text-xs text-slate-600">
+                Wpisz 1 zdanie o pomyśle lub kliknij gotowy scenariusz – model wypełni wszystkie 9 pól Canwy ROPS w ~1s.
+              </p>
+            </div>
+          </div>
+
+          {generationInfo && (
+            <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold self-start md:self-auto border border-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>
+                {generationInfo.aiPowered ? '⚡ Groq AI (openai/gpt-oss-20b)' : '⚡ Błyskawiczny Silnik Lokalny'}: {generationInfo.latencyMs}ms
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Gotowe presety dla Jury */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="text-[11px] font-bold text-slate-500 self-center mr-1">Szybkie scenariusze:</span>
+          {presets.map((p, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleAutofill(p.prompt)}
+              disabled={autofilling}
+              className="text-xs bg-white hover:bg-amber-100 hover:text-amber-900 text-slate-700 font-semibold px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm transition-all flex items-center gap-1"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Input z przyciskiem generowania */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            value={promptInput}
+            onChange={(e) => setPromptInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAutofill()}
+            placeholder="Wpisz dowolny pomysł, np. Mobilna opieka wytchnieniowa dla opiekunów osób niesamodzielnych..."
+            className="flex-1 text-xs sm:text-sm p-3 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+          />
+          <button
+            type="button"
+            onClick={() => handleAutofill()}
+            disabled={autofilling || !promptInput.trim()}
+            className="bg-amber-500 hover:bg-amber-600 text-black font-black px-5 py-3 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {autofilling ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Generowanie...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Generuj Canwę (AI ~1s)</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {generationInfo && (
+          <p className="text-xs font-semibold text-amber-900 mt-2">
+            Wygenerowany tytuł: <strong className="text-slate-950 font-black">"{generationInfo.title}"</strong>
+          </p>
+        )}
+      </div>
+
+      {/* Nagłówek Canwy */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-200 pt-6">
         <div>
           <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-amber-500 text-white flex items-center justify-center text-xs font-black">9</span>
             {etrMode ? 'Tabela Twojego Pomysłu (9 Pól)' : 'Canwa Innowacji Społecznych ROPS Kraków'}
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Wypełnij poszczególne bloki metodyczne, a Asystent AI wskaże luki logiczne i oceni gotowość do grantu.
+            Przejrzyj pola poniżej, a następnie kliknij audyt AI, aby sprawdzić spójność logiczną i wygenerować prompt wizualizatora.
           </p>
         </div>
 
@@ -80,18 +202,23 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
       </div>
 
       {/* Siatka 9 pól Canwy */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         {fields.map((f) => (
-          <div key={f.key} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:bg-white transition-all">
+          <div
+            key={f.key}
+            className={`bg-slate-50 border rounded-xl p-3.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:bg-white transition-all ${
+              generationInfo ? 'border-amber-300 shadow-sm' : 'border-slate-200'
+            }`}
+          >
             <label className="block text-xs font-bold text-slate-800 mb-1">
               {etrMode ? f.etrLabel : f.label}
             </label>
             <p className="text-[11px] text-slate-500 mb-2 leading-tight">{f.hint}</p>
             <textarea
-              rows={3}
+              rows={4}
               value={canvas[f.key]}
               onChange={(e) => handleChange(f.key, e.target.value)}
-              className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+              className="w-full text-xs p-2 rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-blue-500 transition-colors resize-none leading-relaxed"
               placeholder={`Wpisz treść...`}
             />
           </div>

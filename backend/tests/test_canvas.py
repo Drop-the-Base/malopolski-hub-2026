@@ -22,3 +22,21 @@ async def test_canvas_evaluation_and_grant():
         assert data["overall_score"] >= 70
         assert "visual_concept_prompt" in data
         assert len(data["strengths"]) > 0
+
+@pytest.mark.asyncio
+async def test_canvas_autofill():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        payload = {
+            "prompt": "Kawiarenka naprawcza dla seniorów i młodzieży",
+            "powiat": "Nowy Sącz"
+        }
+        res = await ac.post("/api/v1/canvas/autofill", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert "idea_title" in data
+        assert "problem" in data
+        assert "value_proposition" in data
+        assert "partners" in data
+        assert len(data["problem"]) > 10
+        assert "ai_powered" in data
+        assert "latency_ms" in data

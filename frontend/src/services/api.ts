@@ -71,6 +71,15 @@ export const api = {
     return res.data;
   },
 
+  autofillCanvas: async (prompt: string, powiat?: string, target_group?: string) => {
+    const res = await client.post<import('../types').CanvasAutofillResult>('/canvas/autofill', {
+      prompt,
+      powiat: powiat || 'Kraków',
+      target_group: target_group || undefined
+    });
+    return res.data;
+  },
+
   generateGrantApplication: async (data: {
     idea_title: string;
     summary: string;

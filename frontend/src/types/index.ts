@@ -68,6 +68,21 @@ export interface CanvasAudit {
   visual_concept_prompt: string;
 }
 
+export interface CanvasAutofillResult {
+  idea_title: string;
+  problem: string;
+  target_group: string;
+  value_proposition: string;
+  barriers: string;
+  resources: string;
+  partners: string;
+  testing_plan: string;
+  metrics: string;
+  scalability: string;
+  ai_powered: boolean;
+  latency_ms: number;
+}
+
 export interface ServiceBlueprint {
   title: string;
   summary: string;

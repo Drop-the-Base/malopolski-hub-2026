@@ -11,9 +11,13 @@ from app.schemas.idea_schema import (
     CanvasSubmission,
     CanvasAuditResponse,
     GrantApplicationRequest,
-    GrantApplicationResponse
+    GrantApplicationResponse,
+    CanvasAutofillRequest,
+    CanvasAutofillResponse
 )
 from app.services.ai_assistant import evaluate_canvas, generate_grant_application
+from app.services.groq_client import autofill_social_canvas
+from app.services.pii_filter import anonymize_text
 
 router = APIRouter()
 
@@ -60,3 +64,17 @@ async def create_grant_application(req: GrantApplicationRequest):
     Generator wniosków grantowych na bieżące konkursy ROPS Kraków (np. Inkubator Włączenia Społecznego).
     """
     return generate_grant_application(req)
+
+@router.post("/canvas/autofill", response_model=CanvasAutofillResponse, tags=["Moduł III: Kreator Pomysłów"])
+async def autofill_canvas(req: CanvasAutofillRequest):
+    """
+    Błyskawiczne generowanie 9 bloków Canwy Innowacji Społecznej ROPS (Groq AI Fast-Track).
+    Przekształca 1 zdanie obywatela w kompletny, spójny model innowacji w ~1s.
+    """
+    clean_prompt = anonymize_text(req.prompt)
+    result = await autofill_social_canvas(
+        prompt=clean_prompt,
+        powiat=req.powiat or "Kraków",
+        target_group=req.target_group
+    )
+    return CanvasAutofillResponse(**result)

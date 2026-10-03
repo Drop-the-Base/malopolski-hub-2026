@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     DATABASE_URL: str = "sqlite+aiosqlite:///./data/mhis.db"
     VECTOR_STORE_DIR: str = "./data/vector_store"
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     CORS_ORIGINS: List[str] = [

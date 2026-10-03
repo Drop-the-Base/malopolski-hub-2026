@@ -35,8 +35,8 @@ export const MiddlemanView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<ServiceBlueprint | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     try {
       const result = await api.adaptService(form);
@@ -48,6 +48,12 @@ export const MiddlemanView: React.FC = () => {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (searchParams.get('auto') === '1') {
+      handleSubmit();
+    }
+  }, [searchParams]);
 
   const innovationsList = [
     { id: 'rops-inn-001', name: 'Mobilny Doradca Seniora' },
