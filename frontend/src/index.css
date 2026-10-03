@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :focus-visible {
+    outline: 3px solid #f59e0b !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Tryby Wysokiego Kontrastu WCAG 2.1 AA */
+body.theme-yellow-black {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+}
+
+body.theme-yellow-black * {
+  border-color: #ffff00 !important;
+}
+
+body.theme-yellow-black a,
+body.theme-yellow-black button {
+  color: #00ffff !important;
+}
+
+body.theme-yellow-black input,
+body.theme-yellow-black textarea,
+body.theme-yellow-black select {
+  background-color: #111111 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+}
+
+body.theme-black-white {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.theme-black-white * {
+  border-color: #000000 !important;
+}
+
+/* Skalowanie czcionek (WCAG 1.4.4) */
+html.font-large {
+  font-size: 19px !important;
+}
+
+html.font-huge {
+  font-size: 22px !important;
+}

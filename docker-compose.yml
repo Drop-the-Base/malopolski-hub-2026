@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mhis-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - PROJECT_NAME=Malopolski Hub Innowacji Spolecznych
+      - DATABASE_URL=sqlite+aiosqlite:////data/mhis.db
+      - VECTOR_STORE_DIR=/data/vector_store
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CORS_ORIGINS=["http://localhost", "http://localhost:3000", "http://localhost:80"]
+    volumes:
+      - mhis_data:/data
+    networks:
+      - mhis-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mhis-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - mhis-network
+
+networks:
+  mhis-network:
+    driver: bridge
+
+volumes:
+  mhis_data:
+    name: mhis_data
