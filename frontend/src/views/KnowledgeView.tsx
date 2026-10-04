@@ -177,10 +177,6 @@ export const KnowledgeView: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Nagłówek Modułu */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <Compass className="w-3.5 h-3.5 text-blue-600" aria-hidden="true" />
-          <span>Moduł II: Zasobnik Wiedzy</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
           {etrMode ? 'Katalog sprawdzonych pomysłów' : 'Biblioteka Innowacji Społecznych i diagnoza regionu'}
         </h1>

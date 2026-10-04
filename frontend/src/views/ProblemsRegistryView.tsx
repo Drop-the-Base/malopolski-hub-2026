@@ -18,7 +18,7 @@ import {
   ChevronRight,
   ArrowRight,
   RefreshCw,
-  Sparkles
+  ClipboardList
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { apiErrorMessage } from '../services/api';
@@ -73,7 +73,7 @@ export const ProblemsRegistryView: React.FC = () => {
   // Szybkie presety dla urzędnika / Jury
   const officerPresets = [
     {
-      label: '👵 Brak opieki wytchnieniowej (Limanowa)',
+      label: 'Brak opieki wytchnieniowej (Limanowa)',
       title: 'Krytyczny brak opieki wytchnieniowej dla 45 rodzin opiekujących się seniorami z demencją',
       raw_text: 'W gminie Limanowa ponad 40 rodzin sprawuje całodobową opiekę nad osobami starszymi ze znacznym otępieniem. Opiekunowie faktyczni zgłaszają skrajne wyczerpanie fizyczne i psychiczne. Gmina nie posiada dziennego domu pobytu ani wolnych kadr asystenckich.',
       category: 'uslugi_opiekuncze',
@@ -83,7 +83,7 @@ export const ProblemsRegistryView: React.FC = () => {
       affected_count: 45
     },
     {
-      label: '🚌 Wykluczenie komunikacyjne sołectw (Gorlice)',
+      label: 'Wykluczenie komunikacyjne sołectw (Gorlice)',
       title: 'Całkowite odcięcie komunikacyjne 3 sołectw w okresie zimowym i utrudniony dojazd do ośrodka zdrowia',
       raw_text: 'Mieszkańcy sołectw Bodaki i Ropica Górna w gminie Sękowa nie mają dostępu do regularnej komunikacji autobusowej. Osoby starsze i niesamodzielne mają problem z realizacją recept i wizytami u lekarza specjalisty w Gorlicach.',
       category: 'seniorzy',
@@ -93,7 +93,7 @@ export const ProblemsRegistryView: React.FC = () => {
       affected_count: 90
     },
     {
-      label: '💻 Bariera cyfrowa w e-usługach (Słaboszów)',
+      label: 'Bariera cyfrowa w e-usługach (Słaboszów)',
       title: 'Brak umiejętności cyfrowych u 140 seniorów uniemożliwia korzystanie z e-recept i e-urzędu',
       raw_text: 'Likwidacja stacjonarnego punktu kasowego w gminie Słaboszów spowodowała wykluczenie ponad stu osób starszych, które nie potrafią opłacić rachunków przez bankowość internetową ani pobrać kodu e-recepty.',
       category: 'wykluczenie_cyfrowe',
@@ -199,10 +199,6 @@ export const ProblemsRegistryView: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Nagłówek Modułu */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm print:hidden">
-        <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <AlertCircle className="w-3.5 h-3.5 text-blue-700" />
-          <span>Moduł VIII: Rejestr Problemów Społecznych & Panel Urzędnika JST</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
           {etrMode ? 'Zgłaszanie i Rejestr Problemów w Gminach' : 'Rejestr Wyzwań Społecznych i Panel Urzędnika Samorządowego'}
         </h1>
@@ -259,7 +255,7 @@ export const ProblemsRegistryView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
-                📋
+                <ClipboardList className="w-5 h-5" aria-hidden="true" />
               </div>
               <div>
                 <span className="text-xl font-black text-slate-900">{totalCount}</span>
@@ -269,7 +265,7 @@ export const ProblemsRegistryView: React.FC = () => {
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
-                🚨
+                <AlertCircle className="w-5 h-5 text-rose-700" aria-hidden="true" />
               </div>
               <div>
                 <span className="text-xl font-black text-rose-700">{criticalCount}</span>
@@ -279,7 +275,7 @@ export const ProblemsRegistryView: React.FC = () => {
 
             <div className="bg-white p-4 rounded-2xl border border-indigo-200 shadow-xs flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
-                👥
+                <Users className="w-5 h-5" aria-hidden="true" />
               </div>
               <div>
                 <span className="text-xl font-black text-indigo-900">{totalAffected.toLocaleString('pl-PL')}</span>
@@ -324,9 +320,9 @@ export const ProblemsRegistryView: React.FC = () => {
                 className="text-xs p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none"
               >
                 <option value="">Każda pilność</option>
-                <option value="krytyczny">🔴 Krytyczny</option>
-                <option value="wysoki">🟠 Wysoki</option>
-                <option value="standardowy">🔵 Standardowy</option>
+                <option value="krytyczny">Krytyczny</option>
+                <option value="wysoki">Wysoki</option>
+                <option value="standardowy">Standardowy</option>
               </select>
 
               <select
@@ -536,10 +532,9 @@ export const ProblemsRegistryView: React.FC = () => {
         <div className="space-y-6 animate-fadeIn">
           {/* Szybkie Scenariusze dla Jury */}
           <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
-            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-700">
-              <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
-              <span>Szybkie scenariusze problemów samorządowych dla Jury (1 kliknięcie uzupełnia formularz):</span>
-            </div>
+            <p className="mb-2 text-xs font-bold text-slate-700">
+              Przykładowe zgłoszenia – kliknij, aby wypełnić formularz:
+            </p>
             <div className="flex flex-wrap gap-2">
               {officerPresets.map((pr, idx) => (
                 <button
@@ -669,9 +664,9 @@ export const ProblemsRegistryView: React.FC = () => {
                       onChange={(e) => setForm({ ...form, urgency: e.target.value })}
                       className="w-full text-xs p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900"
                     >
-                      <option value="krytyczny">🔴 Krytyczny (wymaga natychmiastowej interwencji)</option>
-                      <option value="wysoki">🟠 Wysoki (zagrożenie eskalacją problemu)</option>
-                      <option value="standardowy">🔵 Standardowy (wyzwanie średniookresowe)</option>
+                      <option value="krytyczny">Krytyczny (wymaga natychmiastowej interwencji)</option>
+                      <option value="wysoki">Wysoki (zagrożenie eskalacją problemu)</option>
+                      <option value="standardowy">Standardowy (wyzwanie średniookresowe)</option>
                     </select>
                   </div>
 
