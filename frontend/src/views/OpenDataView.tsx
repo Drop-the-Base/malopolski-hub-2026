@@ -92,7 +92,7 @@ export const OpenDataView: React.FC = () => {
           <li>Pliki CSV mają separator „;” i kodowanie UTF-8 – otworzysz je w Excelu lub LibreOffice.</li>
           <li>Spis zasobów: <code>GET {API}</code>. Pełna dokumentacja schematów: Swagger pod adresem <code>/docs</code> serwera API.</li>
         </ul>
-        <pre className="bg-slate-900 text-slate-50 text-sm p-4 rounded-lg overflow-x-auto"><code>{EXAMPLE}</code></pre>
+        <pre tabIndex={0} role="region" aria-label="Przykład kodu: pobranie listy innowacji" className="bg-slate-900 text-slate-50 text-sm p-4 rounded-lg overflow-x-auto"><code>{EXAMPLE}</code></pre>
       </section>
 
       <section aria-labelledby="webhook-title" className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">

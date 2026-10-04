@@ -93,8 +93,8 @@ export const SimilarReports: React.FC<{ groups: SimilarReportGroup[]; total: num
             key={g.powiat ?? 'brak'}
             className={`rounded-xl border p-4 text-sm ${g.is_user_powiat ? 'border-blue-600 border-2 bg-blue-50' : 'border-slate-200 bg-slate-50'}`}
           >
-            <div className="flex items-start justify-between gap-3">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
+            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+              <span className="font-bold text-slate-900 flex flex-wrap items-center gap-1.5 min-w-0">
                 <MapPin className="w-4 h-4 text-blue-700 shrink-0" aria-hidden="true" />
                 {g.powiat_label}
                 {g.is_user_powiat && <span className="text-xs font-semibold text-blue-800">(Twój powiat)</span>}

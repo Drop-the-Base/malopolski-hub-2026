@@ -563,7 +563,7 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat, 
         <summary className="cursor-pointer text-sm font-bold text-blue-700 hover:underline underline-offset-4">
           {etrMode ? 'Pokaż te same dane w tabeli' : 'Pokaż dane mapy w tabeli'}
         </summary>
-        <div className="mt-3 overflow-x-auto">
+        <div className="mt-3 overflow-x-auto" tabIndex={0} role="region" aria-label="Tabela danych mapy (przewijana)">
           <table className="w-full text-sm text-left border-collapse">
             <caption className="text-left text-sm text-slate-600 mb-2">
               Wskaźniki społeczne powiatów Małopolski, posortowane według: {indicator.label.toLowerCase()} (od najwyższej wartości).

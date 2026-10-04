@@ -233,15 +233,15 @@ export const HomeView: React.FC = () => {
           O prototypie
         </h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6 max-w-5xl">
-          <div className="flex gap-4 items-baseline">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">10</dt>
-            <dd className="text-slate-600 leading-relaxed">
+            <dd className="text-slate-600 leading-relaxed flex-1 min-w-[12rem]">
               innowacji w wersji demonstracyjnej. Docelowo cała biblioteka ROPS, niemal 200 przetestowanych rozwiązań.
             </dd>
           </div>
-          <div className="flex gap-4 items-baseline">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">22</dt>
-            <dd className="text-slate-600 leading-relaxed">
+            <dd className="text-slate-600 leading-relaxed flex-1 min-w-[12rem]">
               powiaty Małopolski na{' '}
               <Link to="/mapa" className="text-blue-700 underline underline-offset-4">
                 Mapie Wyzwań Społecznych
@@ -249,9 +249,9 @@ export const HomeView: React.FC = () => {
               (dane demonstracyjne).
             </dd>
           </div>
-          <div className="flex gap-4 items-baseline">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <dt className="text-3xl font-extrabold text-slate-900 w-28 shrink-0">AA</dt>
-            <dd className="text-slate-600 leading-relaxed">
+            <dd className="text-slate-600 leading-relaxed flex-1 min-w-[12rem]">
               poziom WCAG 2.1, do którego projektujemy. Szczegóły w{' '}
               <Link to="/deklaracja-dostepnosci" className="text-blue-700 underline underline-offset-4">
                 deklaracji dostępności
@@ -259,9 +259,9 @@ export const HomeView: React.FC = () => {
               .
             </dd>
           </div>
-          <div className="flex gap-4 items-baseline">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">200 zł</dt>
-            <dd className="text-slate-600 leading-relaxed">
+            <dd className="text-slate-600 leading-relaxed flex-1 min-w-[12rem]">
               miesięcznie, szacunkowy koszt infrastruktury i modeli językowych.
             </dd>
           </div>

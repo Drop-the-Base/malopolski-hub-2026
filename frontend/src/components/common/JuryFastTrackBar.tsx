@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Compass,
   Building2,
@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 
 export const JuryFastTrackBar: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   // Domyślnie rozwinięty dla sędziów, ale zwinięty na niskich ekranach (laptop 1366×768, telefon),
   // żeby pole „Twoja sprawa” na stronie głównej było widoczne bez przewijania. Wybór użytkownika ma pierwszeństwo.
@@ -97,10 +96,12 @@ export const JuryFastTrackBar: React.FC = () => {
               const isActive = location.pathname === s.path.split('?')[0];
 
               return (
-                <button
+                // Zwykłe linki (nie przyciski): da się je otworzyć w nowej karcie, czytnik ekranu ogłasza „link” i bieżący krok
+                <Link
                   key={s.id}
-                  onClick={() => navigate(s.path)}
-                  className={`flex items-center gap-2.5 p-2 rounded-lg border text-left transition-colors group overflow-hidden ${
+                  to={s.path}
+                  aria-current={isActive ? 'step' : undefined}
+                  className={`flex items-center gap-2.5 p-2 rounded-lg border text-left transition-colors group ${
                     isActive ? 'bg-slate-900 border-amber-400' : 'border-slate-700 hover:bg-slate-900'
                   }`}
                 >
@@ -108,15 +109,15 @@ export const JuryFastTrackBar: React.FC = () => {
                     {s.num}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold text-white truncate flex items-center gap-1.5">
+                    <div className="text-sm font-bold text-white flex items-center gap-1.5">
                       <Icon className="w-3.5 h-3.5 text-slate-300" aria-hidden="true" />
                       <span>{s.title}</span>
                     </div>
-                    <div className="text-xs text-slate-300 truncate">
+                    <div className="text-xs text-slate-300">
                       {s.subtitle}
                     </div>
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>

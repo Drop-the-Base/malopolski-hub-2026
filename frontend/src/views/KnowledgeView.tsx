@@ -96,7 +96,13 @@ export const KnowledgeView: React.FC = () => {
     }
   }, [onMapRoute, innovationId, tabParam]);
 
-  const closeModal = () => navigate('/baza-wiedzy');
+  // Zamknięcie karty wraca tam, skąd przyszedł użytkownik (np. do wyników Matchmakingu);
+  // przy wejściu z bezpośredniego linku – do listy innowacji.
+  const closeModal = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate('/baza-wiedzy');
+  };
   const dialogRef = useDialog<HTMLDivElement>(!!selectedInnovation, closeModal);
 
   // Dane statyczne (mapa, materiały)
@@ -502,32 +508,33 @@ export const KnowledgeView: React.FC = () => {
             {/* Najważniejsze wskaźniki */}
             <h3 className="sr-only">Najważniejsze informacje</h3>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-6 text-sm border-y border-slate-200 py-4">
-              <div className="flex gap-3">
-                <Wallet className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <dt className="text-slate-600">Koszt</dt>
-                  <dd className="font-bold text-slate-900">{selectedInnovation.budget_bracket}</dd>
-                </div>
+              <div>
+                <dt className="text-slate-600 flex items-center gap-3">
+                  <Wallet className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  Koszt
+                </dt>
+                <dd className="font-bold text-slate-900 pl-8">{selectedInnovation.budget_bracket}</dd>
               </div>
-              <div className="flex gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <dt className="text-slate-600">Gotowość</dt>
-                  <dd className="font-bold text-slate-900">{selectedInnovation.readiness_level}</dd>
-                </div>
+              <div>
+                <dt className="text-slate-600 flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
+                  Gotowość
+                </dt>
+                <dd className="font-bold text-slate-900 pl-8">{selectedInnovation.readiness_level}</dd>
               </div>
-              <div className="flex gap-3">
-                <Users className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <dt className="text-slate-600">Dla kogo</dt>
-                  <dd className="font-bold text-slate-900">{selectedInnovation.target_groups.join(', ')}</dd>
-                </div>
+              <div>
+                <dt className="text-slate-600 flex items-center gap-3">
+                  <Users className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  Dla kogo
+                </dt>
+                <dd className="font-bold text-slate-900 pl-8">{selectedInnovation.target_groups.join(', ')}</dd>
               </div>
-              <div className="flex gap-3">
-                <MapPin className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <dt className="text-slate-600">Gdzie sprawdzona</dt>
-                  <dd className="font-bold text-slate-900">
+              <div>
+                <dt className="text-slate-600 flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
+                  Gdzie sprawdzona
+                </dt>
+                <dd className="font-bold text-slate-900 pl-8">
                     {selectedInnovation.origin_poviat ? (
                       <>
                         {powiatLabel(selectedInnovation.origin_poviat)}
@@ -542,7 +549,6 @@ export const KnowledgeView: React.FC = () => {
                       'brak danych'
                     )}
                   </dd>
-                </div>
               </div>
             </dl>
 

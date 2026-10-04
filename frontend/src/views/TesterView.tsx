@@ -69,6 +69,10 @@ export const TesterView: React.FC = () => {
   const [selectedCampaign, setSelectedCampaign] = useState<TestingCampaignItem | null>(null);
   const [report, setReport] = useState<EvaluationReport | null>(null);
   const [notice, setNotice] = useState('');
+  // Błędy osobno od komunikatów o sukcesie (czerwone pole z role="alert", nie zielone „gotowe”)
+  const [errorNotice, setErrorNotice] = useState('');
+  const [votingLoaded, setVotingLoaded] = useState(false);
+  const [campaignsLoaded, setCampaignsLoaded] = useState(false);
 
   const [registerModal, setRegisterModal] = useState(false);
   const [regForm, setRegForm] = useState(emptyReg);
@@ -85,8 +89,10 @@ export const TesterView: React.FC = () => {
     try {
       const list = await api.getVotingIdeas();
       setVotingIdeas(list);
-    } catch {
-      /* ciche niepowodzenie wczytywania */
+    } catch (err) {
+      setErrorNotice(apiErrorMessage(err, 'Nie udało się wczytać pomysłów do głosowania. Odśwież stronę za chwilę.'));
+    } finally {
+      setVotingLoaded(true);
     }
   };
 
@@ -96,7 +102,9 @@ export const TesterView: React.FC = () => {
       setCampaigns(data);
       setSelectedCampaign(data.find((c) => c.id === keepId) ?? data[0] ?? null);
     } catch (err) {
-      setNotice(apiErrorMessage(err, 'Nie udało się wczytać kampanii.'));
+      setErrorNotice(apiErrorMessage(err, 'Nie udało się wczytać listy testów. Odśwież stronę za chwilę.'));
+    } finally {
+      setCampaignsLoaded(true);
     }
   };
 
@@ -120,9 +128,11 @@ export const TesterView: React.FC = () => {
       } catch {
         /* ignoruj */
       }
+      setErrorNotice('');
       setNotice(res.message);
     } catch (err) {
-      setNotice(apiErrorMessage(err, 'Nie udało się zarejestrować głosu.'));
+      setNotice('');
+      setErrorNotice(apiErrorMessage(err, 'Nie udało się zapisać głosu. Spróbuj ponownie.'));
     } finally {
       setVoteLoading(null);
     }
@@ -181,6 +191,17 @@ export const TesterView: React.FC = () => {
     }
   };
 
+  const filteredIdeas = votingIdeas.filter((idea) => {
+    const matchesPowiat = !filterPowiat || idea.powiat?.toLowerCase() === filterPowiat.toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
+    const matchesQuery =
+      !q ||
+      idea.title.toLowerCase().includes(q) ||
+      (idea.summary && idea.summary.toLowerCase().includes(q)) ||
+      (idea.cluster_group && idea.cluster_group.toLowerCase().includes(q));
+    return matchesPowiat && matchesQuery;
+  });
+
   const formatDate = (d: string) => new Date(d).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
@@ -204,13 +225,20 @@ export const TesterView: React.FC = () => {
           </div>
         )}
       </div>
+      {errorNotice && (
+        <div role="alert" className="bg-rose-50 border border-rose-300 text-rose-900 p-4 rounded-xl text-sm flex items-start justify-between gap-3">
+          <span>{errorNotice}</span>
+          <button type="button" onClick={() => setErrorNotice('')} aria-label="Zamknij komunikat o błędzie" className="p-1"><X className="w-4 h-4" aria-hidden="true" /></button>
+        </div>
+      )}
 
       {/* Przełącznik zakładek modułu Testera */}
-      <nav aria-label="Wybór trybu testowania" className="flex border-b border-slate-200 gap-2 sm:gap-4 overflow-x-auto pb-px">
+      <nav aria-label="Wybór trybu testowania" className="flex flex-col sm:flex-row border-b border-slate-200 gap-1 sm:gap-4 pb-px">
         <button
           type="button"
           onClick={() => setActiveTab('voting')}
-          className={`pb-3.5 px-4 font-bold text-sm border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          aria-pressed={activeTab === 'voting'}
+          className={`pb-3.5 px-4 pt-2 sm:pt-0 font-bold text-sm text-left border-b-2 flex items-center gap-2 transition-all ${
             activeTab === 'voting'
               ? 'border-blue-700 text-blue-700 font-black'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -226,7 +254,8 @@ export const TesterView: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('campaigns')}
-          className={`pb-3.5 px-4 font-bold text-sm border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
+          aria-pressed={activeTab === 'campaigns'}
+          className={`pb-3.5 px-4 pt-2 sm:pt-0 font-bold text-sm text-left border-b-2 flex items-center gap-2 transition-all ${
             activeTab === 'campaigns'
               ? 'border-emerald-700 text-emerald-700 font-black'
               : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -243,6 +272,7 @@ export const TesterView: React.FC = () => {
       {/* ZAKŁADKA 1: Głosowanie Społeczności */}
       {activeTab === 'voting' && (
         <section aria-labelledby="voting-title" className="space-y-6">
+          <h2 id="voting-title" className="sr-only">Głosowanie mieszkańców – pomysły do poparcia</h2>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="w-full md:max-w-md relative">
               <label htmlFor="search-ideas" className="sr-only">Wyszukaj zgłoszony pomysł</label>
@@ -265,7 +295,7 @@ export const TesterView: React.FC = () => {
                 id="filter-powiat"
                 value={filterPowiat}
                 onChange={(e) => setFilterPowiat(e.target.value)}
-                className="text-sm p-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-blue-600"
+                className="w-full sm:w-auto max-w-full text-sm p-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-blue-600"
               >
                 <option value="">Wszystkie powiaty (Małopolska)</option>
                 {POWIATY.map((p) => (
@@ -288,10 +318,14 @@ export const TesterView: React.FC = () => {
           </div>
 
           {/* Lista zgłoszonych innowacji w głosowaniu */}
-          {votingIdeas.length === 0 ? (
+          {!votingLoaded ? (
+            <p role="status" className="bg-white p-8 text-center rounded-2xl border border-slate-200 text-base text-slate-700">
+              Wczytywanie pomysłów…
+            </p>
+          ) : votingIdeas.length === 0 ? (
             <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 space-y-4">
               <FlaskConical className="w-8 h-8 text-blue-600 mx-auto" aria-hidden="true" />
-              <h2 className="text-lg font-black text-slate-900">Brak zgłoszeń w module testowania</h2>
+              <h3 className="text-lg font-black text-slate-900">Na razie nie ma pomysłów do poparcia</h3>
               <p className="text-sm text-slate-600 max-w-md mx-auto">
                 Bądź pierwszą osobą, która zgłosi innowację społeczną do testów i oceny mieszkańców!
               </p>
@@ -302,19 +336,21 @@ export const TesterView: React.FC = () => {
                 <Lightbulb className="w-4 h-4" /> Zgłoś pomysł w Kreatorze
               </Link>
             </div>
+          ) : filteredIdeas.length === 0 ? (
+            <div className="bg-white p-8 text-center rounded-2xl border border-slate-200 space-y-3">
+              <h3 className="text-lg font-black text-slate-900">Nic nie pasuje do wybranych filtrów</h3>
+              <p className="text-sm text-slate-700">Zmień wpisane słowo albo wybierz inny powiat.</p>
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setFilterPowiat(''); }}
+                className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl text-sm"
+              >
+                Pokaż wszystkie pomysły
+              </button>
+            </div>
           ) : (
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-6" aria-label="Wnioski poddane głosowaniu">
-              {votingIdeas
-                .filter((idea) => {
-                  const matchesPowiat = !filterPowiat || idea.powiat?.toLowerCase() === filterPowiat.toLowerCase();
-                  const q = searchQuery.trim().toLowerCase();
-                  const matchesQuery =
-                    !q ||
-                    idea.title.toLowerCase().includes(q) ||
-                    (idea.summary && idea.summary.toLowerCase().includes(q)) ||
-                    (idea.cluster_group && idea.cluster_group.toLowerCase().includes(q));
-                  return matchesPowiat && matchesQuery;
-                })
+              {filteredIdeas
                 .map((idea) => {
                   const hasVoted = votedIds.has(idea.id);
                   const isVotingThis = voteLoading === idea.id;
@@ -418,6 +454,17 @@ export const TesterView: React.FC = () => {
       {/* ZAKŁADKA 2: Pilotaże i Ankiety SUS */}
       {activeTab === 'campaigns' && (
         <section aria-labelledby="campaigns-title" className="space-y-6">
+          <h2 id="campaigns-title" className="sr-only">Pilotaże i ankiety SUS</h2>
+          {!campaignsLoaded && (
+            <p role="status" className="bg-white p-8 text-center rounded-2xl border border-slate-200 text-base text-slate-700">Wczytywanie testów…</p>
+          )}
+          {campaignsLoaded && campaigns.length === 0 && (
+            <div className="bg-white p-8 text-center rounded-2xl border border-slate-200 space-y-2">
+              <h3 className="text-lg font-black text-slate-900">Teraz nie ma otwartych testów</h3>
+              <p className="text-sm text-slate-700">Zapisz się na powiadomienia – damy znać, gdy ruszy nowy pilotaż.</p>
+              <Link to="/powiadomienia" className="inline-block font-bold text-blue-700 underline underline-offset-4">Ustaw powiadomienia e-mail</Link>
+            </div>
+          )}
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" aria-label="Kampanie testowe">
         {campaigns.map((camp) => {
           const isSelected = selectedCampaign?.id === camp.id;
