@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 
 const modules = [
   { to: '/matchmaking', label: 'Znajdź rozwiązanie' },
-  { to: '/baza-wiedzy', label: 'Baza innowacji i mapa wyzwań' },
+  { to: '/baza-wiedzy', label: 'Biblioteka innowacji' },
+  { to: '/mapa', label: 'Mapa wyzwań Małopolski' },
   { to: '/kreator-pomyslow', label: 'Kreator pomysłów' },
   { to: '/tester', label: 'Tester innowacji' },
   { to: '/dialog', label: 'Dialog i mentorzy' },

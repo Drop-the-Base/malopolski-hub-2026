@@ -42,11 +42,29 @@ export const PRIMARY_CTA: NavItem = {
 /** Nawigacja główna: maks. 4 pozycje + wyróżnione wezwanie (backlog G13). */
 export const NAV_ENTRIES: NavEntry[] = [
   {
-    kind: 'link',
-    to: '/baza-wiedzy',
+    kind: 'group',
+    id: 'biblioteka',
     label: 'Biblioteka i mapa',
     labelEtr: 'Biblioteka i mapa',
-    icon: Compass
+    icon: Compass,
+    items: [
+      {
+        to: '/baza-wiedzy',
+        label: 'Biblioteka innowacji',
+        labelEtr: 'Sprawdzone pomysły',
+        hint: 'Sprawdzone rozwiązania z Małopolski, filmy i materiały',
+        hintEtr: 'Pomysły, które już komuś pomogły',
+        icon: Compass
+      },
+      {
+        to: '/mapa',
+        label: 'Mapa wyzwań Małopolski',
+        labelEtr: 'Mapa powiatów',
+        hint: 'Kliknij swój powiat: seniorzy, młodzież, potrzeby i działające rozwiązania',
+        hintEtr: 'Kliknij swój powiat i zobacz, czego tam brakuje',
+        icon: MapIcon
+      }
+    ]
   },
   {
     kind: 'group',

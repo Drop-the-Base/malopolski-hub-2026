@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, apiErrorMessage } from '../services/api';
 import { EducationalMaterial, InnovationItem, InnovationRatingSummary, RegionalChallenge } from '../types';
-import { MalopolskaMap } from '../components/map/MalopolskaMap';
+import { MalopolskaMap, MapThumbnail } from '../components/map/MalopolskaMap';
 import { InnovationRating, RatingBadge } from '../components/innovation/InnovationRating';
 import {
-  Compass,
   Search,
   FileText,
   Building2,
@@ -19,7 +18,9 @@ import {
   MapPin,
   Users,
   Wallet,
-  PlayCircle
+  PlayCircle,
+  ArrowRight,
+  Map as MapIcon
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { useDialog } from '../hooks/useDialog';
@@ -30,7 +31,7 @@ type Tab = 'katalog' | 'mapa' | 'edukacja';
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'katalog', label: 'Biblioteka Innowacji', icon: Layers },
-  { id: 'mapa', label: 'Wyzwania 22 powiatów', icon: Compass },
+  { id: 'mapa', label: 'Mapa wyzwań', icon: MapIcon },
   { id: 'edukacja', label: 'Materiały i narzędzia', icon: BookOpen }
 ];
 
@@ -53,6 +54,9 @@ const matchesAudience = (inn: InnovationItem, groupId: string) => {
 
 const isTab = (v: string | null): v is Tab => v === 'katalog' || v === 'mapa' || v === 'edukacja';
 
+// Każda zakładka ma własny adres – mapę można otworzyć z menu, linku lub zakładki: /mapa
+const tabPath = (t: Tab) => (t === 'mapa' ? '/mapa' : t === 'edukacja' ? '/baza-wiedzy?tab=edukacja' : '/baza-wiedzy');
+
 const youtubeEmbed = (url: string) => {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
   return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : null;
@@ -62,6 +66,7 @@ export const KnowledgeView: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { innovationId } = useParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const legacyId = searchParams.get('id');
   const { etrMode } = useAccessibility();
 
@@ -74,16 +79,22 @@ export const KnowledgeView: React.FC = () => {
   const [error, setError] = useState('');
   const [selectedInnovation, setSelectedInnovation] = useState<InnovationItem | null>(null);
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<Tab>(isTab(tabParam) ? tabParam : 'katalog');
+  const onMapRoute = pathname === '/mapa';
+  // Zakładka wynika z adresu: /mapa albo /baza-wiedzy?tab=edukacja
+  const activeTab: Tab = onMapRoute ? 'mapa' : innovationId ? 'katalog' : isTab(tabParam) ? tabParam : 'katalog';
+  const goToTab = (t: Tab) => navigate(tabPath(t));
   const [allInnovations, setAllInnovations] = useState<InnovationItem[]>([]);
   const [powiatFilter, setPowiatFilter] = useState(searchParams.get('powiat') || '');
   const [audienceFilter, setAudienceFilter] = useState('');
   const [ratings, setRatings] = useState<Record<string, InnovationRatingSummary>>({});
 
-  // Link z innej strony (np. „Mapa wyzwań” na stronie głównej) przełącza zakładkę
+  // Stare linki /baza-wiedzy?tab=mapa prowadzą pod czysty adres /mapa (poprawne menu i okruszki)
   useEffect(() => {
-    if (isTab(tabParam)) setActiveTab(tabParam);
-  }, [tabParam]);
+    if (!onMapRoute && !innovationId && tabParam === 'mapa') {
+      const powiat = searchParams.get('powiat');
+      navigate(`/mapa${powiat ? `?powiat=${encodeURIComponent(powiat)}` : ''}`, { replace: true });
+    }
+  }, [onMapRoute, innovationId, tabParam]);
 
   const closeModal = () => navigate('/baza-wiedzy');
   const dialogRef = useDialog<HTMLDivElement>(!!selectedInnovation, closeModal);
@@ -125,7 +136,7 @@ export const KnowledgeView: React.FC = () => {
     setCategory('');
     setAudienceFilter('');
     setPowiatFilter(powiat);
-    setActiveTab('katalog');
+    navigate(`/baza-wiedzy?powiat=${encodeURIComponent(powiat)}`);
     window.setTimeout(() => document.getElementById('tab-katalog')?.focus(), 0);
   };
 
@@ -168,7 +179,7 @@ export const KnowledgeView: React.FC = () => {
   const onTabKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     const next = (index + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
-    setActiveTab(TABS[next].id);
+    goToTab(TABS[next].id);
     document.getElementById(`tab-${TABS[next].id}`)?.focus();
   };
 
@@ -179,12 +190,12 @@ export const KnowledgeView: React.FC = () => {
       {/* Nagłówek Modułu */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
-          {etrMode ? 'Katalog sprawdzonych pomysłów' : 'Biblioteka Innowacji Społecznych i diagnoza regionu'}
+          {etrMode ? 'Katalog sprawdzonych pomysłów' : 'Biblioteka Innowacji Społecznych i mapa wyzwań regionu'}
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
           {etrMode
             ? 'Tu znajdziesz pomysły, które już komuś pomogły. Możesz je przeczytać prostym językiem.'
-            : 'Przetestowane innowacje społeczne (wersja demonstracyjna: 10 kart), wyzwania 22 powiatów Małopolski oraz materiały metodyczne.'}
+            : 'Przetestowane innowacje społeczne (wersja demonstracyjna: 10 kart), mapa wyzwań 22 powiatów Małopolski oraz materiały metodyczne.'}
         </p>
 
         {/* Zakładki */}
@@ -200,7 +211,7 @@ export const KnowledgeView: React.FC = () => {
                 aria-selected={selected}
                 aria-controls={`panel-${t.id}`}
                 tabIndex={selected ? 0 : -1}
-                onClick={() => setActiveTab(t.id)}
+                onClick={() => goToTab(t.id)}
                 onKeyDown={(e) => onTabKeyDown(e, i)}
                 className={`pb-3 transition-colors border-b-2 flex items-center gap-2 ${
                   selected ? 'border-blue-700 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -219,6 +230,31 @@ export const KnowledgeView: React.FC = () => {
       {activeTab === 'katalog' && (
         <div id="panel-katalog" role="tabpanel" aria-labelledby="tab-katalog" className="space-y-6">
           <CompareFolderBar />
+          {/* Zachęta do mapy – żeby mapę dało się odkryć samemu, bez szukania zakładki */}
+          <section
+            aria-labelledby="map-teaser-title"
+            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
+          >
+            <MapThumbnail className="w-28 sm:w-32 shrink-0" />
+            <div className="flex-1">
+              <h2 id="map-teaser-title" className="text-lg font-bold text-slate-900">
+                {etrMode ? 'Mapa powiatów Małopolski' : 'Mapa wyzwań Małopolski'}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600 leading-relaxed max-w-prose">
+                {etrMode
+                  ? 'Kliknij swój powiat. Zobaczysz, czego tam brakuje i jakie pomysły już działają.'
+                  : 'Kliknij swój powiat i zobacz, ilu mieszka tam seniorów i młodych, jakie potrzeby zgłaszają mieszkańcy i które rozwiązania już działają.'}
+              </p>
+            </div>
+            <Link
+              to="/mapa"
+              className="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-bold shrink-0"
+            >
+              <MapIcon className="w-4 h-4" aria-hidden="true" />
+              Otwórz mapę wyzwań
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          </section>
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
             <div className="sm:col-span-2 lg:col-span-1">
               <label htmlFor="knowledge-search" className="block text-sm font-bold text-slate-700 mb-1">
@@ -395,7 +431,11 @@ export const KnowledgeView: React.FC = () => {
       {/* Widok 2: Wyzwania powiatów */}
       {activeTab === 'mapa' && (
         <div id="panel-mapa" role="tabpanel" aria-labelledby="tab-mapa">
-          <MalopolskaMap challenges={challenges} onShowInnovations={showInnovationsFrom} />
+          <MalopolskaMap
+            challenges={challenges}
+            onShowInnovations={showInnovationsFrom}
+            initialPowiat={onMapRoute ? searchParams.get('powiat') ?? undefined : undefined}
+          />
         </div>
       )}
 
@@ -488,7 +528,19 @@ export const KnowledgeView: React.FC = () => {
                 <div>
                   <dt className="text-slate-600">Gdzie sprawdzona</dt>
                   <dd className="font-bold text-slate-900">
-                    {selectedInnovation.origin_poviat ? powiatLabel(selectedInnovation.origin_poviat) : 'brak danych'}
+                    {selectedInnovation.origin_poviat ? (
+                      <>
+                        {powiatLabel(selectedInnovation.origin_poviat)}
+                        <Link
+                          to={`/mapa?powiat=${encodeURIComponent(selectedInnovation.origin_poviat)}`}
+                          className="block mt-1 text-sm font-bold text-blue-700 underline underline-offset-4 hover:text-blue-900"
+                        >
+                          Pokaż ten powiat na mapie wyzwań
+                        </Link>
+                      </>
+                    ) : (
+                      'brak danych'
+                    )}
                   </dd>
                 </div>
               </div>
