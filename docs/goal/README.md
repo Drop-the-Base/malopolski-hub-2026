@@ -35,8 +35,8 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 | G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | 🚧 częściowo: `no-cache` dla index.html, usunięte plakietki modułów |
 | G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ✅ 824d173 |
 | G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ✅ 5854f0b |
-| G15 | Panel eksperta/mentora: kolejka przydzielonych fiszek i pytań JST, szybki feedback (szablony odpowiedzi), widoczny dla autora w „Moich sprawach” | V / eksperci | ⏳ przerwane limitem sesji – niedokończony backend w worktree `dev-f`, nie scalony |
-| G16 | Katalog dla JST: „Teczka wdrożeń” – porównanie 2–3 innowacji obok siebie (koszt, kadry, gotowość) i wydruk/PDF dla rady gminy | II+VII / JST | ⏳ przerwane limitem sesji – nie rozpoczęte |
+| G15 | Panel eksperta/mentora: kolejka przydzielonych fiszek i pytań JST, szybki feedback (szablony odpowiedzi), widoczny dla autora w „Moich sprawach” | V / eksperci | ✅ fb655e3, ff2ab2f |
+| G16 | Katalog dla JST: „Teczka wdrożeń” – porównanie 2–3 innowacji obok siebie (koszt, kadry, gotowość) i wydruk/PDF dla rady gminy | II+VII / JST | ✅ fb655e3, 3e1b07e |
 
 ## Dziennik decyzji
 
@@ -80,3 +80,24 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 - **Usunięcie „AI tells”** – plakietki „Moduł I–VIII” usunięte ze wszystkich 8 widoków (sprawdzone w podglądzie). Przegląd emotikonów i ikon Sparkles przerwany limitem sesji – do dokończenia.
 - **Cache** – nginx: `no-cache` dla index.html, długi cache dla `/assets/` (hash w nazwie). Po przebudowie przeglądarka zawsze dostaje nową wersję.
 - **Stan na koniec sesji 2026-10-04** – `dev` buduje się w Dockerze (tsc OK), backend 43 testy OK. Niedokończone: G10, G11 (UI), G12, G15, G16, dokończenie przeglądu emotikonów/Sparkles.
+- **G15 Panel eksperta/mentora** (`fb655e3`, `ff2ab2f`, gałąź `dev-f`) – `/mentor`: logowanie demonstracyjne (wybór mentora + kod
+  `MENTOR_PASSWORD`, domyślnie `mentor-demo-2026`), token JWT z rolą „mentor” (nie otwiera Panelu ROPS; token ROPS nie otwiera
+  panelu mentora). Panel: liczby (czeka na opinię, wysłane opinie, pytania bez odpowiedzi, najbliższe konsultacje), fiszki
+  przydzielone przez koordynatora z rozmową w sprawie (bez e-maila autora), pytania z Dialogu w obszarze mentora (konsultacje
+  mentorskie + dopasowanie po słowach ze specjalizacji, najpierw bez odpowiedzi eksperta), konsultacje z rezerwacji. Szybka
+  opinia z 4 edytowalnymi szablonami (Mocne strony, Do doprecyzowania, Proponowany partner, Następny krok; zapis w
+  localStorage per mentor, kursor przechodzi do pierwszego „…”). Opinia = wiadomość `sender=mentor` w `case_messages`
+  (nowe kolumny `sender_name`, `sender_role`, `mentor_id`), autor widzi ją na `/status/:id` z imieniem i specjalizacją,
+  na osi czasu krok „W ocenie” mówi o opinii; e-mail do autora przez skrzynkę nadawczą, powiadomienie w Panelu ROPS.
+  Odpowiedzi mentora w Dialogu podpisane z bazy mentorów (`thread_messages.mentor_id`). Panel ROPS: tabela „Aktywność
+  mentorów” (`GET /admin/mentor-activity`). Dane demo (raz na bazę): 2 startowe fiszki przydzielone, 2 pytania ekspertów
+  w Dialogu. Link z „Dialog i mentorzy”, pozycja „Panel mentora” w grupie „Dla samorządu”. Testy: `tests/test_mentor_panel.py`.
+- **G16 Teczka wdrożeń dla JST** (`fb655e3`, `3e1b07e`) – „Dodaj do porównania” na liście i karcie innowacji (aria-pressed,
+  limit 3, komunikat), pasek „Teczka porównania: n z 3” nad biblioteką; localStorage z try/catch (bez danych osobowych).
+  `/porownanie`: tabela z nagłówkami kolumn (innowacje) i wierszy (problem, dla kogo, przedział kosztu, koszt uruchomienia
+  i miesięczny, kadry, gotowość, gdzie sprawdzona, średnia ocen), na telefonie karty z listą cech; „Drukuj / zapisz PDF dla
+  rady gminy” (A4 poziomo, bez nawigacji, data i zastrzeżenie o danych demo), przy każdej innowacji „Przygotuj pakiet
+  wdrożeniowy” (Middleman). Koszty i kadry z profili Middlemana dla gminy referencyjnej (5 tys. mieszkańców, 20% seniorów),
+  opis metody pod tabelą; brak profilu = „brak danych”. API `GET /api/v1/knowledge/compare?ids=` (2–3 id, 422 przy >3).
+  Pozycja „Porównaj innowacje” w grupie „Dla samorządu”.
+  Sprawdzone: `pytest` – 48 passed (5 nowych testów), `npm run build` (tsc) – OK; bez podglądu w przeglądarce.
