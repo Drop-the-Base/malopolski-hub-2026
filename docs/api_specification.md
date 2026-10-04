@@ -110,6 +110,8 @@ Odpowiedź (skrócona):
 - Wyniki są posortowane malejąco; poniżej progu trafności (0,35) nie są zwracane. Gdy nic nie pasuje: `no_match: true`, pusta lista `matches` i kroki „zgłoś problem / zaproponuj pomysł”.
 - `trend_alert` pojawia się tylko, gdy w powiecie w ostatnich 90 dniach zarejestrowano ≥ 2 zgłoszenia w tej samej kategorii (z porównaniem do poprzedniego kwartału, jeśli są dane).
 - `ai_generated` = uzasadnienia wygenerował LLM; w przeciwnym razie szablon oparty na `matched_needs`.
+- **Widoczna trafność (G3):** każda pozycja ma `matched_keywords` – słowa z opisu użytkownika, które zdecydowały o dopasowaniu (np. `["samotni", "seniorzy", "wsi"]`). Na poziomie odpowiedzi `highlights` to fragmenty `clean_query` do podświetlenia: `{ "start": 0, "end": 7, "text": "Samotni", "reasons": ["samotność i izolacja"] }` (pozycje znaków, rozłączne, posortowane).
+- **Podobne zgłoszenia z regionu:** `similar_reports` (maks. 6 grup) agreguje wcześniejsze zapytania Matchmakingu i wpisy Rejestru Wyzwań o tych samych potrzebach per powiat: `{ "powiat": "gorlicki", "powiat_label": "powiat gorlicki", "count": 4, "registry_count": 1, "last_reported_at": "…", "example_titles": ["…"], "is_user_powiat": true }`; `similar_reports_total` to łączna liczba. Treść zapytań mieszkańców nie jest zwracana – `example_titles` pochodzą wyłącznie z wpisów Rejestru Wyzwań (zanonimizowane). Wyniki oceny jakości rankingu: `docs/goal/matchmaking_eval.md`.
 
 ### 3.2. `POST /ideas` → `PATCH /ideas/{id}` → `GET /ideas/{id}/status`
 ```json

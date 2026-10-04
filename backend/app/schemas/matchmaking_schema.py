@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
+from datetime import datetime
 from typing import List, Optional
 from app.core.constants import normalize_powiat, normalize_category
 
@@ -29,9 +30,30 @@ class InnovationMatchItem(BaseModel):
     category_label: str
     target_groups: List[str]
     matched_needs: List[str] = Field(default_factory=list, description="Potrzeby ze zgłoszenia, na które odpowiada innowacja")
+    matched_keywords: List[str] = Field(
+        default_factory=list,
+        description="Słowa z opisu użytkownika, które zdecydowały o dopasowaniu (np. 'samotni', 'seniorzy', 'wsi')",
+    )
     etr_summary: Optional[str] = None
     video_url: Optional[str] = None
     handbook_url: Optional[str] = None
+
+class KeywordHighlight(BaseModel):
+    """Fragment opisu (`clean_query[start:end]`), który wpłynął na wynik."""
+    start: int
+    end: int
+    text: str
+    reasons: List[str] = Field(default_factory=list, description="Rozpoznane potrzeby lub innowacja, z którą słowo się pokrywa")
+
+class SimilarReportGroup(BaseModel):
+    """Zagregowane podobne zgłoszenia z jednego powiatu – bez treści zapytań mieszkańców i danych osobowych."""
+    powiat: Optional[str] = None
+    powiat_label: str
+    count: int
+    registry_count: int = Field(0, description="W tym wpisy Rejestru Wyzwań gmin (pozostałe: anonimowe zapytania Matchmakingu)")
+    last_reported_at: Optional[datetime] = None
+    example_titles: List[str] = Field(default_factory=list, description="Tytuły wpisów Rejestru Wyzwań (zanonimizowane)")
+    is_user_powiat: bool = False
 
 class MatchmakingResponse(BaseModel):
     clean_query: str
@@ -41,6 +63,9 @@ class MatchmakingResponse(BaseModel):
     no_match: bool = False
     similar_cases_count: int
     trend_alert: Optional[str] = None
+    highlights: List[KeywordHighlight] = Field(default_factory=list, description="Słowa kluczowe w `clean_query`")
+    similar_reports: List[SimilarReportGroup] = Field(default_factory=list, description="Podobne zgłoszenia z regionu")
+    similar_reports_total: int = 0
     ceneo_intro: str = Field(..., description="Empatyczne podsumowanie problemu")
     ceneo_bundle_rationale: str = Field(..., description="Dlaczego te innowacje tworzą spójny zestaw")
     action_steps: List[str] = Field(default_factory=list, description="Lista 3 kroków działania")
