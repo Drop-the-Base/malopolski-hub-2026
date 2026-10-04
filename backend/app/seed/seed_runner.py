@@ -154,6 +154,8 @@ async def run_seed():
         await session.commit()
 
     await sync_reference_data()
+    from app.seed.mentor_demo import seed_mentor_demo
+    await seed_mentor_demo()
     logger.info("Inicjalizacja danych demonstracyjnych zakończona pomyślnie.")
 
 

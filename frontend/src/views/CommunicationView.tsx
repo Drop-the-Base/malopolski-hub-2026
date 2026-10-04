@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api, apiErrorMessage } from '../services/api';
 import { BookingConfirmation, CommunicationThreadItem, MentorItem, MentorSlot } from '../types';
 import { Users, MessageSquare, Send, UserCheck, Calendar, Mail, Plus, Download, CheckCircle2 } from 'lucide-react';
@@ -188,6 +189,10 @@ export const CommunicationView: React.FC = () => {
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">
           Pytania do koordynatorów, giełda partnerstw (NGO szuka gminy, gmina szuka realizatora) oraz rezerwacja konsultacji u mentorów z potwierdzeniem e-mail i plikiem do kalendarza.
+        </p>
+        <p className="text-sm text-slate-700 mt-2">
+          Jesteś mentorem lub ekspertem ROPS?{' '}
+          <Link to="/mentor" className="font-bold text-blue-700 underline">Otwórz panel mentora</Link> – pomysły do oceny, pytania i Twoje konsultacje.
         </p>
 
         <div role="tablist" aria-label="Sekcje dialogu" className="flex flex-wrap border-b border-slate-200 mt-6 gap-x-6 text-sm font-bold">

@@ -30,7 +30,8 @@ def _mark_current(steps: List[TimelineStep]) -> List[TimelineStep]:
 
 
 def build_fiszka_timeline(
-    fiszka: IdeaFiszka, mentor_name: Optional[str], last_rops_message_at: Optional[datetime]
+    fiszka: IdeaFiszka, mentor_name: Optional[str], last_rops_message_at: Optional[datetime],
+    mentor_feedback_at: Optional[datetime] = None,
 ) -> List[TimelineStep]:
     status = fiszka.status or "submitted"
     received = bool(fiszka.read_at) or status != "submitted"
@@ -43,6 +44,9 @@ def build_fiszka_timeline(
         review_desc = f"Przydzielony mentor: {mentor_name}."
     elif in_review:
         review_desc = "Koordynator ROPS ocenia pomysł."
+    if mentor_feedback_at:
+        review_desc = (f"{mentor_name or 'Mentor'} przekazał(a) opinię o pomyśle. "
+                       "Przeczytasz ją w rozmowie poniżej (podaj e-mail ze zgłoszenia).")
 
     if decided:
         decision_desc = f"Decyzja: {FISZKA_STATUSES.get(status, status)}."
@@ -100,6 +104,13 @@ async def list_case_messages(db: AsyncSession, case_id: str, case_type: str = "f
          .where(CaseMessage.case_type == case_type, CaseMessage.case_id == case_id)
          .order_by(CaseMessage.created_at.asc()))
     return list((await db.execute(q)).scalars().all())
+
+
+async def last_mentor_feedback_at(db: AsyncSession, case_id: str) -> Optional[datetime]:
+    q = (select(CaseMessage.created_at)
+         .where(CaseMessage.case_id == case_id, CaseMessage.sender == "mentor")
+         .order_by(CaseMessage.created_at.desc()).limit(1))
+    return (await db.execute(q)).scalar()
 
 
 async def last_rops_message_at(db: AsyncSession, case_id: str) -> Optional[datetime]:
