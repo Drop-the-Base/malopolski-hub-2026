@@ -17,6 +17,8 @@
 
   h1, h2, h3 {
     text-wrap: balance;
+    /* Przy powiększonym tekście (150%) na telefonie długie słowa nie mogą wypychać strony w bok (WCAG 1.4.10) */
+    overflow-wrap: anywhere;
   }
 }
 
@@ -86,9 +88,11 @@ body.theme-yellow-black input[type='submit'] {
 /* Elementy aktywne / wciśnięte: odwrócone kolory (czarny na żółtym) */
 body.theme-yellow-black button[aria-pressed='true'],
 body.theme-yellow-black a[aria-current='page'],
+body.theme-yellow-black a[aria-current='step'],
 body.theme-yellow-black button[aria-selected='true'],
 body.theme-yellow-black button[aria-pressed='true'] *,
 body.theme-yellow-black a[aria-current='page'] *,
+body.theme-yellow-black a[aria-current='step'] *,
 body.theme-yellow-black button[aria-selected='true'] * {
   background-color: #ffff00 !important;
   color: #000000 !important;
@@ -140,9 +144,11 @@ body.theme-black-white select {
 
 body.theme-black-white button[aria-pressed='true'],
 body.theme-black-white a[aria-current='page'],
+body.theme-black-white a[aria-current='step'],
 body.theme-black-white button[aria-selected='true'],
 body.theme-black-white button[aria-pressed='true'] *,
 body.theme-black-white a[aria-current='page'] *,
+body.theme-black-white a[aria-current='step'] *,
 body.theme-black-white button[aria-selected='true'] * {
   background-color: #000000 !important;
   color: #ffffff !important;

@@ -68,6 +68,8 @@ export const CommunicationView: React.FC = () => {
   const [replyText, setReplyText] = useState('');
   const [replyError, setReplyError] = useState('');
   const [status, setStatus] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const [loaded, setLoaded] = useState(false);
 
   const [newThreadModal, setNewThreadModal] = useState(false);
   const [threadError, setThreadError] = useState('');
@@ -98,8 +100,11 @@ export const CommunicationView: React.FC = () => {
       setThreads(thData);
       setMentors(mData);
       setSelectedId(keepId ?? thData[0]?.id ?? null);
+      setLoadError('');
     } catch (err) {
-      setStatus(apiErrorMessage(err, 'Nie udało się wczytać wątków.'));
+      setLoadError(apiErrorMessage(err, 'Nie udało się wczytać rozmów. Odśwież stronę za chwilę.'));
+    } finally {
+      setLoaded(true);
     }
   };
 
@@ -208,6 +213,9 @@ export const CommunicationView: React.FC = () => {
       </div>
 
       <p aria-live="polite" className="sr-only">{status}</p>
+      {loadError && (
+        <p role="alert" className="bg-rose-50 border border-rose-300 text-rose-900 p-4 rounded-xl text-sm">{loadError}</p>
+      )}
 
       {activeTab === 'threads' && (
         <div id="panel-threads" role="tabpanel" aria-labelledby="tab-threads" className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -223,6 +231,12 @@ export const CommunicationView: React.FC = () => {
               </button>
             </div>
 
+            {!loaded && <p role="status" className="text-sm text-slate-700">Wczytywanie rozmów…</p>}
+            {loaded && !loadError && threads.length === 0 && (
+              <p className="bg-white p-4 rounded-xl border border-slate-200 text-sm text-slate-700">
+                Nie ma jeszcze żadnych rozmów. Zacznij pierwszą – kliknij „Nowy wątek”.
+              </p>
+            )}
             <ul className="space-y-2">
               {threads.map((t) => {
                 const isSelected = selectedId === t.id;
@@ -267,7 +281,8 @@ export const CommunicationView: React.FC = () => {
                   </p>
                 </div>
 
-                <ol role="log" aria-live="polite" aria-label="Wiadomości w wątku" className="space-y-3 mb-6 max-h-72 overflow-y-auto pr-1">
+                <div role="log" aria-live="polite" aria-label="Wiadomości w wątku" tabIndex={0} className="mb-6 max-h-72 overflow-y-auto pr-1">
+                <ol className="space-y-3">
                   {selectedThread.messages.map((m) => (
                     <li key={m.id} className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm">
                       <div className="flex flex-wrap justify-between gap-2 font-bold text-slate-900 mb-1">
@@ -278,6 +293,7 @@ export const CommunicationView: React.FC = () => {
                     </li>
                   ))}
                 </ol>
+                </div>
 
                 <form onSubmit={handleReply} className="space-y-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -308,7 +324,9 @@ export const CommunicationView: React.FC = () => {
                 </form>
               </div>
             ) : (
-              <p className="text-center py-20 text-slate-600 text-sm">Wybierz wątek z listy.</p>
+              <p className="text-center py-20 text-slate-600 text-sm">
+                {threads.length === 0 ? 'Tu pojawi się rozmowa, gdy ktoś założy wątek.' : 'Wybierz wątek z listy.'}
+              </p>
             )}
           </div>
         </div>

@@ -307,7 +307,7 @@ export const AdminDashboardView: React.FC = () => {
         {panelNotifications.length === 0 ? (
           <p className="text-sm text-slate-600">Brak powiadomień.</p>
         ) : (
-          <ul className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+          <ul tabIndex={0} aria-label="Powiadomienia panelu" className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
             {panelNotifications.map((n) => (
               <li key={n.id} className="py-2 text-sm flex justify-between gap-3">
                 <span>
@@ -323,7 +323,7 @@ export const AdminDashboardView: React.FC = () => {
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer font-semibold text-slate-800 flex items-center gap-1.5"><Mail className="w-4 h-4" aria-hidden="true" /> Skrzynka nadawcza e-mail ({outbox.length})</summary>
           <p className="text-xs text-slate-600 mt-1">Bez skonfigurowanego serwera SMTP wiadomości mają status „queued” i są widoczne tylko tutaj.</p>
-          <ul className="divide-y divide-slate-100 max-h-64 overflow-y-auto mt-2">
+          <ul tabIndex={0} aria-label="Wysłane i oczekujące e-maile" className="divide-y divide-slate-100 max-h-64 overflow-y-auto mt-2">
             {outbox.map((n) => (
               <li key={n.id} className="py-2">
                 <span className="text-xs text-slate-600">{formatDateTime(n.created_at)} · do: {n.recipient} · {n.delivery_status}</span>
@@ -903,7 +903,7 @@ export const AdminDashboardView: React.FC = () => {
             </div>
             <details className="mt-4">
               <summary className="cursor-pointer text-sm font-semibold text-slate-800">Tabela danych (alternatywa tekstowa wykresu)</summary>
-              <div className="overflow-x-auto mt-2">
+              <div className="overflow-x-auto mt-2" tabIndex={0} role="region" aria-label="Tabela: zgłoszenia i alerty w powiatach">
                 <table className="w-full text-sm">
                   <caption className="sr-only">Zgłoszenia i alerty w powiatach</caption>
                   <thead>

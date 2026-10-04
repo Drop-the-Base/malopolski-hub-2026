@@ -215,7 +215,7 @@ export const MiddlemanView: React.FC = () => {
       {/* Formularz Parametrów Gminy */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <h3 className="text-base font-bold text-slate-900 mb-2">Parametry wdrożenia i specyfika samorządu:</h3>
+          <h2 className="text-base font-bold text-slate-900 mb-2">Parametry wdrożenia i specyfika samorządu:</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -445,7 +445,7 @@ export const MiddlemanView: React.FC = () => {
               <FileText className="w-4 h-4 text-indigo-600" />
               Projekt uchwały Rady Gminy (do weryfikacji prawnej):
             </h3>
-            <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-72 border border-slate-800">
+            <pre tabIndex={0} role="region" aria-label="Projekt uchwały (przewijany)" className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-72 border border-slate-800">
               {blueprint.resolution_draft}
             </pre>
           </div>
@@ -495,7 +495,7 @@ export const MiddlemanView: React.FC = () => {
         )}
 
         {/* Okno Rozmowy */}
-        <div role="log" aria-live="polite" aria-label="Rozmowa z doradcą" className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-96 overflow-y-auto space-y-3">
+        <div role="log" aria-live="polite" aria-label="Rozmowa z doradcą" tabIndex={0} className="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-96 overflow-y-auto space-y-3">
           {chatMessages.map((msg) => (
             <div
               key={msg.id}
@@ -556,7 +556,7 @@ export const MiddlemanView: React.FC = () => {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder={`Zadaj pytanie doradcy (np. Jak sfinansować wdrożenie w ${form.municipality_name}?)...`}
-            className="flex-1 text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+            className="flex-1 min-w-0 text-xs p-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
           />
           <button
             type="submit"

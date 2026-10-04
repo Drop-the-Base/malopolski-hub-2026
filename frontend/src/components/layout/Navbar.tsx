@@ -209,14 +209,14 @@ export const Navbar: React.FC = () => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 h-[72px]">
+        <div className="flex items-center justify-between gap-3 min-h-[72px] py-2 lg:py-0">
           {/* Znak: prostokąt w barwie regionu z żółtą belką (jak favicon) */}
-          <Link to="/" className="flex items-center gap-3 rounded p-1 -m-1 shrink-0">
-            <span className="relative w-10 h-10 rounded bg-blue-600 text-white font-extrabold text-base flex items-start justify-center pt-1.5" aria-hidden="true">
+          <Link to="/" className="flex items-center gap-3 rounded p-1 -m-1 min-w-0 lg:shrink-0">
+            <span className="relative w-10 h-10 shrink-0 rounded bg-blue-600 text-white font-extrabold text-base flex items-start justify-center pt-1.5" aria-hidden="true">
               MH
               <span className="absolute left-1.5 right-1.5 bottom-1.5 h-1 bg-amber-400" />
             </span>
-            <span className="leading-tight">
+            <span className="leading-tight min-w-0 [overflow-wrap:anywhere]">
               <span className="block font-extrabold text-slate-900 text-[1.0625rem]">Małopolski Hub</span>
               <span className="block text-sm text-slate-600">
                 Innowacji Społecznych <span className="text-slate-500">(prototyp)</span>
@@ -269,7 +269,7 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Mobile: wezwanie do działania zawsze widoczne obok przycisku menu */}
-          <div className="lg:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-2 shrink-0">
             <Link
               to={PRIMARY_CTA.to}
               aria-current={ctaActive ? 'page' : undefined}
