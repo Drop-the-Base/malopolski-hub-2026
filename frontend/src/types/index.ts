@@ -40,6 +40,34 @@ export interface EducationalMaterial {
   is_external: boolean;
 }
 
+export interface EducationalMaterialAdmin extends EducationalMaterial {
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface EducationalMaterialUpsert {
+  title: string;
+  category: string;
+  description: string;
+  download_url: string;
+  format: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface NewSinceLogin {
+  since: string;
+  first_login: boolean;
+  new_ideas: number;
+  new_problem_reports: number;
+  new_matchmaking_queries: number;
+  new_tester_feedback: number;
+  new_mentor_bookings: number;
+  total: number;
+}
+
+export type AdminExportKind = 'ideas' | 'problems' | 'needs';
+
 export interface MatchmakingMatch {
   innovation_id: string;
   title: string;

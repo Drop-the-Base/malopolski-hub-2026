@@ -29,6 +29,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { LoginForm } from '../components/auth/LoginForm';
+import { AdminDataTools, NewSinceLoginSummary } from '../components/admin/AdminDataTools';
 import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDateTime, powiatLabel } from '../constants/domain';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -238,6 +239,9 @@ export const AdminDashboardView: React.FC = () => {
 
       <p aria-live="polite" className={status ? 'bg-blue-50 border border-blue-200 text-blue-950 p-3 rounded-xl text-sm' : 'sr-only'}>{status}</p>
       {error && <p role="alert" className="bg-rose-50 border border-rose-200 text-rose-900 p-3 rounded-xl text-sm">{error}</p>}
+
+      {/* G8: nowe od ostatniego logowania */}
+      <NewSinceLoginSummary />
 
       {radar && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -930,6 +934,9 @@ export const AdminDashboardView: React.FC = () => {
           </section>
         </>
       )}
+
+      {/* G8: eksport CSV, wyzwania powiatów, materiały edukacyjne */}
+      <AdminDataTools onStatus={setStatus} />
 
       {/* Zarządzanie katalogiem */}
       <section aria-labelledby="catalog-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">

@@ -71,3 +71,23 @@ class EducationalMaterial(BaseModel):
     download_url: str
     format: str
     is_external: bool = False
+
+
+class EducationalMaterialAdmin(EducationalMaterial):
+    is_published: bool = True
+    sort_order: int = 0
+
+class EducationalMaterialUpsert(BaseModel):
+    """Materiał edukacyjny edytowany w Panelu ROPS. Link: https://… albo ścieżka w Hubie zaczynająca się od '/'."""
+    title: str = Field(..., min_length=3, max_length=200)
+    category: str = Field("Metodyka", min_length=2, max_length=60)
+    description: str = Field("", max_length=1000)
+    download_url: str = Field(..., max_length=500, pattern=r"^(https://|/)")
+    format: str = Field("Strona zewnętrzna", min_length=2, max_length=60)
+    is_published: bool = True
+    sort_order: int = Field(0, ge=0, le=999)
+
+class RegionalChallengeUpdate(BaseModel):
+    """Szybka edycja wyzwania powiatu na Mapie Wyzwań (wskaźniki liczbowe pochodzą z danych statystycznych)."""
+    key_social_challenge: str = Field(..., min_length=3, max_length=300)
+    demographic_trend: Optional[str] = Field(None, max_length=60)

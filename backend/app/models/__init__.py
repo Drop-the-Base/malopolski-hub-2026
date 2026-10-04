@@ -6,6 +6,8 @@ from app.models.testing import TestingCampaign, TestingFeedback, TesterSignup
 from app.models.communication import CommunicationThread, ThreadMessage, Mentor, MentorBooking
 from app.models.regional_stat import RegionalStat
 from app.models.notification import Notification
+from app.models.app_state import AppState
+from app.models.educational_material import EducationalMaterialRecord
 
 __all__ = [
     "Base",
@@ -21,5 +23,7 @@ __all__ = [
     "RegionalStat",
     "TesterSignup",
     "MentorBooking",
-    "Notification"
+    "Notification",
+    "AppState",
+    "EducationalMaterialRecord",
 ]
