@@ -25,6 +25,7 @@ import { AUTHOR_TYPES, IMPLEMENTATION_STAGES, POWIATY, powiatLabel, formatPLN } 
 import { OfficialGrantApplicationDocument } from '../components/documents/OfficialGrantApplicationDocument';
 import { downloadPdfFromElement } from '../utils/pdfExport';
 import { rememberCase } from '../utils/recentCases';
+import { IdeaPoster } from '../components/canvas/IdeaPoster';
 
 const EMPTY_CANVAS: CanvasData = {
   problem: '',
@@ -594,6 +595,16 @@ export const IdeaCreatorView: React.FC = () => {
               </div>
             ))}
           </div>
+
+          <IdeaPoster
+            title={step1Form.title}
+            summary={step1Form.summary}
+            targetAudience={step1Form.target_audience}
+            stage={step1Form.implementation_stage}
+            powiat={step1Form.powiat}
+            gmina={step1Form.gmina}
+            canvas={canvas}
+          />
 
           <div className="flex items-center justify-between pt-4">
             <button type="button" onClick={() => setCurrentStep(1)}
