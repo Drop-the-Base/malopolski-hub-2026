@@ -40,3 +40,23 @@ async def test_canvas_autofill():
         assert len(data["problem"]) > 10
         assert "ai_powered" in data
         assert "latency_ms" in data
+
+
+@pytest.mark.asyncio
+async def test_poster_hints_fallback(monkeypatch):
+    """Podpowiedzi na plakat działają bez klucza LLM (szablon): hasło + dokładnie 3 warianty."""
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "GROQ_API_KEY", "")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.post("/api/v1/canvas/poster-hints", json={
+            "title": "Sąsiedzka sieć asystentów seniora",
+            "summary": "Seniorzy w odległych sołectwach mają trudności z dojazdem do apteki.",
+            "target_group": "Seniorzy 70+"
+        })
+        assert res.status_code == 200
+        data = res.json()
+        assert data["ai_powered"] is False
+        assert len(data["tagline"]) > 10
+        assert len(data["twists"]) == 3
+        res = await ac.post("/api/v1/canvas/poster-hints", json={"title": "x"})
+        assert res.status_code == 422

@@ -86,22 +86,22 @@ export const HomeView: React.FC = () => {
   return (
     <div className="space-y-20 sm:space-y-24">
       {/* Hero: fiszka, w której mieszkaniec opisuje problem */}
-      <section aria-labelledby="hero-title" className="pt-4 sm:pt-10">
+      <section aria-labelledby="hero-title" className="pt-0 sm:pt-2">
         <h1
           id="hero-title"
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.05] tracking-[-0.02em] max-w-[18ch]"
+          className="text-[2rem] sm:text-[2.75rem] lg:text-5xl font-extrabold text-slate-900 leading-[1.08] tracking-[-0.02em] max-w-[28ch]"
         >
           {etrMode ? 'Napisz, co jest trudne. Pomożemy znaleźć rozwiązanie.' : 'Opisz, co dzieje się w Twojej okolicy.'}
         </h1>
         {!etrMode && (
-          <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-[46ch] leading-relaxed">
+          <p className="mt-3 text-lg sm:text-xl text-slate-600 max-w-[60ch] leading-relaxed">
             Podpowiemy sprawdzone rozwiązanie z katalogu innowacji społecznych Małopolski i pokażemy, kto może pomóc
             je wdrożyć.
           </p>
         )}
 
-        <form onSubmit={handleQuickSearch} className="fiszka mt-10 max-w-4xl">
-          <div className="flex items-baseline justify-between gap-4 px-5 sm:px-8 pt-4 pb-2 border-b border-blue-200">
+        <form onSubmit={handleQuickSearch} className="fiszka mt-6 sm:mt-8 max-w-4xl">
+          <div className="flex items-baseline justify-between gap-4 px-5 sm:px-8 pt-3 pb-2 border-b border-blue-200">
             <label htmlFor="hero-problem" className="font-bold text-slate-900">
               {etrMode ? 'Twoja sprawa' : 'Fiszka zgłoszenia'}
             </label>
@@ -116,7 +116,7 @@ export const HomeView: React.FC = () => {
             placeholder="Na przykład: w naszej wsi starsze osoby nie mają jak dojechać do apteki…"
             className="fiszka-lines block w-full resize-none bg-transparent border-0 px-5 sm:px-8 pt-1 pb-0 text-[1.3125rem] text-slate-900 placeholder:text-slate-500 focus:ring-0"
           />
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-8 py-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-4">
             <span className="text-sm text-slate-500">Dane osobowe zostaną ukryte przed analizą.</span>
             <button
               type="submit"

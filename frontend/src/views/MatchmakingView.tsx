@@ -4,10 +4,8 @@ import { api, apiErrorMessage } from '../services/api';
 import { MatchmakingResult } from '../types';
 import { CATEGORIES, POWIATY, powiatLabel } from '../constants/domain';
 import {
-  Sparkles,
   Search,
   Filter,
-  CheckCircle2,
   ArrowRight,
   ShieldAlert,
   Building2,
@@ -205,10 +203,6 @@ export const MatchmakingView: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Nagłówek Modułu */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          <span>Moduł I: Matchmaking Społeczny (Obligatoryjny)</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
           {etrMode ? 'Powiedz, co jest problemem – znajdziemy rozwiązanie' : 'Kojarzenie potrzeb z innowacjami społecznymi'}
         </h1>
@@ -229,9 +223,8 @@ export const MatchmakingView: React.FC = () => {
               </label>
 
               {voiceBadge && (
-                <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-700" aria-hidden="true" />
-                  Głos: {voiceBadge.model}{voiceBadge.latencyMs ? ` (${voiceBadge.latencyMs} ms)` : ''}
+                <span className="text-xs text-slate-700">
+                  Wypowiedź rozpoznana{voiceBadge.latencyMs ? ` (${(voiceBadge.latencyMs / 1000).toFixed(1)} s)` : ''}
                 </span>
               )}
             </div>
@@ -268,7 +261,7 @@ export const MatchmakingView: React.FC = () => {
                     onClick={startRecording}
                     disabled={transcribing}
                     className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors disabled:opacity-50"
-                    title="Nagraj wypowiedź głosem (Groq Whisper dla seniorów)"
+                    title="Nagraj wypowiedź głosem"
                   >
                     {transcribing ? (
                       <>
@@ -325,7 +318,7 @@ export const MatchmakingView: React.FC = () => {
                 onClick={simulateVoiceInput}
                 className="text-blue-700 hover:underline font-semibold"
               >
-                Przykładowa wypowiedź seniora (demo)
+                Przykładowa wypowiedź seniora
               </button>
             </div>
           </div>
@@ -408,10 +401,6 @@ export const MatchmakingView: React.FC = () => {
           {/* Alerty i podsumowanie analizy */}
           <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
             <div>
-              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold mb-1">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Diagnoza Potrzeby Ukończona</span>
-              </div>
               <h2 className="text-lg font-black text-white">
                 {result.no_match
                   ? 'Brak wystarczająco trafnych innowacji w katalogu'
@@ -438,14 +427,10 @@ export const MatchmakingView: React.FC = () => {
           {result.ceneo_intro && (
             <div className="bg-amber-50 rounded-2xl border border-amber-300 p-6 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-                  🤖
-                </div>
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 bg-amber-200/80 text-amber-900 text-[11px] font-black px-2.5 py-0.5 rounded-full ">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                    <span>{result.no_match ? 'Co dalej?' : result.ai_generated ? 'Podsumowanie doradcy (AI)' : 'Podsumowanie doradcy'}</span>
-                  </div>
+                  <h3 className="text-sm font-bold text-amber-900">
+                    {result.no_match ? 'Co dalej?' : result.ai_generated ? 'Podsumowanie doradcy (wygenerowane automatycznie)' : 'Podsumowanie doradcy'}
+                  </h3>
                   <p className="text-sm sm:text-base font-semibold text-slate-900 leading-relaxed">
                     {result.ceneo_intro}
                   </p>
@@ -555,7 +540,6 @@ export const MatchmakingView: React.FC = () => {
                 {/* Sekcja: Dlaczego dopasowano */}
                 <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 mb-4">
                   <span className="text-xs font-bold text-amber-950 mb-1 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-700" aria-hidden="true" />
                     Dlaczego to pasuje{result.ai_generated ? ' (AI)' : ''}:
                   </span>
                   <p className="text-sm text-amber-950 leading-relaxed">{item.why_matched}</p>

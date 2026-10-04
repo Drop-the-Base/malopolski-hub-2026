@@ -187,10 +187,6 @@ export const TesterView: React.FC = () => {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <FlaskConical className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
-          <span>Moduł IV: Tester Innowacji</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
           {etrMode ? 'Testuj nowe rozwiązania i pomagaj' : 'Testowanie i ocena prototypów'}
         </h1>

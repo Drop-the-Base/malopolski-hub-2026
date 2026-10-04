@@ -30,18 +30,20 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 | G7 | Biblioteka innowacji: atrakcyjniejsza karta (historia „problem → rozwiązanie → efekt”, wskaźniki, miejsce na film), filtr powiat/grupa | II / atrakcyjność | ✅ a6032ba, 021a933 |
 | G8 | Panel ROPS: szybka edycja materiałów i wyzwań, eksport CSV zgłoszeń/potrzeb, licznik „nowe od ostatniego logowania” | VI | ✅ b0867a4 |
 | G9 | Integracje: udokumentowane otwarte API (eksport JSON/CSV innowacji, webhook dla nowych fiszek) | potencjał wdrożeniowy | ✅ 37fc477 |
-| G10 | Audyt dostępności (axe) wszystkich widoków + poprawki | WCAG | ⏳ |
-| G11 | Kreator: wizualizacja pomysłu (szkic/plakat SVG generowany z Canwy) | III / asystent | ⏳ |
-| G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | ⏳ |
-| G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ⏳ |
-| G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ⏳ |
-| G15 | Panel eksperta/mentora: kolejka przydzielonych fiszek i pytań JST, szybki feedback (szablony odpowiedzi), widoczny dla autora w „Moich sprawach” | V / eksperci | ⏳ |
-| G16 | Katalog dla JST: „Teczka wdrożeń” – porównanie 2–3 innowacji obok siebie (koszt, kadry, gotowość) i wydruk/PDF dla rady gminy | II+VII / JST | ⏳ |
+| G10 | Audyt dostępności (axe) wszystkich widoków + poprawki | WCAG | ⏳ przerwane limitem sesji – brak zmian; zrobiono tylko `no-cache` dla index.html |
+| G11 | Kreator: wizualizacja pomysłu (szkic/plakat SVG generowany z Canwy) | III / asystent | 🚧 tylko backend `POST /canvas/poster-hints` (10c1d5d); komponent plakatu niedokończony (limit sesji) |
+| G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | 🚧 częściowo: `no-cache` dla index.html, usunięte plakietki modułów |
+| G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ✅ 824d173 |
+| G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ✅ 5854f0b |
+| G15 | Panel eksperta/mentora: kolejka przydzielonych fiszek i pytań JST, szybki feedback (szablony odpowiedzi), widoczny dla autora w „Moich sprawach” | V / eksperci | ⏳ przerwane limitem sesji – niedokończony backend w worktree `dev-f`, nie scalony |
+| G16 | Katalog dla JST: „Teczka wdrożeń” – porównanie 2–3 innowacji obok siebie (koszt, kadry, gotowość) i wydruk/PDF dla rady gminy | II+VII / JST | ⏳ przerwane limitem sesji – nie rozpoczęte |
 
 ## Dziennik decyzji
 
 - **2026-10-04** – Gałąź `dev` utworzona z `main@25cf670` w worktree `.claude/worktrees/dev`. Niezacommitowane zmiany na `main` (PDF wniosku, usunięta prezentacja) zostają nietknięte – to praca autora, nie mieszamy jej z `dev`.
 - **2026-10-04** – Prosty język (ETR) zawsze włączony, bez przełącznika (decyzja autora): mniej elementów w pasku, nikt nie trafi przypadkiem na trudniejszy tekst.
+- **2026-10-04** – Bez plakietek „Moduł X”, ozdobnych chipów, zbędnych emotikonów i żargonu (Groq/LLM/AI) w interfejsie (decyzja autora) – wyglądały jak „AI tell” i nic nie wnosiły.
+- **2026-10-04** – Podgląd zawsze z `dev`: `docker compose -p mhis-dev up --build` z worktree `dev` (wcześniej omyłkowo działał stos z katalogu `main`).
 - **2026-10-04** – Priorytet wg wag kryteriów: najpierw to, co widać w demo i co jest nazwane w wyzwaniu wprost (Mapa Wyzwań, ścieżka komunikacji, trafność), potem integracje i audyt.
 
 ## Postęp
@@ -74,3 +76,7 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
   Sekcja „4. Integracje” w `docs/api_specification.md`, strona `/otwarte-dane` i link w stopce. Sprawdzone: `pytest`
   (6 nowych testów), `npm run build`.
 - **Prosty język zawsze włączony** – na prośbę autora usunięty przełącznik „Prosty język (ETR)” z paska dostępności; tryb ETR na stałe (`useAccessibilityStore.ts`, `AccessibilityBar.tsx`), stare ustawienie `mhis_etr` usuwane z `localStorage`.
+- **Nawigacja i strona główna** (`824d173`, `5854f0b`) – menu w 4 grupach (Biblioteka i mapa, Działaj ▾, Rozmowa i pomoc, Dla samorządu ▾) + wyróżnione „Znajdź pomoc”, rozwijane menu dostępne z klawiatury, okruszki na podstronach; pole „Twoja sprawa” widoczne bez przewijania. Sprawdzone w podglądzie.
+- **Usunięcie „AI tells”** – plakietki „Moduł I–VIII” usunięte ze wszystkich 8 widoków (sprawdzone w podglądzie). Przegląd emotikonów i ikon Sparkles przerwany limitem sesji – do dokończenia.
+- **Cache** – nginx: `no-cache` dla index.html, długi cache dla `/assets/` (hash w nazwie). Po przebudowie przeglądarka zawsze dostaje nową wersję.
+- **Stan na koniec sesji 2026-10-04** – `dev` buduje się w Dockerze (tsc OK), backend 43 testy OK. Niedokończone: G10, G11 (UI), G12, G15, G16, dokończenie przeglądu emotikonów/Sparkles.

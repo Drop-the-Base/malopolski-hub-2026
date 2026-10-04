@@ -74,7 +74,7 @@ Charakter nadaje skala i waga, nie drugi krój. Skala według klasycznej skali t
 
 | Poziom | Rozmiar / interlinia | Waga | Uwagi |
 |---|---|---|---|
-| Hero (h1 strony głównej) | 36 → 60 px / 1.05 | 800 | `letter-spacing: -0.02em`, maks. 18 znaków na linię w wersji desktop. |
+| Hero (h1 strony głównej) | 32 → 48 px / 1.08 | 800 | `letter-spacing: -0.02em`, maks. 28 znaków na linię – pole „Twoja sprawa” musi być widoczne bez przewijania na 1366×768 i 390×844. |
 | Nagłówek strony (h1) | 36 px / 1.15 | 800 | |
 | Sekcja (h2) | 24 px / 1.25 | 700 | |
 | Podsekcja (h3) | 18 px / 1.35 | 700 | |
@@ -146,15 +146,20 @@ Treść wyrównana do lewej. Wyśrodkowanie tylko dla pustych stanów i komunika
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Mobile (< 640 px): jedna kolumna, h1 36 px, przycisk fiszki na pełną szerokość, margines boczny 16 px.
+Mobile (< 640 px): jedna kolumna, h1 32 px, przycisk fiszki na pełną szerokość, margines boczny 16 px.
+Pasek „Ścieżka dla jury” jest domyślnie zwinięty, gdy okno ma mniej niż 900 px wysokości lub 768 px szerokości (wybór użytkownika jest zapamiętywany).
 
 ### Powłoka
 
 - **Pasek dostępności**: Atrament, przyciski jako segmenty z wyraźnym stanem `aria-pressed`
   (żółty dla ETR, biały/niebieski dla wybranych opcji).
 - **Nawigacja**: biała, linia 1 px u dołu, logo jako prostokątny znak `MH` w Niebieskim
-  Małopolski (bez gradientu). Linki tekstowe z ikoną 16 px, aktywny link z żółtą belką.
-  Zamiast wyróżnionych „pigułek” jeden wyróżniony link: „Znajdź rozwiązanie”.
+  Małopolski (bez gradientu). Najwyżej 4 pozycje: „Biblioteka i mapa”, „Działaj” ▾ (zgłoś pomysł,
+  testuj, sprawdź zgłoszenie), „Rozmowa i pomoc”, „Dla samorządu” ▾ (plan dla gminy, rejestr wyzwań,
+  Panel ROPS) + jedno wyróżnione wezwanie „Znajdź pomoc” (niebieski przycisk). Grupy to przyciski
+  z `aria-expanded` (otwierane kliknięciem, nie najechaniem; Escape zamyka). Aktywna pozycja z żółtą belką.
+  Konfiguracja w `components/layout/navConfig.ts`; menu mobilne pokazuje te same grupy jako sekcje.
+  Na podstronach okruszki „Jesteś tutaj” (Strona główna › grupa › strona).
 - **Ścieżka dla jury**: ciemny pasek Atramentu, kroki 1–4 (prawdziwa sekwencja, więc numery
   są uzasadnione), bez gradientowej pigułki.
 - **Stopka**: Atrament, dwie kolumny, nagłówki zdaniowe, zastrzeżenie o prototypie zachowane.

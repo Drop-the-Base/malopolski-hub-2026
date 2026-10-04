@@ -19,7 +19,6 @@ import {
   Tag,
   Layers,
   Filter,
-  Sparkles,
   Building,
   Edit3,
   X,
@@ -236,10 +235,6 @@ export const AdminDashboardView: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-bold mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-            <span>Moduł VI: Panel koordynatora</span>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
             {etrMode ? 'Dla pracownika – zgłoszenia i dane' : 'Moderacja zgłoszeń, powiadomienia i radar trendów'}
           </h1>
@@ -344,15 +339,11 @@ export const AdminDashboardView: React.FC = () => {
       <section aria-labelledby="proposals-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6 print:hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
-            <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-900 text-xs font-bold px-2.5 py-0.5 rounded-full mb-1">
-              <FileCheck className="w-3.5 h-3.5 text-blue-700" />
-              <span>Moduł Urzędnika ROPS</span>
-            </div>
             <h2 id="proposals-title" className="text-xl font-black text-slate-900 flex items-center gap-2">
               Baza i ocena wniosków innowacji ({submissions.length})
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">
-              Zatwierdzaj wnioski (Approve), łącz je w klastry strategiczne (Group), modyfikuj treść (Change) oraz generuj oficjalne karty A4 (Print).
+              Zatwierdzaj wnioski, łącz je w klastry strategiczne, edytuj treść i drukuj karty A4.
             </p>
           </div>
 
@@ -449,7 +440,7 @@ export const AdminDashboardView: React.FC = () => {
 
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-xs bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
-                            <span>👍</span> {f.votes_count || 0} głosów
+                            {f.votes_count || 0} głosów
                           </span>
                         </div>
                       </div>
@@ -469,7 +460,6 @@ export const AdminDashboardView: React.FC = () => {
                         )}
                         {f.assigned_mentor_id && (
                           <div className="text-xs text-emerald-800 font-semibold flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                             <span>Mentor: {mentors.find(m => m.id === f.assigned_mentor_id)?.full_name || f.assigned_mentor_id}</span>
                           </div>
                         )}
@@ -499,7 +489,7 @@ export const AdminDashboardView: React.FC = () => {
                                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300'
                             }`}
                           >
-                            ✓ Zatwierdź
+                            Zatwierdź
                           </button>
                           <button
                             type="button"
@@ -510,7 +500,7 @@ export const AdminDashboardView: React.FC = () => {
                                 : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-300'
                             }`}
                           >
-                            🔬 Do testów
+                            Do testów
                           </button>
                           <button
                             type="button"
@@ -521,7 +511,7 @@ export const AdminDashboardView: React.FC = () => {
                                 : 'bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-300'
                             }`}
                           >
-                            ⚠️ Do poprawy
+                            Do poprawy
                           </button>
                           <button
                             type="button"
@@ -532,7 +522,7 @@ export const AdminDashboardView: React.FC = () => {
                                 : 'bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-300'
                             }`}
                           >
-                            ✕ Odrzuć
+                            Odrzuć
                           </button>
                         </div>
 

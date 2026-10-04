@@ -296,10 +296,6 @@ export const IdeaCreatorView: React.FC = () => {
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm print:hidden">
-        <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-          <Lightbulb className="w-3.5 h-3.5 text-amber-700" aria-hidden="true" />
-          <span>Moduł III: Kreator Pomysłów</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
           {etrMode ? 'Zgłoś swój pomysł' : 'Fiszka pomysłu, Canwa innowacji i szkic wniosku'}
         </h1>
