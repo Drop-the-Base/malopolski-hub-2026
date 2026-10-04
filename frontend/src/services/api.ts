@@ -24,7 +24,17 @@ import {
   FiszkaUpdatePayload,
   IdeaVoteResponse,
   NotificationItem,
-  EducationalMaterial
+  EducationalMaterial,
+  FiszkaCaseView,
+  CaseMessage,
+  ProblemPublicStatus,
+  AdminInboxSummary,
+  SubscriptionPayload,
+  SubscriptionResult,
+  SubscriptionInfo,
+  SubscriptionStats,
+  GrantCallUpsert,
+  GrantCallAdminResult
 } from '../types';
 
 const API_BASE = '/api/v1';
@@ -371,6 +381,72 @@ export const api = {
 
   markNotificationsRead: async () => {
     await client.post('/admin/notifications/mark-read');
+  },
+
+  // „Moje sprawy” (G4): status, oś czasu i rozmowa autora z ROPS
+  openMyCase: async (fiszkaId: string, email: string) => {
+    const res = await client.post<FiszkaCaseView>(`/ideas/${encodeURIComponent(fiszkaId)}/case`, { email });
+    return res.data;
+  },
+
+  sendCaseMessage: async (fiszkaId: string, email: string, body: string) => {
+    const res = await client.post<FiszkaCaseView>(`/ideas/${encodeURIComponent(fiszkaId)}/messages`, { email, body });
+    return res.data;
+  },
+
+  getProblemStatus: async (problemId: string) => {
+    const res = await client.get<ProblemPublicStatus>(`/cases/problems/${encodeURIComponent(problemId)}`);
+    return res.data;
+  },
+
+  getInboxSummary: async () => {
+    const res = await client.get<AdminInboxSummary>('/admin/inbox-summary');
+    return res.data;
+  },
+
+  acknowledgeSubmission: async (fiszkaId: string) => {
+    await client.post(`/admin/submissions/${encodeURIComponent(fiszkaId)}/read`);
+  },
+
+  getCaseMessagesAdmin: async (fiszkaId: string) => {
+    const res = await client.get<CaseMessage[]>(`/admin/submissions/${encodeURIComponent(fiszkaId)}/messages`);
+    return res.data;
+  },
+
+  replyToAuthor: async (fiszkaId: string, body: string) => {
+    const res = await client.post<CaseMessage[]>(`/admin/submissions/${encodeURIComponent(fiszkaId)}/messages`, { body });
+    return res.data;
+  },
+
+  // Subskrypcje powiadomień (G5)
+  subscribe: async (data: SubscriptionPayload) => {
+    const res = await client.post<SubscriptionResult>('/subscriptions', data);
+    return res.data;
+  },
+
+  getSubscription: async (token: string) => {
+    const res = await client.get<SubscriptionInfo>(`/subscriptions/${encodeURIComponent(token)}`);
+    return res.data;
+  },
+
+  unsubscribe: async (token: string) => {
+    const res = await client.post<SubscriptionInfo>(`/subscriptions/${encodeURIComponent(token)}/unsubscribe`);
+    return res.data;
+  },
+
+  getSubscriptionStats: async () => {
+    const res = await client.get<SubscriptionStats>('/admin/subscriptions/stats');
+    return res.data;
+  },
+
+  createGrantCall: async (data: GrantCallUpsert) => {
+    const res = await client.post<GrantCallAdminResult>('/admin/grant-calls', data);
+    return res.data;
+  },
+
+  updateGrantCall: async (id: string, data: GrantCallUpsert) => {
+    const res = await client.put<GrantCallAdminResult>(`/admin/grant-calls/${encodeURIComponent(id)}`, data);
+    return res.data;
   },
 
   // Rejestr Wyzwań JST

@@ -18,6 +18,8 @@ import { RequireLogin } from './components/auth/RequireLogin';
 import { FiszkaStatusView } from './views/FiszkaStatusView';
 import { AccessibilityStatementView } from './views/AccessibilityStatementView';
 import { NotFoundView } from './views/NotFoundView';
+import { MyCasesView } from './views/MyCasesView';
+import { SubscriptionsView, UnsubscribeView } from './views/SubscriptionsView';
 
 const SITE_NAME = 'Małopolski Hub Innowacji Społecznych';
 
@@ -32,6 +34,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/dialog': 'Dialog i mentorzy',
   '/admin': 'Panel ROPS',
   '/status': 'Status zgłoszenia',
+  '/moje-sprawy': 'Moje sprawy',
+  '/powiadomienia/wypisz': 'Wypisz się z powiadomień',
+  '/powiadomienia': 'Powiadomienia e-mail',
   '/deklaracja-dostepnosci': 'Deklaracja dostępności'
 };
 
@@ -92,6 +97,9 @@ export const App: React.FC = () => {
             <Route path="/admin" element={<AdminDashboardView />} />
             <Route path="/status" element={<FiszkaStatusView />} />
             <Route path="/status/:id" element={<FiszkaStatusView />} />
+            <Route path="/moje-sprawy" element={<MyCasesView />} />
+            <Route path="/powiadomienia" element={<SubscriptionsView />} />
+            <Route path="/powiadomienia/wypisz/:token" element={<UnsubscribeView />} />
             <Route path="/deklaracja-dostepnosci" element={<AccessibilityStatementView />} />
             <Route path="*" element={<NotFoundView />} />
           </Routes>

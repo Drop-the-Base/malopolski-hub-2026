@@ -9,10 +9,48 @@ import {
   ShieldCheck,
   FlaskConical,
   AlertCircle,
+  FolderOpen,
   Menu,
   X
 } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
+import { api, authStore } from '../../services/api';
+import { INBOX_CHANGED_EVENT } from '../admin/CaseThreadAdmin';
+
+/** Liczba spraw wymagających uwagi koordynatora (nowe fiszki + pytania autorów) – tylko po zalogowaniu. */
+const useAdminAttention = (pathname: string) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      if (!authStore.get()) {
+        setCount(0);
+        return;
+      }
+      api
+        .getInboxSummary()
+        .then((s) => !cancelled && setCount(s.total_attention))
+        .catch(() => !cancelled && setCount(0));
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 60000);
+    window.addEventListener(INBOX_CHANGED_EVENT, refresh);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener(INBOX_CHANGED_EVENT, refresh);
+    };
+  }, [pathname]);
+  return count;
+};
+
+const AttentionBadge: React.FC<{ count: number }> = ({ count }) =>
+  count > 0 ? (
+    <span className="ml-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-700 text-white text-xs font-bold inline-flex items-center justify-center">
+      {count}
+      <span className="sr-only"> {count === 1 ? 'sprawa wymaga' : 'spraw wymaga'} uwagi</span>
+    </span>
+  ) : null;
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -20,6 +58,7 @@ export const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
+  const attention = useAdminAttention(location.pathname);
 
   const navLinks = [
     { to: '/matchmaking', label: etrMode ? 'Znajdź pomoc' : 'Znajdź rozwiązanie', icon: Sparkles, highlight: true },
@@ -29,6 +68,7 @@ export const Navbar: React.FC = () => {
     { to: '/middleman', label: etrMode ? 'Dla gminy' : 'Middleman dla gmin', icon: Building2 },
     { to: '/tester', label: etrMode ? 'Testuj rzeczy' : 'Tester', icon: FlaskConical },
     { to: '/dialog', label: etrMode ? 'Rozmowa i pomoc' : 'Dialog i mentorzy', icon: Users },
+    { to: '/moje-sprawy', label: 'Moje sprawy', icon: FolderOpen },
     { to: '/admin', label: etrMode ? 'Dla urzędnika' : 'Panel ROPS', icon: ShieldCheck }
   ];
 
@@ -69,8 +109,9 @@ export const Navbar: React.FC = () => {
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      <Icon className="w-4 h-4 hidden 2xl:block" aria-hidden="true" />
+                      <Icon className="w-4 h-4 hidden min-[1720px]:block" aria-hidden="true" />
                       <span>{link.label}</span>
+                      {link.to === '/admin' && <AttentionBadge count={attention} />}
                       {isActive && <span className="absolute left-2 right-2 bottom-0 h-1 bg-amber-400" aria-hidden="true" />}
                     </Link>
                   </li>
@@ -110,6 +151,7 @@ export const Navbar: React.FC = () => {
                   >
                     <Icon className="w-4 h-4" aria-hidden="true" />
                     {link.label}
+                    {link.to === '/admin' && <AttentionBadge count={attention} />}
                   </Link>
                 </li>
               );

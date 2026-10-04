@@ -127,6 +127,9 @@ export interface GrantCall {
   max_budget_pln: number;
   criteria: string[];
   is_open: boolean;
+  category?: string | null;
+  powiat?: string | null;
+  updated_at?: string | null;
 }
 
 export interface GrantApplication {
@@ -277,6 +280,9 @@ export interface FiszkaAdminItem {
   assigned_mentor_id?: string | null;
   cluster_group?: string | null;
   votes_count?: number;
+  read_at?: string | null;
+  review_started_at?: string | null;
+  decided_at?: string | null;
   created_at: string;
   updated_at?: string | null;
 }
@@ -296,6 +302,7 @@ export interface FiszkaPublicStatus {
   votes_count?: number;
   created_at: string;
   updated_at?: string | null;
+  timeline?: TimelineStep[];
 }
 
 export interface FiszkaUpdatePayload {
@@ -359,3 +366,110 @@ export interface MunicipalReportSummary {
   recommended_innovations: Array<{ id: string; title: string; tagline: string; category: string; matched_reports?: number }>;
 }
 
+
+// „Moje sprawy” (G4): oś czasu, rozmowa autora z ROPS, liczniki panelu
+export interface TimelineStep {
+  key: string;
+  label: string;
+  description: string;
+  done: boolean;
+  current: boolean;
+  tone: 'neutral' | 'positive' | 'warning' | 'negative' | string;
+  date?: string | null;
+}
+
+export interface CaseMessage {
+  id: string;
+  sender: 'author' | 'rops' | string;
+  body: string;
+  read_by_rops: boolean;
+  created_at: string;
+}
+
+export interface FiszkaCaseView {
+  status: FiszkaPublicStatus;
+  messages: CaseMessage[];
+}
+
+export interface ProblemPublicStatus {
+  id: string;
+  title?: string | null;
+  powiat?: string | null;
+  gmina?: string | null;
+  status: string;
+  status_label: string;
+  assigned_innovation_id?: string | null;
+  assigned_innovation_title?: string | null;
+  created_at: string;
+  timeline: TimelineStep[];
+}
+
+export interface AdminInboxSummary {
+  new_submissions: number;
+  new_submission_ids: string[];
+  unread_messages: number;
+  unread_by_case: Record<string, number>;
+  unread_notifications: number;
+  total_attention: number;
+}
+
+// Subskrypcje powiadomień (G5)
+export type SubscriptionTopic = 'innowacje' | 'nabory';
+
+export interface SubscriptionPayload {
+  email: string;
+  topics: SubscriptionTopic[];
+  categories: string[];
+  powiaty: string[];
+  rodo_consent: boolean;
+}
+
+export interface SubscriptionResult {
+  message: string;
+  email_masked: string;
+  topics: string[];
+  categories: string[];
+  powiaty: string[];
+  is_update: boolean;
+}
+
+export interface SubscriptionInfo {
+  email_masked: string;
+  topics: string[];
+  categories: string[];
+  powiaty: string[];
+  is_active: boolean;
+}
+
+export interface CountItem {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface SubscriptionStats {
+  active_total: number;
+  by_topic: CountItem[];
+  by_category: CountItem[];
+  all_categories_count: number;
+  by_powiat: CountItem[];
+  all_powiaty_count: number;
+  alerts_sent: number;
+}
+
+export interface GrantCallUpsert {
+  title: string;
+  opens_on: string;
+  closes_on: string;
+  min_budget_pln: number;
+  max_budget_pln: number;
+  criteria: string[];
+  category?: string | null;
+  powiat?: string | null;
+}
+
+export interface GrantCallAdminResult {
+  call: GrantCall;
+  notified_count: number;
+  message: string;
+}
