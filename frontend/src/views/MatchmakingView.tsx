@@ -25,7 +25,7 @@ import { useAccessibility } from '../store/useAccessibilityStore';
 import { AnalysisProgress, HighlightedQuery, SimilarReports } from '../components/matchmaking/MatchEvidence';
 
 export const MatchmakingView: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const initialPowiat = searchParams.get('powiat') || '';
   const { etrMode } = useAccessibility();
@@ -37,6 +37,8 @@ export const MatchmakingView: React.FC = () => {
   const [result, setResult] = useState<MatchmakingResult | null>(null);
   const [error, setError] = useState('');
   const resultsRef = useRef<HTMLDivElement>(null);
+  // Ostatnio wyszukane zapytanie zapisane w adresie – po powrocie z karty innowacji wyniki wracają bez ponownego wpisywania
+  const lastQueryKey = useRef('');
 
   // Stan nagrywania głosu (Groq Whisper)
   const [isRecording, setIsRecording] = useState(false);
@@ -100,13 +102,30 @@ export const MatchmakingView: React.FC = () => {
     if (!text.trim()) return;
     setLoading(true);
     setError('');
+    lastQueryKey.current = `${text}|${powiat || ''}`;
     try {
       const data = await api.matchProblem(text, powiat, category);
       setResult(data);
-      // Fokus dla czytników ekranu bez przewijania widoku (aria-live ogłasza wyniki)
-      requestAnimationFrame(() => resultsRef.current?.focus({ preventScroll: true }));
+      const params: Record<string, string> = { q: text };
+      if (powiat) params.powiat = powiat;
+      setSearchParams(params, { replace: true });
+      // Fokus dla czytników ekranu bez przewijania widoku (aria-live ogłasza wyniki);
+      // po powrocie z karty innowacji – fokus na linku „Szczegóły” tej innowacji
+      requestAnimationFrame(() => {
+        let back: HTMLElement | null = null;
+        try {
+          const lastOpened = sessionStorage.getItem('mhis_mm_opened');
+          sessionStorage.removeItem('mhis_mm_opened');
+          if (lastOpened) back = document.querySelector<HTMLElement>(`[data-innovation-link="${CSS.escape(lastOpened)}"]`);
+        } catch {
+          /* brak dostępu do storage */
+        }
+        if (back) back.focus();
+        else resultsRef.current?.focus({ preventScroll: true });
+      });
     } catch (err) {
       setResult(null);
+      lastQueryKey.current = '';
       setError(apiErrorMessage(err, 'Nie udało się dopasować innowacji. Spróbuj ponownie za chwilę.'));
     } finally {
       setLoading(false);
@@ -123,7 +142,7 @@ export const MatchmakingView: React.FC = () => {
     const q = searchParams.get('q');
     const p = searchParams.get('powiat');
     if (p) setSelectedPowiat(p);
-    if (q) {
+    if (q && `${q}|${p || ''}` !== lastQueryKey.current) {
       setProblemDescription(q);
       triggerMatch(q, p || selectedPowiat, selectedCategory);
     }
@@ -235,6 +254,13 @@ export const MatchmakingView: React.FC = () => {
                 rows={4}
                 value={problemDescription}
                 onChange={(e) => setProblemDescription(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter = nowa linia (tekst zostaje); Ctrl+Enter / Cmd+Enter = szukaj
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    if (!loading) handleSubmit();
+                  }
+                }}
                 placeholder="Wpisz treść lub kliknij mikrofon poniżej (np. W naszej wsi w powiecie gorlickim osoby starsze nie mają jak dojechać do lekarza...)"
                 className="w-full text-sm p-4 pb-14 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-y text-slate-900 placeholder:text-slate-500"
                 maxLength={4000}
@@ -312,7 +338,7 @@ export const MatchmakingView: React.FC = () => {
 
             {/* Informacja o ułatwieniu dla seniorów */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 mt-3">
-              <span id="problem-hint">Możesz mówić zamiast pisać. Nie podawaj imion, adresów ani numerów telefonu.</span>
+              <span id="problem-hint">Możesz mówić zamiast pisać. Nie podawaj imion, adresów ani numerów telefonu. Gdy skończysz, naciśnij przycisk „Znajdź innowację” (lub Ctrl+Enter).</span>
               <button
                 type="button"
                 onClick={simulateVoiceInput}
@@ -562,6 +588,14 @@ export const MatchmakingView: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
                       to={`/baza-wiedzy/${item.innovation_id}`}
+                      data-innovation-link={item.innovation_id}
+                      onClick={() => {
+                        try {
+                          sessionStorage.setItem('mhis_mm_opened', item.innovation_id);
+                        } catch {
+                          /* brak dostępu do storage */
+                        }
+                      }}
                       className="inline-flex items-center gap-1 text-xs font-bold border border-slate-300 hover:bg-slate-100 text-slate-900 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       <FileText className="w-3.5 h-3.5" aria-hidden="true" />
