@@ -18,6 +18,7 @@ import { RequireLogin } from './components/auth/RequireLogin';
 import { FiszkaStatusView } from './views/FiszkaStatusView';
 import { AccessibilityStatementView } from './views/AccessibilityStatementView';
 import { NotFoundView } from './views/NotFoundView';
+import { OpenDataView } from './views/OpenDataView';
 
 const SITE_NAME = 'Małopolski Hub Innowacji Społecznych';
 
@@ -32,7 +33,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/dialog': 'Dialog i mentorzy',
   '/admin': 'Panel ROPS',
   '/status': 'Status zgłoszenia',
-  '/deklaracja-dostepnosci': 'Deklaracja dostępności'
+  '/deklaracja-dostepnosci': 'Deklaracja dostępności',
+  '/otwarte-dane': 'Otwarte dane i integracje'
 };
 
 /** Tytuł karty przeglądarki per podstrona (WCAG 2.4.2) i przeniesienie fokusu na treść po nawigacji. */
@@ -93,6 +95,7 @@ export const App: React.FC = () => {
             <Route path="/status" element={<FiszkaStatusView />} />
             <Route path="/status/:id" element={<FiszkaStatusView />} />
             <Route path="/deklaracja-dostepnosci" element={<AccessibilityStatementView />} />
+            <Route path="/otwarte-dane" element={<OpenDataView />} />
             <Route path="*" element={<NotFoundView />} />
           </Routes>
         </main>

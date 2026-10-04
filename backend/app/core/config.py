@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "hub-innowacji@rops.example.org"
+    # Opcjonalny webhook wychodzący (nowa fiszka / nowy wpis Rejestru Wyzwań). Puste = wyłączony.
+    WEBHOOK_URL: str = ""
+    WEBHOOK_SECRET: str = ""
+    WEBHOOK_TIMEOUT_SECONDS: float = 5.0
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:5173",

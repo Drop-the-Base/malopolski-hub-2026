@@ -19,6 +19,7 @@ from app.core.constants import normalize_powiat
 from app.services.matchmaking_service import populate_vector_store_if_needed, rank_innovations
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
+from app.services.webhook_service import fire_event
 
 router = APIRouter(prefix="/problems", tags=["Moduł VIII: Rejestr Problemów i Panel Urzędnika JST"], dependencies=[Depends(require_admin)])
 
@@ -97,6 +98,13 @@ async def create_problem_report(
                      related_type="problem", related_id=prob_id)
     await db.commit()
     await db.refresh(report)
+    # Integracja: zdarzenie bez danych zgłaszającego (fail-safe, w tle)
+    fire_event("problem_report.created", {
+        "id": report.id, "title": report.title, "powiat": report.powiat, "gmina": report.gmina,
+        "category": report.category, "urgency": report.urgency, "affected_count": report.affected_count,
+        "reporter_type": report.reporter_type, "status": report.status,
+        "matched_innovations": report.matched_innovations or [], "created_at": report.created_at,
+    })
     return report
 
 @router.get("/{problem_id}", response_model=ProblemReportResponse)

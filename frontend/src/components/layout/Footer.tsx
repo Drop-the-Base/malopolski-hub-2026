@@ -29,6 +29,11 @@ export const Footer: React.FC = () => {
                 Deklaracja dostępności
               </Link>
             </p>
+            <p className="text-sm mt-2">
+              <Link to="/otwarte-dane" className="underline underline-offset-4 hover:text-white">
+                Dla deweloperów / Otwarte dane
+              </Link>
+            </p>
           </div>
 
           <nav className="md:col-span-4" aria-label="Moduły platformy">

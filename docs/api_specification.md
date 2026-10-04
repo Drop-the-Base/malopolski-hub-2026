@@ -45,6 +45,11 @@
 | VI. Panel ROPS | `PATCH` 🔒 | `/admin/submissions/{id}/status` | Zgodność wsteczna – deleguje do `PATCH /ideas/{id}` |
 | VI. Panel ROPS | `GET` 🔒 | `/admin/notifications` | Powiadomienia panelu (`?channel=panel`) i skrzynka nadawcza e-mail (`?channel=email`) |
 | VI. Panel ROPS | `POST` 🔒 | `/admin/notifications/mark-read` | Oznaczenie powiadomień panelu jako przeczytanych |
+| VI. Panel ROPS | `GET` 🔒 | `/admin/new-since-login` | Liczba nowych fiszek, zgłoszeń, zapytań, opinii i rezerwacji od poprzedniego logowania |
+| VI. Panel ROPS | `GET` 🔒 | `/admin/export/{ideas\|problems\|needs}.csv` | Eksport CSV (`;`, UTF-8 z BOM) bez danych kontaktowych autorów i zgłaszających |
+| VI. Panel ROPS | `GET` / `POST` 🔒 | `/admin/materials` | Materiały edukacyjne (także ukryte) / dodanie materiału |
+| VI. Panel ROPS | `PUT` / `DELETE` 🔒 | `/admin/materials/{id}` | Edycja / ukrycie materiału |
+| VI. Panel ROPS | `PUT` 🔒 | `/admin/challenges/{powiat_code}` | Edycja kluczowego wyzwania i trendu demograficznego powiatu |
 | VII. Middleman | `POST` | `/middleman/adapt` | Projekt pakietu wdrożeniowego i uchwały dla gminy (404 dla nieznanej innowacji) |
 | VII. Middleman | `POST` | `/middleman/chat` | Czat z doradcą wdrożeniowym (LLM, odpowiedź zapasowa bez klucza) |
 | Rejestr Wyzwań JST | `GET` 🔒 | `/problems` | Rejestr wyzwań; anonimowe zapytania Matchmakingu ukryte (`?include_matchmaking=true`) |
@@ -53,6 +58,10 @@
 | Rejestr Wyzwań JST | `POST` 🔒 | `/problems/{id}/assign-innovation` | Przypisanie innowacji (422 dla nieznanej) |
 | Rejestr Wyzwań JST | `GET` 🔒 | `/problems/summary/regional?powiat=` | Raport diagnostyczny powiatu z rekomendacjami z dopasowań |
 | Narzędzia | `POST` | `/tools/etr-simplify` | Uproszczenie tekstu do formatu ETR |
+| Otwarte dane | `GET` | `/open` | Spis otwartych zasobów |
+| Otwarte dane | `GET` | `/open/innovations`, `/open/innovations.csv` | Katalog innowacji (stronicowany JSON / CSV) |
+| Otwarte dane | `GET` | `/open/challenges`, `/open/challenges.csv` | Wyzwania i wskaźniki 22 powiatów |
+| Otwarte dane | `GET` | `/open/needs`, `/open/needs.csv` | Potrzeby zagregowane per powiat i obszar (same liczby) |
 
 ---
 
@@ -170,3 +179,62 @@ Wynik SUS liczony standardowo (Brooke 1996): pytania nieparzyste `x−1`, parzys
 ```
 - 404 – nieznany nabór, 409 – nabór zamknięty, 422 – kwota poza limitem naboru.
 - Odpowiedź zawiera `completeness_pct` i `missing_elements`; brakujące pola Canwy są oznaczone w treści jako `[DO UZUPEŁNIENIA: …]` zamiast zmyślonej treści.
+
+---
+
+## 4. Integracje
+
+Hub ma dwa kanały integracji z systemami zewnętrznymi (CRM, EZD, BIP, portale gmin, hurtownie danych). Strona dla
+użytkowników: `/otwarte-dane` (link „Dla deweloperów / Otwarte dane” w stopce).
+
+### 4.1. Otwarte API (tylko odczyt)
+
+- **Bez logowania**, wyłącznie `GET`. **CORS: `Access-Control-Allow-Origin: *`** dla ścieżek `/api/v1/open/*`
+  (bez ciasteczek i poświadczeń; preflight `OPTIONS` → 204). Pozostałe API nadal akceptuje tylko domeny z `CORS_ORIGINS`.
+- Odpowiedzi cache'owalne: `Cache-Control: public, max-age=300`.
+- **Stronicowanie**: `?page=` (od 1) i `?page_size=` (1–100; domyślnie 20 / 25 / 50). Koperta odpowiedzi:
+  ```json
+  {
+    "items": [ { "id": "rops-inn-001", "title": "Mobilny Doradca Seniora", "category": "seniorzy", "…": "…" } ],
+    "total": 10, "page": 1, "page_size": 3, "pages": 4,
+    "next": "/api/v1/open/innovations?page=2&page_size=3", "previous": null,
+    "note": "Prototyp HackYeah 2026 – dane demonstracyjne…"
+  }
+  ```
+- **CSV** (`*.csv`): separator `;`, UTF-8 z BOM (polskie znaki w Excelu), komórki zaczynające się od `= + - @`
+  są neutralizowane apostrofem (ochrona przed CSV injection).
+
+| Zasób | Pola (JSON) | Filtry |
+|---|---|---|
+| `/open/innovations` | `id, title, tagline, category, category_label, target_groups, description, easy_to_read_summary, readiness_level, budget_bracket, origin_powiat, video_url, handbook_url, page_path, created_at` | `category` (422 dla nieznanej) |
+| `/open/challenges` | `powiat_code, powiat_name, population, senior_share_pct, youth_share_pct, demographic_trend, reported_problems_count, active_innovations_count, key_social_challenge` | – |
+| `/open/needs` | `powiat, category, category_label, reports_total, registry_reports, matchmaking_queries, critical_reports, affected_residents, reports_last_90_days, last_reported_at` | – |
+
+Zgłoszenia mieszkańców i urzędników **nie są publikowane** – `/open/needs` zawiera wyłącznie liczby (bez treści,
+imion, ról zgłaszających).
+
+Przykład:
+```bash
+curl "http://localhost:3000/api/v1/open/innovations?page=1&page_size=20&category=seniorzy"
+curl -o innowacje.csv "http://localhost:3000/api/v1/open/innovations.csv"
+```
+
+### 4.2. Webhook wychodzący (opcjonalny)
+
+Włączany zmienną środowiskową `WEBHOOK_URL` (puste = wyłączony). Zdarzenia:
+
+| Zdarzenie | Kiedy | `data` |
+|---|---|---|
+| `fiszka.created` | `POST /ideas` | `id, title, powiat, target_audience, implementation_stage, author_type, status, created_at, status_path` |
+| `problem_report.created` | `POST /problems` | `id, title, powiat, gmina, category, urgency, affected_count, reporter_type, status, matched_innovations, created_at` |
+
+Żądanie: `POST <WEBHOOK_URL>`, `Content-Type: application/json`, nagłówki `X-MHIS-Event: <zdarzenie>` oraz – gdy
+ustawiono `WEBHOOK_SECRET` – `X-MHIS-Signature: sha256=<HMAC-SHA256(body, WEBHOOK_SECRET)>`. Treść:
+```json
+{ "id": "evt-3f2a…", "event": "fiszka.created", "occurred_at": "2026-10-04T10:15:00Z", "source": "mhis",
+  "data": { "id": "fiszka-1a2b3c4d", "title": "…", "powiat": "bocheński", "status": "submitted", "…": "…" } }
+```
+- **Bez danych osobowych**: nie wysyłamy imion, e-maili ani telefonów autorów i zgłaszających.
+- **Fail-safe i nieblokujący**: wysyłka odbywa się w tle po zapisaniu zgłoszenia (timeout `WEBHOOK_TIMEOUT_SECONDS`,
+  domyślnie 5 s). Błąd sieci lub odpowiedź inna niż 2xx jest tylko logowana – zgłoszenie zawsze się zapisuje.
+- Prototyp nie ponawia nieudanych wysyłek; w produkcji: kolejka z ponowieniami i dziennik dostarczeń.
