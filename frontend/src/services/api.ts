@@ -26,7 +26,21 @@ import {
   FiszkaUpdatePayload,
   IdeaVoteResponse,
   NotificationItem,
-  EducationalMaterial
+  EducationalMaterial,
+  FiszkaCaseView,
+  CaseMessage,
+  ProblemPublicStatus,
+  AdminInboxSummary,
+  SubscriptionPayload,
+  SubscriptionResult,
+  SubscriptionInfo,
+  SubscriptionStats,
+  GrantCallUpsert,
+  GrantCallAdminResult,
+  EducationalMaterialAdmin,
+  EducationalMaterialUpsert,
+  NewSinceLogin,
+  AdminExportKind
 } from '../types';
 
 const API_BASE = '/api/v1';
@@ -396,6 +410,117 @@ export const api = {
 
   markNotificationsRead: async () => {
     await client.post('/admin/notifications/mark-read');
+  },
+
+  // „Moje sprawy” (G4): status, oś czasu i rozmowa autora z ROPS
+  openMyCase: async (fiszkaId: string, email: string) => {
+    const res = await client.post<FiszkaCaseView>(`/ideas/${encodeURIComponent(fiszkaId)}/case`, { email });
+    return res.data;
+  },
+
+  sendCaseMessage: async (fiszkaId: string, email: string, body: string) => {
+    const res = await client.post<FiszkaCaseView>(`/ideas/${encodeURIComponent(fiszkaId)}/messages`, { email, body });
+    return res.data;
+  },
+
+  getProblemStatus: async (problemId: string) => {
+    const res = await client.get<ProblemPublicStatus>(`/cases/problems/${encodeURIComponent(problemId)}`);
+    return res.data;
+  },
+
+  getInboxSummary: async () => {
+    const res = await client.get<AdminInboxSummary>('/admin/inbox-summary');
+    return res.data;
+  },
+
+  acknowledgeSubmission: async (fiszkaId: string) => {
+    await client.post(`/admin/submissions/${encodeURIComponent(fiszkaId)}/read`);
+  },
+
+  getCaseMessagesAdmin: async (fiszkaId: string) => {
+    const res = await client.get<CaseMessage[]>(`/admin/submissions/${encodeURIComponent(fiszkaId)}/messages`);
+    return res.data;
+  },
+
+  replyToAuthor: async (fiszkaId: string, body: string) => {
+    const res = await client.post<CaseMessage[]>(`/admin/submissions/${encodeURIComponent(fiszkaId)}/messages`, { body });
+    return res.data;
+  },
+
+  // Subskrypcje powiadomień (G5)
+  subscribe: async (data: SubscriptionPayload) => {
+    const res = await client.post<SubscriptionResult>('/subscriptions', data);
+    return res.data;
+  },
+
+  getSubscription: async (token: string) => {
+    const res = await client.get<SubscriptionInfo>(`/subscriptions/${encodeURIComponent(token)}`);
+    return res.data;
+  },
+
+  unsubscribe: async (token: string) => {
+    const res = await client.post<SubscriptionInfo>(`/subscriptions/${encodeURIComponent(token)}/unsubscribe`);
+    return res.data;
+  },
+
+  getSubscriptionStats: async () => {
+    const res = await client.get<SubscriptionStats>('/admin/subscriptions/stats');
+    return res.data;
+  },
+
+  createGrantCall: async (data: GrantCallUpsert) => {
+    const res = await client.post<GrantCallAdminResult>('/admin/grant-calls', data);
+    return res.data;
+  },
+
+  updateGrantCall: async (id: string, data: GrantCallUpsert) => {
+    const res = await client.put<GrantCallAdminResult>(`/admin/grant-calls/${encodeURIComponent(id)}`, data);
+    return res.data;
+  },
+
+  getNewSinceLogin: async () => {
+    const res = await client.get<NewSinceLogin>('/admin/new-since-login');
+    return res.data;
+  },
+
+  getAdminMaterials: async () => {
+    const res = await client.get<EducationalMaterialAdmin[]>('/admin/materials');
+    return res.data;
+  },
+
+  createMaterial: async (data: EducationalMaterialUpsert) => {
+    const res = await client.post<EducationalMaterialAdmin>('/admin/materials', data);
+    return res.data;
+  },
+
+  updateMaterial: async (id: string, data: EducationalMaterialUpsert) => {
+    const res = await client.put<EducationalMaterialAdmin>(`/admin/materials/${encodeURIComponent(id)}`, data);
+    return res.data;
+  },
+
+  hideMaterial: async (id: string) => {
+    await client.delete(`/admin/materials/${encodeURIComponent(id)}`);
+  },
+
+  updateChallenge: async (powiatCode: string, data: { key_social_challenge: string; demographic_trend?: string }) => {
+    const res = await client.put<RegionalChallenge>(`/admin/challenges/${encodeURIComponent(powiatCode)}`, data);
+    return res.data;
+  },
+
+  /** Pobiera eksport CSV (z tokenem) i zapisuje go jako plik w przeglądarce. */
+  downloadAdminExport: async (kind: AdminExportKind) => {
+    const res = await client.get<Blob>(`/admin/export/${kind}.csv`, { responseType: 'blob' });
+    const disposition = String(res.headers['content-disposition'] ?? '');
+    const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? `mhis-${kind}.csv`;
+    const url = URL.createObjectURL(res.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return filename;
   },
 
   // Rejestr Wyzwań JST

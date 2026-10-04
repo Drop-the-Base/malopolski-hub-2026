@@ -6,7 +6,9 @@ import {
   Users,
   ShieldCheck,
   FlaskConical,
-  ClipboardList,
+  FolderOpen,
+  BellRing,
+  Database,
   Search,
   Map as MapIcon
 } from 'lucide-react';
@@ -68,12 +70,20 @@ export const NAV_ENTRIES: NavEntry[] = [
         icon: FlaskConical
       },
       {
-        to: '/status',
-        label: 'Sprawdź swoje zgłoszenie',
-        labelEtr: 'Sprawdź swoje zgłoszenie',
-        hint: 'Status fiszki po numerze',
-        hintEtr: 'Zobacz, co dzieje się z Twoim pomysłem',
-        icon: ClipboardList
+        to: '/moje-sprawy',
+        label: 'Moje sprawy',
+        labelEtr: 'Moje sprawy',
+        hint: 'Status zgłoszeń i odpowiedzi z ROPS',
+        hintEtr: 'Zobacz, co dzieje się z Twoim zgłoszeniem',
+        icon: FolderOpen
+      },
+      {
+        to: '/powiadomienia',
+        label: 'Powiadomienia o naborach',
+        labelEtr: 'Powiadomienia e-mail',
+        hint: 'E-mail o nowych naborach i innowacjach',
+        hintEtr: 'Dostaniesz e-mail, gdy pojawi się nabór',
+        icon: BellRing
       }
     ]
   },
@@ -114,6 +124,14 @@ export const NAV_ENTRIES: NavEntry[] = [
         hint: 'Zgłoszenia, decyzje i trendy – wymaga logowania',
         hintEtr: 'Dla pracowników ROPS – trzeba się zalogować',
         icon: ShieldCheck
+      },
+      {
+        to: '/otwarte-dane',
+        label: 'Otwarte dane i API',
+        labelEtr: 'Otwarte dane',
+        hint: 'Eksport JSON/CSV i webhooki dla systemów gmin',
+        hintEtr: 'Dane do pobrania dla gmin i programistów',
+        icon: Database
       }
     ]
   }
@@ -133,6 +151,7 @@ export function breadcrumbFor(pathname: string, etr: boolean): { group?: string;
       if (item) return { group: pick(entry), page: pick(item), pageTo: item.to };
     }
   }
+  if (matches('/status')) return { group: 'Działaj', page: 'Status zgłoszenia', pageTo: '/status' };
   if (matches('/deklaracja-dostepnosci')) return { page: 'Deklaracja dostępności', pageTo: '/deklaracja-dostepnosci' };
   return null;
 }

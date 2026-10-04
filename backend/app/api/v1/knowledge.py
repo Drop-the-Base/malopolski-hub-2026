@@ -14,6 +14,8 @@ from app.services.knowledge_service import (
     get_educational_materials
 )
 from app.services.vector_store import vector_store
+from app.services.subscription_service import notify_subscribers
+from app.core.constants import category_label, powiat_locative
 
 router = APIRouter()
 
@@ -42,6 +44,15 @@ async def create_innovation(req: InnovationUpsert, db: AsyncSession = Depends(ge
     numbers = [int(m.group(1)) for i in ids if (m := re.fullmatch(r"rops-inn-(\d+)", i))]
     new_id = f"rops-inn-{(max(numbers) + 1) if numbers else 1:03d}"
     db.add(Innovation(id=new_id, **req.model_dump()))
+    if req.is_published:
+        # G5: automatyczne powiadomienie subskrybentów (kategoria / powiat pochodzenia)
+        origin = f" Sprawdzona {powiat_locative(req.origin_poviat)}." if req.origin_poviat else ""
+        await notify_subscribers(
+            db, "innowacje", subject=f"Nowa innowacja w Bibliotece: {req.title}",
+            body=(f"{req.tagline}\nKategoria: {category_label(req.category)}.{origin}\n"
+                  f"Zobacz kartę innowacji: /baza-wiedzy/{new_id}"),
+            category=req.category, powiat=req.origin_poviat or None, related_id=new_id,
+        )
     await db.commit()
     vector_store.clear()  # indeks zostanie przebudowany przy kolejnym zapytaniu
     return await get_innovation_by_id(db, new_id)
@@ -79,6 +90,6 @@ async def list_challenges(db: AsyncSession = Depends(get_db)):
     return await get_regional_challenges(db)
 
 @router.get("/knowledge/materials", response_model=List[EducationalMaterial], tags=["Moduł II: Zasobnik Wiedzy"])
-async def list_materials():
-    """Materiały edukacyjne i narzędzia metodyczne."""
-    return get_educational_materials()
+async def list_materials(db: AsyncSession = Depends(get_db)):
+    """Materiały edukacyjne i narzędzia metodyczne (opublikowane; edycja w Panelu ROPS)."""
+    return await get_educational_materials(db)

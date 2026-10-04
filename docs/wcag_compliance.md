@@ -17,7 +17,7 @@ graph LR
     Mowa["Odsłuchaj"] -->|Web Speech API, pl-PL| UI
 ```
 
-Wszystkie przełączniki mają `aria-pressed` i nazwy dostępne; ustawienia są zapamiętywane w `localStorage`. Tryb ETR jest domyślnie włączony.
+Wszystkie przełączniki mają `aria-pressed` i nazwy dostępne; ustawienia są zapamiętywane w `localStorage`. Prosty język (ETR) jest zawsze włączony – nie ma przełącznika, żeby nikt nie trafił przypadkiem na trudniejszą wersję tekstu.
 
 ---
 

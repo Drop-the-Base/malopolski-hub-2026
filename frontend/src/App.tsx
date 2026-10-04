@@ -18,6 +18,9 @@ import { RequireLogin } from './components/auth/RequireLogin';
 import { FiszkaStatusView } from './views/FiszkaStatusView';
 import { AccessibilityStatementView } from './views/AccessibilityStatementView';
 import { NotFoundView } from './views/NotFoundView';
+import { MyCasesView } from './views/MyCasesView';
+import { SubscriptionsView, UnsubscribeView } from './views/SubscriptionsView';
+import { OpenDataView } from './views/OpenDataView';
 
 const SITE_NAME = 'Małopolski Hub Innowacji Społecznych';
 
@@ -32,7 +35,11 @@ const PAGE_TITLES: Record<string, string> = {
   '/dialog': 'Dialog i mentorzy',
   '/admin': 'Panel ROPS',
   '/status': 'Status zgłoszenia',
-  '/deklaracja-dostepnosci': 'Deklaracja dostępności'
+  '/moje-sprawy': 'Moje sprawy',
+  '/powiadomienia/wypisz': 'Wypisz się z powiadomień',
+  '/powiadomienia': 'Powiadomienia e-mail',
+  '/deklaracja-dostepnosci': 'Deklaracja dostępności',
+  '/otwarte-dane': 'Otwarte dane i integracje'
 };
 
 /** Tytuł karty przeglądarki per podstrona (WCAG 2.4.2) i przeniesienie fokusu na treść po nawigacji. */
@@ -93,7 +100,11 @@ export const App: React.FC = () => {
             <Route path="/admin" element={<AdminDashboardView />} />
             <Route path="/status" element={<FiszkaStatusView />} />
             <Route path="/status/:id" element={<FiszkaStatusView />} />
+            <Route path="/moje-sprawy" element={<MyCasesView />} />
+            <Route path="/powiadomienia" element={<SubscriptionsView />} />
+            <Route path="/powiadomienia/wypisz/:token" element={<UnsubscribeView />} />
             <Route path="/deklaracja-dostepnosci" element={<AccessibilityStatementView />} />
+            <Route path="/otwarte-dane" element={<OpenDataView />} />
             <Route path="*" element={<NotFoundView />} />
           </Routes>
         </main>

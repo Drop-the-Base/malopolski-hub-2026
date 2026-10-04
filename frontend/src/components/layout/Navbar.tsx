@@ -3,8 +3,48 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 import { NAV_ENTRIES, PRIMARY_CTA, NavEntry, NavItem, breadcrumbFor, isEntryActive } from './navConfig';
+import { api, authStore } from '../../services/api';
+import { INBOX_CHANGED_EVENT } from '../admin/CaseThreadAdmin';
 
 const pathMatches = (pathname: string, to: string) => pathname === to || pathname.startsWith(`${to}/`);
+
+/** Ścieżka, przy której pokazujemy licznik spraw wymagających uwagi koordynatora. */
+const ATTENTION_PATH = '/admin';
+
+/** Liczba spraw wymagających uwagi koordynatora (nowe fiszki + pytania autorów) – tylko po zalogowaniu. */
+const useAdminAttention = (pathname: string) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      if (!authStore.get()) {
+        setCount(0);
+        return;
+      }
+      api
+        .getInboxSummary()
+        .then((s) => !cancelled && setCount(s.total_attention))
+        .catch(() => !cancelled && setCount(0));
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 60000);
+    window.addEventListener(INBOX_CHANGED_EVENT, refresh);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener(INBOX_CHANGED_EVENT, refresh);
+    };
+  }, [pathname]);
+  return count;
+};
+
+const AttentionBadge: React.FC<{ count: number }> = ({ count }) =>
+  count > 0 ? (
+    <span className="ml-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-700 text-white text-xs font-bold inline-flex items-center justify-center">
+      {count}
+      <span className="sr-only"> {count === 1 ? 'sprawa wymaga' : 'spraw wymaga'} uwagi</span>
+    </span>
+  ) : null;
 
 /**
  * Rozwijane menu grupy (wzorzec „disclosure”): przycisk z aria-expanded, lista zwykłych linków.
@@ -17,7 +57,8 @@ const NavDisclosure: React.FC<{
   onToggle: (open: boolean) => void;
   etr: boolean;
   pathname: string;
-}> = ({ entry, open, onToggle, etr, pathname }) => {
+  attention: number;
+}> = ({ entry, open, onToggle, etr, pathname, attention }) => {
   const panelId = useId();
   const wrapRef = useRef<HTMLLIElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -85,6 +126,7 @@ const NavDisclosure: React.FC<{
         }`}
       >
         <span>{etr ? entry.labelEtr : entry.label}</span>
+        {entry.items.some((i) => i.to === ATTENTION_PATH) && <AttentionBadge count={attention} />}
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
         {active && <span className="absolute left-3 right-3 bottom-0 h-1 bg-amber-400" aria-hidden="true" />}
       </button>
@@ -111,6 +153,7 @@ const NavDisclosure: React.FC<{
                   <span>
                     <span className={`block text-base text-slate-900 ${current ? 'font-bold' : 'font-semibold'}`}>
                       {etr ? item.labelEtr : item.label}
+                      {item.to === ATTENTION_PATH && <AttentionBadge count={attention} />}
                     </span>
                     {item.hint && (
                       <span className="block text-sm text-slate-600 leading-snug">{etr ? item.hintEtr ?? item.hint : item.hint}</span>
@@ -132,6 +175,7 @@ export const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const attention = useAdminAttention(pathname);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -156,6 +200,7 @@ export const Navbar: React.FC = () => {
         >
           <Icon className="w-5 h-5 text-blue-700 shrink-0" aria-hidden="true" />
           {label(item)}
+          {item.to === ATTENTION_PATH && <AttentionBadge count={attention} />}
         </Link>
       </li>
     );
@@ -189,6 +234,7 @@ export const Navbar: React.FC = () => {
                     entry={entry}
                     etr={etrMode}
                     pathname={pathname}
+                    attention={attention}
                     open={openGroup === entry.id}
                     onToggle={(o) => setOpenGroup(o ? entry.id : null)}
                   />

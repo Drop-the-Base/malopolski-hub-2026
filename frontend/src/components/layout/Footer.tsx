@@ -9,7 +9,9 @@ const modules = [
   { to: '/dialog', label: 'Dialog i mentorzy' },
   { to: '/admin', label: 'Panel ROPS' },
   { to: '/middleman', label: 'Middleman dla gmin' },
-  { to: '/problemy', label: 'Rejestr wyzwań gmin' }
+  { to: '/problemy', label: 'Rejestr wyzwań gmin' },
+  { to: '/moje-sprawy', label: 'Moje sprawy (status zgłoszeń)' },
+  { to: '/powiadomienia', label: 'Powiadomienia o naborach' }
 ];
 
 export const Footer: React.FC = () => {
@@ -27,6 +29,11 @@ export const Footer: React.FC = () => {
             <p className="text-sm">
               <Link to="/deklaracja-dostepnosci" className="underline underline-offset-4 hover:text-white">
                 Deklaracja dostępności
+              </Link>
+            </p>
+            <p className="text-sm mt-2">
+              <Link to="/otwarte-dane" className="underline underline-offset-4 hover:text-white">
+                Dla deweloperów / Otwarte dane
               </Link>
             </p>
           </div>

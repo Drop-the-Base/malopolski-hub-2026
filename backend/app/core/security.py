@@ -1,7 +1,7 @@
 """Uproszczone uwierzytelnianie koordynatora ROPS (token JWT HS256) dla panelu administratora."""
 import hmac
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Dict, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -15,12 +15,16 @@ def verify_admin_password(password: str) -> bool:
     return hmac.compare_digest(password.encode("utf-8"), settings.ADMIN_PASSWORD.encode("utf-8"))
 
 
-def create_admin_token() -> str:
+def create_admin_token(previous_login: Optional[datetime] = None) -> str:
+    """Token koordynatora; `prev_login` (czas poprzedniego logowania) zasila licznik „nowe od ostatniego logowania”."""
     expire = datetime.utcnow() + timedelta(minutes=settings.ADMIN_TOKEN_TTL_MINUTES)
-    return jwt.encode({"sub": "rops_admin", "role": "admin", "exp": expire}, settings.SECRET_KEY, algorithm=ALGORITHM)
+    claims: Dict[str, Any] = {"sub": "rops_admin", "role": "admin", "exp": expire}
+    if previous_login:
+        claims["prev_login"] = previous_login.isoformat()
+    return jwt.encode(claims, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def require_admin(credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)) -> str:
+async def require_admin_claims(credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)) -> Dict[str, Any]:
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Wymagane zalogowanie do Panelu ROPS.",
@@ -34,4 +38,8 @@ async def require_admin(credentials: Optional[HTTPAuthorizationCredentials] = De
         raise unauthorized
     if payload.get("role") != "admin":
         raise unauthorized
-    return payload["sub"]
+    return payload
+
+
+async def require_admin(claims: Dict[str, Any] = Depends(require_admin_claims)) -> str:
+    return claims["sub"]

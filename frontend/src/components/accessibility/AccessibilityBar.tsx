@@ -1,15 +1,13 @@
 import React from 'react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
-import { Eye, Type, Volume2, BookOpen, Check } from 'lucide-react';
+import { Eye, Type, Volume2 } from 'lucide-react';
 
 export const AccessibilityBar: React.FC = () => {
   const {
     contrastMode,
     fontSize,
-    etrMode,
     setContrastMode,
-    setFontSize,
-    toggleEtrMode
+    setFontSize
   } = useAccessibility();
 
   const handleSpeakPage = () => {
@@ -44,22 +42,6 @@ export const AccessibilityBar: React.FC = () => {
 
         {/* Prawa strona: Przyciski kontrolne */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-4">
-          {/* Przełącznik Tekst Łatwy (ETR) */}
-          <button
-            onClick={toggleEtrMode}
-            aria-pressed={etrMode}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors font-medium ${
-              etrMode
-                ? 'bg-amber-400 text-slate-900 font-bold'
-                : 'text-slate-200 hover:bg-slate-800'
-            }`}
-            title="Włącz tekst łatwy do czytania i rozumienia (ETR)"
-          >
-            <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Prosty język<span className="hidden sm:inline"> (ETR)</span></span>
-            {etrMode && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
-          </button>
-
           {/* Odsłuchaj stronę */}
           <button
             onClick={handleSpeakPage}

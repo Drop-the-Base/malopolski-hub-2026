@@ -29,7 +29,11 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { LoginForm } from '../components/auth/LoginForm';
+import { AdminDataTools, NewSinceLoginSummary } from '../components/admin/AdminDataTools';
 import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDateTime, powiatLabel } from '../constants/domain';
+import { AdminInboxSummary } from '../types';
+import { CaseThreadAdmin, INBOX_CHANGED_EVENT, notifyInboxChanged } from '../components/admin/CaseThreadAdmin';
+import { SubscriptionsAdmin } from '../components/admin/SubscriptionsAdmin';
 
 const STATUS_STYLES: Record<string, string> = {
   submitted: 'bg-amber-100 text-amber-950 border border-amber-300',
@@ -73,6 +77,11 @@ export const AdminDashboardView: React.FC = () => {
   const [editingProposal, setEditingProposal] = useState<FiszkaAdminItem | null>(null);
   const [editProposalError, setEditProposalError] = useState('');
   const [printProposal, setPrintProposal] = useState<FiszkaAdminItem | null>(null);
+  const [inbox, setInbox] = useState<AdminInboxSummary | null>(null);
+
+  const loadInbox = () => {
+    api.getInboxSummary().then(setInbox).catch(() => undefined);
+  };
 
   const groupedSubmissions = useMemo(() => {
     if (groupBy === 'none') {
@@ -168,6 +177,7 @@ export const AdminDashboardView: React.FC = () => {
       setInnovations(inns);
       setDrafts(Object.fromEntries(s.map((f) => [f.id, { status: f.status, admin_notes: f.admin_notes ?? '', assigned_mentor_id: f.assigned_mentor_id ?? '' }])));
       setError('');
+      notifyInboxChanged(); // odświeża licznik w panelu i plakietkę w nawigacji
     } catch (err) {
       if (isUnauthorized(err)) {
         logout();
@@ -180,6 +190,11 @@ export const AdminDashboardView: React.FC = () => {
   useEffect(() => {
     if (loggedIn) loadAll();
   }, [loggedIn]);
+
+  useEffect(() => {
+    window.addEventListener(INBOX_CHANGED_EVENT, loadInbox);
+    return () => window.removeEventListener(INBOX_CHANGED_EVENT, loadInbox);
+  }, []);
 
   if (!loggedIn) return <LoginForm onLoggedIn={() => setLoggedIn(true)} />;
 
@@ -201,8 +216,9 @@ export const AdminDashboardView: React.FC = () => {
     try {
       if (editing.id) await api.updateInnovation(editing.id, editing.data);
       else await api.createInnovation(editing.data);
+      const isNewInnovation = !editing.id;
       setEditing(null);
-      setStatus('Zapisano kartę innowacji. Matchmaking korzysta już z nowych danych.');
+      setStatus(`Zapisano kartę innowacji. Matchmaking korzysta już z nowych danych.${isNewInnovation && editing.data.is_published ? ' Subskrybenci tej kategorii dostali e-mail (skrzynka nadawcza).' : ''}`);
       loadAll();
     } catch (err) {
       setEditError(apiErrorMessage(err, 'Nie udało się zapisać innowacji.'));
@@ -238,6 +254,20 @@ export const AdminDashboardView: React.FC = () => {
 
       <p aria-live="polite" className={status ? 'bg-blue-50 border border-blue-200 text-blue-950 p-3 rounded-xl text-sm' : 'sr-only'}>{status}</p>
       {error && <p role="alert" className="bg-rose-50 border border-rose-200 text-rose-900 p-3 rounded-xl text-sm">{error}</p>}
+
+      {/* G4: co wymaga uwagi koordynatora (nowe fiszki, pytania autorów) */}
+      {inbox && (
+        <div className={`p-4 rounded-2xl border text-sm flex flex-wrap items-center gap-x-6 gap-y-2 ${inbox.total_attention > 0 ? 'bg-amber-50 border-amber-300 text-slate-900' : 'bg-white border-slate-200 text-slate-700'}`}>
+          <strong className="text-base">{inbox.total_attention > 0 ? 'Wymaga Twojej uwagi:' : 'Wszystko przejrzane.'}</strong>
+          <span>Nowe fiszki do przyjęcia: <strong>{inbox.new_submissions}</strong></span>
+          <span>Pytania autorów bez odpowiedzi: <strong>{inbox.unread_messages}</strong></span>
+          {inbox.total_attention > 0 && (
+            <a href="#proposals-title" className="font-bold text-blue-700 underline">Przejdź do wniosków</a>
+          )}
+        </div>
+      )}
+      {/* G8: nowe od ostatniego logowania */}
+      <NewSinceLoginSummary />
 
       {radar && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -444,6 +474,14 @@ export const AdminDashboardView: React.FC = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* G4: przyjęcie zgłoszenia i rozmowa z autorem */}
+                      <CaseThreadAdmin
+                        fiszka={f}
+                        isNew={!!inbox?.new_submission_ids.includes(f.id)}
+                        unread={inbox?.unread_by_case[f.id] ?? 0}
+                        onChanged={(msg) => { setStatus(msg); loadAll(); }}
+                      />
 
                       {/* Pasek narzędziowy operacji urzędnika: Approve, Group, Change, Print */}
                       <div className="pt-3 border-t border-slate-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
@@ -931,6 +969,9 @@ export const AdminDashboardView: React.FC = () => {
         </>
       )}
 
+      {/* G8: eksport CSV, wyzwania powiatów, materiały edukacyjne */}
+      <AdminDataTools onStatus={setStatus} />
+
       {/* Zarządzanie katalogiem */}
       <section aria-labelledby="catalog-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -1025,6 +1066,9 @@ export const AdminDashboardView: React.FC = () => {
           ))}
         </ul>
       </section>
+
+      {/* G5: subskrypcje powiadomień i nabory */}
+      <SubscriptionsAdmin onStatus={(msg) => { setStatus(msg); loadAll(); }} />
     </div>
   );
 };

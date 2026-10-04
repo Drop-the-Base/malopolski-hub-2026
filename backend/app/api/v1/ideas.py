@@ -28,15 +28,18 @@ from app.schemas.idea_schema import (
     IdeaPosterHintsRequest,
     IdeaPosterHintsResponse
 )
-from app.services.ai_assistant import evaluate_canvas, generate_grant_application, list_grant_calls, get_grant_call
+from app.services.ai_assistant import evaluate_canvas, generate_grant_application
+from app.services.grant_call_service import list_grant_calls, get_grant_call
 from app.services.groq_client import autofill_social_canvas, suggest_poster_hints
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
+from app.services.case_service import build_fiszka_timeline, last_rops_message_at, REVIEW_STATUSES, DECISION_STATUSES
+from app.services.webhook_service import fire_event
 
 router = APIRouter()
 
 
-async def _public_status(db: AsyncSession, fiszka: IdeaFiszka) -> FiszkaPublicStatus:
+async def _public_status(db: AsyncSession, fiszka: IdeaFiszka, with_timeline: bool = False) -> FiszkaPublicStatus:
     mentor_name = None
     if fiszka.assigned_mentor_id:
         mentor = await db.get(Mentor, fiszka.assigned_mentor_id)
@@ -56,6 +59,7 @@ async def _public_status(db: AsyncSession, fiszka: IdeaFiszka) -> FiszkaPublicSt
         votes_count=fiszka.votes_count or 0,
         created_at=fiszka.created_at,
         updated_at=fiszka.updated_at,
+        timeline=build_fiszka_timeline(fiszka, mentor_name, await last_rops_message_at(db, fiszka.id)) if with_timeline else [],
     )
 
 
@@ -91,7 +95,7 @@ async def get_idea_status(fiszka_id: str, db: AsyncSession = Depends(get_db)):
     fiszka = await db.get(IdeaFiszka, fiszka_id)
     if not fiszka:
         raise HTTPException(status_code=404, detail="Nie znaleziono fiszki o podanym numerze.")
-    return await _public_status(db, fiszka)
+    return await _public_status(db, fiszka, with_timeline=True)
 
 
 @router.patch("/ideas/{fiszka_id}", response_model=FiszkaResponse, tags=["Moduł VI: Panel Administratora"])
@@ -131,17 +135,31 @@ async def moderate_or_update_idea(
     elif req.assigned_mentor_id == "":
         fiszka.assigned_mentor_id = None
 
+    now = datetime.utcnow()
     status_changed = False
     if req.status is not None and req.status != fiszka.status:
         fiszka.status = req.status
         status_changed = True
 
+    notes_changed = False
     if req.admin_notes is not None:
-        fiszka.admin_notes = req.admin_notes.strip() or None
+        new_notes = req.admin_notes.strip() or None
+        if new_notes != fiszka.admin_notes:
+            fiszka.admin_notes = new_notes
+            notes_changed = bool(new_notes)
+            fiszka.admin_notes_at = now if new_notes else None
 
-    fiszka.updated_at = datetime.utcnow()
-
+    # Oś czasu sprawy (G4): każda czynność koordynatora oznacza zgłoszenie jako przyjęte
+    if fiszka.read_at is None:
+        fiszka.read_at = now
+    if fiszka.review_started_at is None and (fiszka.status in REVIEW_STATUSES or fiszka.assigned_mentor_id):
+        fiszka.review_started_at = now
     if status_changed:
+        fiszka.decided_at = now if fiszka.status in DECISION_STATUSES else None
+
+    fiszka.updated_at = now
+
+    if status_changed or notes_changed:
         body = f"Status Twojej fiszki „{fiszka.title}”: {FISZKA_STATUSES.get(fiszka.status, fiszka.status)}."
         if fiszka.admin_notes:
             body += f"\n\nKomentarz koordynatora ROPS:\n{fiszka.admin_notes}"
@@ -195,7 +213,13 @@ async def create_idea_fiszka(req: FiszkaCreate, db: AsyncSession = Depends(get_d
     )
     await db.commit()
     await db.refresh(fiszka)
-    return await _public_status(db, fiszka)
+    # Integracja: zdarzenie bez danych osobowych autora (fail-safe, w tle)
+    fire_event("fiszka.created", {
+        "id": fiszka.id, "title": fiszka.title, "powiat": fiszka.powiat, "target_audience": fiszka.target_audience,
+        "implementation_stage": fiszka.implementation_stage, "author_type": fiszka.author_type,
+        "status": fiszka.status, "created_at": fiszka.created_at, "status_path": f"/status/{fiszka.id}",
+    })
+    return await _public_status(db, fiszka, with_timeline=True)
 
 
 @router.get("/ideas", response_model=List[FiszkaResponse], tags=["Moduł III: Kreator Pomysłów"])
@@ -215,17 +239,17 @@ async def audit_social_canvas(req: CanvasSubmission):
 
 
 @router.get("/grant-calls", response_model=List[GrantCall], tags=["Moduł III: Kreator Pomysłów"])
-async def grant_calls():
-    """Nabory grantowe (dane demonstracyjne) z datami otwarcia/zamknięcia i kryteriami."""
-    return list_grant_calls()
+async def grant_calls(db: AsyncSession = Depends(get_db)):
+    """Nabory grantowe (demonstracyjne, edytowalne w Panelu ROPS) z datami otwarcia/zamknięcia i kryteriami."""
+    return await list_grant_calls(db)
 
 
 @router.post("/grant-applications/generate", response_model=GrantApplicationResponse, tags=["Moduł III: Kreator Pomysłów"])
-async def create_grant_application(req: GrantApplicationRequest):
+async def create_grant_application(req: GrantApplicationRequest, db: AsyncSession = Depends(get_db)):
     """
     Generator szkicu wniosku – dostępny tylko dla otwartego naboru, dopasowany do jego kryteriów i limitów budżetu.
     """
-    call = get_grant_call(req.call_id)
+    call = await get_grant_call(db, req.call_id)
     if not call:
         raise HTTPException(status_code=404, detail="Nie znaleziono naboru.")
     if not call.is_open:

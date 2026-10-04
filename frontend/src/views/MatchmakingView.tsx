@@ -17,7 +17,6 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Zap,
   RefreshCw,
   PackageCheck,
   MessageSquare,
@@ -25,6 +24,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useAccessibility } from '../store/useAccessibilityStore';
+import { AnalysisProgress, HighlightedQuery, SimilarReports } from '../components/matchmaking/MatchEvidence';
 
 export const MatchmakingView: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -49,39 +49,54 @@ export const MatchmakingView: React.FC = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<any>(null);
 
+  // Przykładowe opisy – kliknięcie wstawia tekst i od razu uruchamia dopasowanie
   const scenarios = [
     {
-      label: '👵 Senior w Limanowej (82 lata, łazienka)',
-      text: 'Mój 82-letni dziadek w Limanowej ma trudności z wchodzeniem do wanny i potrzebuje adaptacji łazienki, a GOPS jest daleko.',
-      powiat: 'limanowski',
-      category: 'dostepnosc'
+      label: 'Samotni seniorzy na wsi',
+      text: 'Starsi ludzie w naszej wsi są samotni, dzieci wyjechały za granicę, a nikt ich nie odwiedza. Autobus do miasta jeździ rzadko.',
+      powiat: 'nowosądecki'
     },
     {
-      label: '🧠 Kryzys psychiczny młodzieży (Oświęcim)',
+      label: 'Lęk i kryzysy u młodzieży',
       text: 'Młodzież w szkole w Oświęcimiu doświadcza lęków i kryzysów emocjonalnych po pandemii, a terminy u psychologa NFZ wynoszą 8 miesięcy.',
-      powiat: 'oświęcimski',
-      category: 'zdrowie_psychiczne'
+      powiat: 'oświęcimski'
     },
     {
-      label: '🚌 Brak transportu do lekarza (Gorlice)',
-      text: 'W naszej wsi w powiecie gorlickim osoby starsze nie mają jak dojechać do ośrodka zdrowia, bus komunalny jeździ raz w tygodniu.',
-      powiat: 'gorlicki',
-      category: 'seniorzy'
-    },
-    {
-      label: '💻 Wykluczenie cyfrowe seniorów (Miechów)',
+      label: 'Seniorzy i e-recepta',
       text: 'Seniorzy w gminie Miechów nie potrafią obsłużyć e-recepty ani bankowości internetowej i czują się bezradni wobec cyfryzacji urzędu.',
-      powiat: 'miechowski',
-      category: 'wykluczenie_cyfrowe'
+      powiat: 'miechowski'
+    },
+    {
+      label: 'Brak dojazdu do lekarza',
+      text: 'W naszej wsi w powiecie gorlickim osoby starsze nie mają jak dojechać do ośrodka zdrowia, bus komunalny jeździ raz w tygodniu.',
+      powiat: 'gorlicki'
+    },
+    {
+      label: 'Opiekun osoby z niepełnosprawnością',
+      text: 'Mama opiekuje się dorosłym synem na wózku z niepełnosprawnością, jest wyczerpana i nie ma nikogo, kto by ją zastąpił choć na kilka dni.',
+      powiat: 'limanowski'
+    },
+    {
+      label: 'Łazienka po udarze (82 lata)',
+      text: 'Mój 82-letni dziadek w Limanowej ma trudności z wchodzeniem do wanny i potrzebuje adaptacji łazienki, a GOPS jest daleko.',
+      powiat: 'limanowski'
     }
   ];
 
   const handleSelectScenario = (sc: typeof scenarios[0]) => {
     setProblemDescription(sc.text);
     setSelectedPowiat(sc.powiat);
-    setSelectedCategory(sc.category);
-    triggerMatch(sc.text, sc.powiat, sc.category);
+    setSelectedCategory('');
+    triggerMatch(sc.text, sc.powiat);
   };
+
+  const length = problemDescription.trim().length;
+  const lengthHint =
+    length === 0
+      ? 'Napisz 1–3 zdania: kogo dotyczy problem, gdzie i czego brakuje.'
+      : length < 40
+        ? 'Dodaj kilka słów więcej – np. kogo dotyczy problem i czego brakuje. Im więcej szczegółów, tym trafniejsze dopasowanie.'
+        : 'Dobrze – taki opis wystarczy do dopasowania.';
 
   const triggerMatch = async (text: string, powiat: string, category?: string) => {
     if (!text.trim()) return;
@@ -204,26 +219,6 @@ export const MatchmakingView: React.FC = () => {
         </p>
       </div>
 
-      {/* Szybkie Scenariusze dla Jury */}
-      <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200">
-        <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-700">
-          <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
-          <span>Szybkie scenariusze testowe dla Jury (1 kliknięcie uruchamia dopasowanie):</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {scenarios.map((sc, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleSelectScenario(sc)}
-              className="text-xs bg-white hover:bg-amber-50 hover:border-amber-400 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-300 shadow-sm transition-all text-left"
-            >
-              {sc.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Formularz Zgłoszenia */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -250,7 +245,8 @@ export const MatchmakingView: React.FC = () => {
                 placeholder="Wpisz treść lub kliknij mikrofon poniżej (np. W naszej wsi w powiecie gorlickim osoby starsze nie mają jak dojechać do lekarza...)"
                 className="w-full text-sm p-4 pb-14 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-y text-slate-900 placeholder:text-slate-500"
                 maxLength={4000}
-                aria-describedby="problem-hint"
+                aria-describedby="problem-hint problem-length"
+                minLength={5}
                 required
               />
 
@@ -290,9 +286,40 @@ export const MatchmakingView: React.FC = () => {
               </div>
             </div>
 
+            {/* Podpowiedź długości i licznik znaków */}
+            <div className="flex flex-wrap items-start justify-between gap-2 text-sm mt-1.5">
+              <span id="problem-length" className={length > 0 && length < 40 ? 'text-slate-900 font-semibold' : 'text-slate-700'}>
+                {lengthHint}
+              </span>
+              <span className="text-xs text-slate-600 tabular-nums whitespace-nowrap" aria-hidden="true">
+                {problemDescription.length} / 4000 znaków
+              </span>
+            </div>
+
+            {/* Przykłady do kliknięcia */}
+            <div className="mt-3">
+              <p id="examples-label" className="text-sm font-semibold text-slate-800 mb-1.5">
+                Nie wiesz, od czego zacząć? Kliknij przykład – od razu pokażemy wynik:
+              </p>
+              <ul aria-labelledby="examples-label" className="flex flex-wrap gap-2">
+                {scenarios.map((sc) => (
+                  <li key={sc.label}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectScenario(sc)}
+                      disabled={loading}
+                      className="text-sm bg-white hover:bg-blue-50 hover:border-blue-600 text-slate-900 font-semibold px-3 py-1.5 rounded-full border border-slate-300 transition-colors disabled:opacity-50"
+                    >
+                      {sc.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Informacja o ułatwieniu dla seniorów */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 mt-1">
-              <span id="problem-hint">Możesz mówić zamiast pisać. Nie podawaj imion, adresów ani numerów telefonu. ({problemDescription.length}/4000 znaków)</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 mt-3">
+              <span id="problem-hint">Możesz mówić zamiast pisać. Nie podawaj imion, adresów ani numerów telefonu.</span>
               <button
                 type="button"
                 onClick={simulateVoiceInput}
@@ -372,13 +399,8 @@ export const MatchmakingView: React.FC = () => {
         </div>
       )}
 
-      {/* Miejsce na wyniki podczas pierwszego wyszukiwania – bez skoku układu */}
-      {loading && !result && (
-        <div role="status" className="min-h-[420px] bg-white rounded-2xl border border-slate-200 p-6 flex items-center justify-center gap-2 text-sm text-slate-700">
-          <RefreshCw className="w-4 h-4 animate-spin" aria-hidden="true" />
-          Szukamy pasujących innowacji…
-        </div>
-      )}
+      {/* Postęp analizy (kroki przetwarzania) */}
+      {loading && <AnalysisProgress />}
 
       {/* Prezentacja Wyników Matchmakingu */}
       {result && (
@@ -397,7 +419,7 @@ export const MatchmakingView: React.FC = () => {
               </h2>
               <p className="text-xs text-slate-200 mt-1">
                 Rozpoznane potrzeby: <strong className="text-amber-300">{result.detected_topics.join(', ')}</strong>
-                {result.similar_cases_count > 0 && ` · Podobnych zgłoszeń na platformie: ${result.similar_cases_count}`}
+                {(result.similar_reports_total ?? 0) > 0 && ` · Podobnych zgłoszeń w regionie: ${result.similar_reports_total}`}
               </p>
             </div>
 
@@ -408,6 +430,9 @@ export const MatchmakingView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Opis użytkownika z zaznaczonymi słowami, które zdecydowały o wyniku */}
+          <HighlightedQuery text={result.clean_query} highlights={result.highlights ?? []} />
 
           {/* Styl Ceneo: Inteligentny Koszyk Rozwiązań z empatyczną diagnozą */}
           {result.ceneo_intro && (
@@ -502,6 +527,21 @@ export const MatchmakingView: React.FC = () => {
 
                 <p className="text-sm text-slate-700 mb-3">{item.tagline}</p>
 
+                {(item.matched_keywords ?? []).length > 0 && (
+                  <div className="mb-3 text-sm">
+                    <span id={`kw-${item.innovation_id}`} className="font-bold text-slate-900">Dopasowano, bo w opisie jest:</span>
+                    <ul aria-labelledby={`kw-${item.innovation_id}`} className="flex flex-wrap gap-1.5 mt-1">
+                      {(item.matched_keywords ?? []).map((kw) => (
+                        <li key={kw}>
+                          <mark className="bg-amber-300 text-slate-950 font-bold underline decoration-2 underline-offset-2 px-2 py-0.5 rounded-full text-xs">
+                            {kw}
+                          </mark>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {item.matched_needs.length > 0 && (
                   <ul className="flex flex-wrap gap-1.5 mb-3" aria-label="Dopasowane potrzeby">
                     {item.matched_needs.map((need) => (
@@ -555,6 +595,9 @@ export const MatchmakingView: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* Podobne zgłoszenia z regionu (zagregowane, bez danych osobowych) */}
+          <SimilarReports groups={result.similar_reports ?? []} total={result.similar_reports_total ?? 0} />
 
           {!result.no_match && (
             <p className="text-sm text-slate-700 text-center">

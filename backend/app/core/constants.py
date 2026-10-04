@@ -92,3 +92,12 @@ def category_label(category: Optional[str]) -> str:
 def format_pl_number(value: float) -> str:
     """3800 -> '3 800' (polski separator tysięcy: twarda spacja)."""
     return f"{int(round(value)):,}".replace(",", " ")
+
+
+def powiat_label(powiat: Optional[str]) -> str:
+    """'gorlicki' -> 'powiat gorlicki', 'm. Kraków' -> 'Kraków (miasto na prawach powiatu)', None -> 'nie podano powiatu'."""
+    if not powiat:
+        return "nie podano powiatu"
+    if powiat.startswith("m. "):
+        return f"{powiat[3:]} (miasto na prawach powiatu)"
+    return f"powiat {powiat}"

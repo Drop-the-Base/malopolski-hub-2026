@@ -73,8 +73,21 @@ class FiszkaResponse(BaseModel):
     assigned_mentor_id: Optional[str] = None
     cluster_group: Optional[str] = None
     votes_count: int = 0
+    read_at: Optional[datetime] = None
+    review_started_at: Optional[datetime] = None
+    decided_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+
+class TimelineStep(BaseModel):
+    """Krok osi czasu sprawy widoczny dla autora (Wysłano → Przyjęte → W ocenie → Decyzja → Odpowiedź)."""
+    key: str
+    label: str
+    description: str
+    done: bool
+    current: bool = False
+    tone: str = "neutral"  # 'neutral', 'positive', 'warning', 'negative'
+    date: Optional[datetime] = None
 
 class FiszkaPublicStatus(BaseModel):
     """Publiczny podgląd statusu fiszki dla autora i modułu głosowania."""
@@ -92,6 +105,7 @@ class FiszkaPublicStatus(BaseModel):
     votes_count: int = 0
     created_at: datetime
     updated_at: Optional[datetime] = None
+    timeline: List[TimelineStep] = []
 
 class FiszkaModeration(BaseModel):
     status: str
@@ -158,6 +172,9 @@ class GrantCall(BaseModel):
     max_budget_pln: int
     criteria: List[str]
     is_open: bool
+    category: Optional[str] = None
+    powiat: Optional[str] = None
+    updated_at: Optional[datetime] = None
 
 class GrantApplicationRequest(BaseModel):
     call_id: str = Field(..., description="Identyfikator naboru (GET /grant-calls)")

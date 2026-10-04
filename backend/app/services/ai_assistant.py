@@ -158,7 +158,12 @@ def _to_call(raw: dict, today: Optional[date] = None) -> GrantCall:
     return GrantCall(**raw, is_open=is_open)
 
 
+# Startowe nabory dla pustej bazy – dalej zarządzane w Panelu ROPS (app/services/grant_call_service.py)
+DEFAULT_GRANT_CALLS = _GRANT_CALLS
+
+
 def list_grant_calls() -> List[GrantCall]:
+    """Nabory demonstracyjne (bez bazy) – API korzysta z grant_call_service."""
     return [_to_call(c) for c in _GRANT_CALLS]
 
 

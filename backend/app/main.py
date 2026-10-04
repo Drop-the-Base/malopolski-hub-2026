@@ -23,6 +23,10 @@ from app.api.v1.communication import router as communication_router
 from app.api.v1.admin import router as admin_router
 from app.api.v1.voice import router as voice_router
 from app.api.v1.problems import router as problems_router
+from app.api.v1.cases import router as cases_router
+from app.api.v1.subscriptions import router as subscriptions_router
+from app.api.v1.admin_content import router as admin_content_router
+from app.api.v1.open_data import router as open_data_router, open_data_cors
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mhis_app")
@@ -90,6 +94,8 @@ async def lifespan(app: FastAPI):
     await ensure_initialized()
     yield
     logger.info("Zamykanie zasobów aplikacji MHIS...")
+    from app.services.webhook_service import drain
+    await drain()
 
 
 app = FastAPI(
@@ -129,6 +135,10 @@ async def init_on_first_request(request: Request, call_next):
     return await call_next(request)
 
 
+# Otwarte dane: CORS dla dowolnej domeny (tylko GET, bez poświadczeń) – middleware zewnętrzny wobec CORSMiddleware
+app.middleware("http")(open_data_cors)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Czytelne komunikaty walidacji (pole + powód) bez zrzucania całych danych wejściowych."""
@@ -153,7 +163,9 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 # Rejestracja routerów pod prefiksem /api/v1
 for router in (health_router, auth_router, matchmaking_router, knowledge_router, ideas_router, middleman_router,
-               testing_router, communication_router, admin_router, voice_router, problems_router):
+               testing_router, communication_router, admin_router, voice_router, problems_router,
+               cases_router, subscriptions_router,
+               admin_content_router, open_data_router):
     app.include_router(router, prefix="/api/v1")
 
 
@@ -164,5 +176,6 @@ async def root():
         "note": "Prototyp HackYeah 2026 – koncepcja dla ROPS Kraków",
         "docs_url": "/docs",
         "api_v1_prefix": "/api/v1",
+        "open_data_url": "/api/v1/open",
         "status": "online",
     }
