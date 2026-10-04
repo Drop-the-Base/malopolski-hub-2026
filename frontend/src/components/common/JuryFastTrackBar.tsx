@@ -6,8 +6,7 @@ import {
   Activity,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  Zap
+  Lightbulb
 } from 'lucide-react';
 
 export const JuryFastTrackBar: React.FC = () => {
@@ -57,7 +56,7 @@ export const JuryFastTrackBar: React.FC = () => {
       title: 'Nowy pomysł',
       subtitle: 'Canwa z autouzupełnianiem',
       path: '/kreator-pomyslow',
-      icon: Sparkles,
+      icon: Lightbulb,
     },
     {
       id: 'step4',
@@ -81,7 +80,6 @@ export const JuryFastTrackBar: React.FC = () => {
           className="w-full flex items-center justify-between gap-2 py-0.5 rounded text-left"
         >
           <span className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" aria-hidden="true" />
             <span className="text-sm font-bold">Ścieżka dla jury</span>
             <span className="text-sm text-slate-300 hidden md:inline">cztery kroki, około minuty</span>
           </span>

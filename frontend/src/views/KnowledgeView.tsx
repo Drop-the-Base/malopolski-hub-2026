@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Layers,
   ExternalLink,
-  Sparkles,
+  FlaskConical,
   X,
   MapPin,
   Users,
@@ -586,7 +586,7 @@ export const KnowledgeView: React.FC = () => {
                 to={`/tester`}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold text-slate-800 hover:bg-slate-100"
               >
-                <Sparkles className="w-4 h-4" aria-hidden="true" /> Zapisz się na testy
+                <FlaskConical className="w-4 h-4" aria-hidden="true" /> Zapisz się na testy
               </Link>
               <button
                 type="button"

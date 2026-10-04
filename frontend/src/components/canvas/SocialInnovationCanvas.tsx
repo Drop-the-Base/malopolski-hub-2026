@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CanvasData, CanvasAudit } from '../../types';
 import { api } from '../../services/api';
-import { Sparkles, CheckCircle2, AlertCircle, Zap, RefreshCw, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import { useAccessibility } from '../../store/useAccessibilityStore';
 
 interface CanvasProps {
@@ -30,9 +30,9 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
   const [audit, setAudit] = useState<CanvasAudit | null>(null);
 
   const presets = [
-    { label: '☕ Kawiarenka Naprawcza (Nowy Sącz)', prompt: 'Kawiarenka naprawcza dla seniorów i młodzieży w Nowym Sączu' },
-    { label: '🚐 Asystent Seniora (Podhale)', prompt: 'Mobilny asystent seniora i transport medyczny w gminach tatrzańskich' },
-    { label: '⚡ Spółdzielnia Energetyczna (Miechów)', prompt: 'Sąsiedzka spółdzielnia energetyczna i walka z ubóstwem energetycznym w Miechowie' }
+    { label: 'Kawiarenka Naprawcza (Nowy Sącz)', prompt: 'Kawiarenka naprawcza dla seniorów i młodzieży w Nowym Sączu' },
+    { label: 'Asystent Seniora (Podhale)', prompt: 'Mobilny asystent seniora i transport medyczny w gminach tatrzańskich' },
+    { label: 'Spółdzielnia Energetyczna (Miechów)', prompt: 'Sąsiedzka spółdzielnia energetyczna i walka z ubóstwem energetycznym w Miechowie' }
   ];
 
   const handleAutofill = async (customPrompt?: string) => {
@@ -103,12 +103,9 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
       <div className="bg-amber-50 p-5 rounded-2xl border border-amber-300">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-amber-500 text-white rounded-lg shadow-sm">
-              <Zap className="w-4 h-4 fill-white" />
-            </span>
             <div>
               <h4 className="text-sm font-black text-slate-900 tracking-tight">
-                AI Auto-Fill Canwy (1-Click Groq Fast-Track dla Jury)
+                Wypełnij Canwę na podstawie opisu
               </h4>
               <p className="text-xs text-slate-600">
                 Wpisz 1 zdanie o pomyśle lub kliknij gotowy scenariusz – model wypełni wszystkie 9 pól Canwy ROPS w ~1s.
@@ -117,18 +114,15 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           </div>
 
           {generationInfo && (
-            <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold self-start md:self-auto border border-emerald-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>
-                {generationInfo.aiPowered ? '⚡ Groq AI (openai/gpt-oss-20b)' : '⚡ Błyskawiczny Silnik Lokalny'}: {generationInfo.latencyMs}ms
-              </span>
-            </div>
+            <p className="text-xs text-slate-600 self-start md:self-auto">
+              {generationInfo.aiPowered ? 'Wypełnione automatycznie – sprawdź pola' : 'Wypełnione z szablonu'} ({(generationInfo.latencyMs / 1000).toFixed(1)} s)
+            </p>
           )}
         </div>
 
         {/* Gotowe presety dla Jury */}
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="text-[11px] font-bold text-slate-500 self-center mr-1">Szybkie scenariusze:</span>
+          <span className="text-[11px] font-bold text-slate-500 self-center mr-1">Przykłady:</span>
           {presets.map((p, idx) => (
             <button
               key={idx}
@@ -165,8 +159,7 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
-                <span>Generuj Canwę (AI ~1s)</span>
+                <span>Wypełnij Canwę</span>
               </>
             )}
           </button>
@@ -196,7 +189,6 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           disabled={loading}
           className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 transition-all disabled:opacity-50"
         >
-          <Sparkles className="w-4 h-4 text-amber-300" />
           {loading ? 'Audytowanie Canwy...' : 'Audytuj z Asystentem AI'}
         </button>
       </div>
@@ -277,7 +269,6 @@ export const SocialInnovationCanvas: React.FC<CanvasProps> = ({ initialData, onS
           <div className="bg-indigo-900/60 p-4 rounded-xl border border-indigo-700/60 space-y-3">
             <div className="flex items-center justify-between">
               <h5 className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-300" />
                 Koncepcja Wizualna Prototypu (Prompt dla Generatora Grafik / Wizualizatora):
               </h5>
 

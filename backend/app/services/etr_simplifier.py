@@ -45,11 +45,11 @@ def simplify_to_etr(source_text: str) -> ETRResponse:
 
     etr_text = " ".join(final_lines)
 
-    # 3. Wyodrębnienie kluczowych punktów z emotikonami
+    # 3. Wyodrębnienie kluczowych punktów
     key_points = [
-        f"👥 {final_lines[0]}" if len(final_lines) > 0 else "👥 Pomoc dla każdego mieszkańca.",
-        f"🏡 {final_lines[1]}" if len(final_lines) > 1 else "🏡 Wsparcie bezpośrednio w Twojej okolicy.",
-        f"✅ {final_lines[2]}" if len(final_lines) > 2 else "✅ Rozwiązanie jest sprawdzone i bezpieczne."
+        f"{final_lines[0]}" if len(final_lines) > 0 else "Pomoc dla każdego mieszkańca.",
+        f"{final_lines[1]}" if len(final_lines) > 1 else "Wsparcie bezpośrednio w Twojej okolicy.",
+        f"{final_lines[2]}" if len(final_lines) > 2 else "Rozwiązanie jest sprawdzone i bezpieczne."
     ]
 
     return ETRResponse(

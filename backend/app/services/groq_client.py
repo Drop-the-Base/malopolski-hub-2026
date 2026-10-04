@@ -324,7 +324,7 @@ def _generate_fallback_ceneo_synthesis(
 
     if any(k in p_lower for k in ["senior", "starsz", "wanna", "łazienk", "dziad", "babci", "emeryt", "opiek"]):
         intro = (
-            f"Jasne 👵 Zdiagnozowałem sytuację: {loc} mierzysz się z barierami w codziennym funkcjonowaniu osoby starszej, "
+            f"Zdiagnozowałem sytuację: {loc} mierzysz się z barierami w codziennym funkcjonowaniu osoby starszej, "
             f"trudnościami w higienie lub odcięciem od opieki. Przygotowałem dla Ciebie zgrany zestaw sprawdzonych innowacji ROPS Kraków, "
             f"które kompleksowo zabezpieczają potrzeby seniora i odciążają rodzinę."
         )
@@ -340,7 +340,7 @@ def _generate_fallback_ceneo_synthesis(
         ]
     elif any(k in p_lower for k in ["psych", "lęk", "depresj", "młodzie", "nastolat", "szkoł", "stres"]):
         intro = (
-            f"Jasne 🧠 Rozumiem powagę wyzwania: kryzysy emocjonalne i poczucie osamotnienia młodzieży {loc} "
+            f"Rozumiem powagę wyzwania: kryzysy emocjonalne i poczucie osamotnienia młodzieży {loc} "
             f"wymagają szybkiej, środowiskowej interwencji bez stygmatyzacji gabinetowej i wielomiesięcznych kolejek NFZ. "
             f"Skomponowałem dla Ciebie zestaw narzędzi ROPS stworzonych specjalnie do pracy w społeczności lokalnej."
         )
@@ -356,7 +356,7 @@ def _generate_fallback_ceneo_synthesis(
         ]
     elif any(k in p_lower for k in ["cyfrow", "komputer", "smartfon", "internet", "bankow"]):
         intro = (
-            f"Jasne 💻 Wykryłem barierę cyfrową: {loc} mieszkańcy (zwłaszcza seniorzy) czują się zagubieni "
+            f"Wykryłem barierę cyfrową: {loc} mieszkańcy (zwłaszcza seniorzy) czują się zagubieni "
             f"w obliczu cyfryzacji urzędów, e-recept i bankowości online. Przygotowałem pakiet innowacji ROPS "
             f"przywracających cyfrową samodzielność w przyjaznym tempie."
         )
@@ -371,7 +371,7 @@ def _generate_fallback_ceneo_synthesis(
         ]
     else:
         intro = (
-            f"Jasne 🤝 Zdiagnozowałem Twoje zgłoszenie: {loc} istnieje pilna potrzeba oddolnego rozwiązania wyzwania społecznego. "
+            f"Zdiagnozowałem Twoje zgłoszenie: {loc} istnieje pilna potrzeba oddolnego rozwiązania wyzwania społecznego. "
             f"Zamiast wyważać otwarte drzwi, wyselekcjonowałem zestaw innowacji ROPS Kraków, które zostały przetestowane w Małopolsce "
             f"i posiadają wysoki wskaźnik skuteczności."
         )
@@ -409,13 +409,13 @@ async def generate_ceneo_match_synthesis(
     system_prompt = (
         "Jesteś empatycznym, fachowym doradcą Małopolskiego Hubu Innowacji Społecznych ROPS Kraków. "
         "Działasz jak nowoczesny asystent zakupowy w stylu Ceneo, który przyjaznym, profesjonalnym tonem "
-        "podsumowuje problem zgłaszającego (np. 'Jasne 🤝 Zdiagnozowałem sytuację...'), "
+        "podsumowuje problem zgłaszającego rzeczowo, bez emotikon i bez wstępów typu 'Jasne', "
         "wyjaśnia dlaczego polecane innowacje tworzą wzajemnie uzupełniający się 'koszyk rozwiązań' (bundle), "
         "oraz proponuje konkretne 3 ponumerowane kroki działania. "
         "Zwróć odpowiedź WYŁĄCZNIE jako obiekt JSON w formacie:\n"
         "```json\n"
         "{\n"
-        '  "ceneo_intro": "Jasne 🤝 [emocjonalna diagnoza i powitanie w 2-3 zdaniach]",\n'
+        '  "ceneo_intro": "[rzeczowa diagnoza i powitanie w 2-3 zdaniach]",\n'
         '  "ceneo_bundle_rationale": "Dlaczego ten zestaw: [wyjaśnienie synergii pakietu w 2-3 zdaniach]",\n'
         '  "action_steps": [\n'
         '    "Krok 1: [krótka wskazówka]",\n'
