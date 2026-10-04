@@ -27,6 +27,7 @@ from app.api.v1.cases import router as cases_router
 from app.api.v1.subscriptions import router as subscriptions_router
 from app.api.v1.admin_content import router as admin_content_router
 from app.api.v1.mentor import router as mentor_router
+from app.api.v1.compare import router as compare_router
 from app.api.v1.open_data import router as open_data_router, open_data_cors
 
 logging.basicConfig(level=logging.INFO)
@@ -166,7 +167,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 for router in (health_router, auth_router, matchmaking_router, knowledge_router, ideas_router, middleman_router,
                testing_router, communication_router, admin_router, voice_router, problems_router,
                cases_router, subscriptions_router,
-               admin_content_router, open_data_router, mentor_router):
+               admin_content_router, open_data_router, mentor_router, compare_router):
     app.include_router(router, prefix="/api/v1")
 
 
