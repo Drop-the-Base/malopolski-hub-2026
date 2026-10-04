@@ -17,6 +17,8 @@ interface MapProps {
   onSelectPowiat?: (powiatName: string) => void;
   /** Przejście do Biblioteki z filtrem „sprawdzone w powiecie” */
   onShowInnovations?: (powiatName: string) => void;
+  /** Powiat zaznaczony na starcie, np. z linku „Gdzie sprawdzona” na karcie innowacji (nazwa jak w danych, np. „gorlicki”) */
+  initialPowiat?: string;
 }
 
 // [kolumna, wiersz] – wiersze nieparzyste są przesunięte o pół pola (siatka „odd-r”)
@@ -143,7 +145,7 @@ const INDICATORS: Indicator[] = [
 
 const CLASSES = 5;
 
-export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat, onShowInnovations }) => {
+export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat, onShowInnovations, initialPowiat }) => {
   const { etrMode, contrastMode } = useAccessibility();
   const highContrast = contrastMode !== 'default';
   const hcFg = contrastMode === 'yellow-black' ? '#FFFF00' : '#000000';
@@ -158,12 +160,19 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat, 
 
   const indicator = INDICATORS.find((i) => i.id === indicatorId)!;
 
+  // Powiat wskazany w adresie (np. /mapa?powiat=gorlicki) ma pierwszeństwo przed domyślnym wyborem
+  useEffect(() => {
+    const wanted = initialPowiat ? challenges.find((c) => c.powiat_name === initialPowiat) : undefined;
+    if (wanted) setSelectedCode(wanted.powiat_code);
+  }, [challenges, initialPowiat]);
+
   // Domyślny wybór po wczytaniu danych (powiat gorlicki – najwyższe zapotrzebowanie w danych demo)
   useEffect(() => {
     if (!selectedCode && challenges.length) {
-      setSelectedCode((challenges.find((c) => c.powiat_name === 'gorlicki') ?? challenges[0]).powiat_code);
+      const wanted = initialPowiat ? challenges.find((c) => c.powiat_name === initialPowiat) : undefined;
+      setSelectedCode((wanted ?? challenges.find((c) => c.powiat_name === 'gorlicki') ?? challenges[0]).powiat_code);
     }
-  }, [challenges, selectedCode]);
+  }, [challenges, selectedCode, initialPowiat]);
 
   const placed = useMemo(
     () =>
@@ -605,5 +614,47 @@ export const MalopolskaMap: React.FC<MapProps> = ({ challenges, onSelectPowiat, 
         Danych Lokalnych GUS i ze zgłoszeń na platformie.
       </p>
     </section>
+  );
+};
+
+// Odcienie miniatury – stały, dekoracyjny wzór (nie są to dane)
+const THUMB_FILL = ['#DBEAFE', '#BFDBFE', '#93C5FD', '#60A5FA', '#2563EB'];
+const THUMB_PATTERN: Record<string, number> = {
+  olkuski: 1, miechowski: 3, chrzanowski: 0, krakowski: 1, proszowicki: 3, dąbrowski: 4, oświęcimski: 1,
+  'm. Kraków': 0, wielicki: 1, bocheński: 2, brzeski: 3, tarnowski: 3, 'm. Tarnów': 2, wadowicki: 2,
+  myślenicki: 1, limanowski: 3, nowosądecki: 3, 'm. Nowy Sącz': 1, gorlicki: 4, suski: 3, nowotarski: 2, tatrzański: 2
+};
+
+/**
+ * Miniatura mapy 22 powiatów (sam kształt, bez danych) – zachęta do otwarcia pełnej mapy.
+ * Czysto dekoracyjna: ukryta przed czytnikami ekranu, obok zawsze musi być link z tekstem.
+ */
+export const MapThumbnail: React.FC<{ className?: string; highlight?: string }> = ({ className = '', highlight = 'gorlicki' }) => {
+  const { contrastMode } = useAccessibility();
+  const hc = contrastMode !== 'default';
+  const fg = contrastMode === 'yellow-black' ? '#FFFF00' : '#000000';
+  const bg = contrastMode === 'yellow-black' ? '#000000' : '#FFFFFF';
+  return (
+    <svg
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      className={`block h-auto ${className}`}
+      aria-hidden="true"
+      focusable="false"
+    >
+      {Object.entries(LAYOUT).map(([name, [col, row]]) => {
+        const { x, y } = center(col, row);
+        const isHighlight = name === highlight;
+        const fill = hc ? (isHighlight ? fg : bg) : isHighlight ? '#F59E0B' : THUMB_FILL[THUMB_PATTERN[name] ?? 1];
+        return (
+          <polygon
+            key={name}
+            points={hexPoints(x, y, R - 2)}
+            fill={fill}
+            stroke={hc ? fg : '#FFFFFF'}
+            strokeWidth={hc ? 3 : 4}
+          />
+        );
+      })}
+    </svg>
   );
 };

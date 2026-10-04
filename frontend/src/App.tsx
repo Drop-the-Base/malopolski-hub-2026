@@ -30,7 +30,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/': 'Strona główna',
   '/matchmaking': 'Kojarzenie potrzeb z innowacjami',
   '/problemy': 'Rejestr wyzwań JST',
-  '/baza-wiedzy': 'Baza innowacji i mapa wyzwań',
+  '/baza-wiedzy': 'Biblioteka innowacji',
+  '/mapa': 'Mapa wyzwań Małopolski',
   '/kreator-pomyslow': 'Kreator pomysłów',
   '/middleman': 'Middleman dla samorządów',
   '/tester': 'Tester innowacji',
@@ -97,6 +98,7 @@ export const App: React.FC = () => {
             />
             <Route path="/baza-wiedzy" element={<KnowledgeView />} />
             <Route path="/baza-wiedzy/:innovationId" element={<KnowledgeView />} />
+            <Route path="/mapa" element={<KnowledgeView />} />
             <Route path="/kreator-pomyslow" element={<IdeaCreatorView />} />
             <Route path="/middleman" element={<MiddlemanView />} />
             <Route path="/tester" element={<TesterView />} />

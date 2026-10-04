@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccessibility } from '../store/useAccessibilityStore';
+import { MapThumbnail } from '../components/map/MalopolskaMap';
+import { powiatLabel } from '../constants/domain';
 
 export const HomeView: React.FC = () => {
   const { etrMode } = useAccessibility();
@@ -54,7 +56,7 @@ export const HomeView: React.FC = () => {
       actions: [
         { to: '/problemy', label: 'Zapisz wyzwania swojej gminy', labelEtr: 'Zapisz problemy gminy' },
         { to: '/middleman', label: 'Przygotuj plan wdrożenia i kosztorys', labelEtr: 'Zrób plan dla gminy' },
-        { to: '/baza-wiedzy?tab=mapa', label: 'Zobacz mapę wyzwań powiatów', labelEtr: 'Zobacz mapę powiatów' }
+        { to: '/mapa', label: 'Zobacz mapę wyzwań powiatów', labelEtr: 'Zobacz mapę powiatów' }
       ]
     },
     {
@@ -78,7 +80,7 @@ export const HomeView: React.FC = () => {
       actions: [
         { to: '/admin', label: 'Przejrzyj nowe zgłoszenia', labelEtr: 'Zobacz nowe zgłoszenia' },
         { to: '/problemy', label: 'Otwórz rejestr wyzwań gmin', labelEtr: 'Zobacz problemy gmin' },
-        { to: '/baza-wiedzy?tab=mapa', label: 'Zobacz mapę wyzwań regionu', labelEtr: 'Zobacz mapę powiatów' }
+        { to: '/mapa', label: 'Zobacz mapę wyzwań regionu', labelEtr: 'Zobacz mapę powiatów' }
       ]
     }
   ];
@@ -151,6 +153,46 @@ export const HomeView: React.FC = () => {
         </p>
       </section>
 
+      {/* Mapa wyzwań: widoczna zaraz pod fiszką, żeby można ją było odkryć bez szukania w menu */}
+      <section
+        aria-labelledby="home-map-title"
+        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center"
+      >
+        <div className="md:col-span-7">
+          <h2 id="home-map-title" className="text-2xl sm:text-3xl font-bold text-slate-900">
+            {etrMode ? 'Mapa powiatów Małopolski' : 'Mapa wyzwań Małopolski'}
+          </h2>
+          <p className="mt-2 text-lg text-slate-600 max-w-prose leading-relaxed">
+            {etrMode
+              ? 'Kliknij swój powiat. Zobaczysz, czego tam brakuje i jakie pomysły już działają.'
+              : 'Wszystkie 22 powiaty na jednej mapie. Kliknij swój i zobacz, ilu mieszka tam seniorów i młodych, jakie potrzeby zgłaszają mieszkańcy i które rozwiązania już działają.'}
+          </p>
+          <Link
+            to="/mapa"
+            className="mt-5 inline-block bg-blue-600 hover:bg-blue-800 text-white font-bold px-6 py-3 rounded-lg text-base transition-colors"
+          >
+            {etrMode ? 'Zobacz mapę powiatów' : 'Zobacz mapę wyzwań regionu'}
+          </Link>
+          <p className="mt-4 text-base text-slate-600">
+            <span className="mr-1">Albo od razu:</span>
+            {['gorlicki', 'm. Nowy Sącz', 'tatrzański'].map((p, idx, all) => (
+              <React.Fragment key={p}>
+                <Link
+                  to={`/mapa?powiat=${encodeURIComponent(p)}`}
+                  className="text-blue-700 underline decoration-blue-300 underline-offset-4 hover:decoration-blue-700"
+                >
+                  {powiatLabel(p).replace(' (miasto na prawach powiatu)', '')}
+                </Link>
+                {idx < all.length - 1 ? ', ' : '.'}
+              </React.Fragment>
+            ))}
+          </p>
+        </div>
+        <div className="md:col-span-5 flex justify-center">
+          <MapThumbnail className="w-full max-w-[16rem] sm:max-w-xs" />
+        </div>
+      </section>
+
       {/* Start według roli: kto jestem → 2–3 najważniejsze działania */}
       <section id="kim-jestes" aria-labelledby="roles-title" className="scroll-mt-8">
         <h2 id="roles-title" className="text-2xl sm:text-3xl font-bold text-slate-900">
@@ -201,7 +243,7 @@ export const HomeView: React.FC = () => {
             <dt className="text-3xl font-extrabold text-slate-900 tabular-nums w-28 shrink-0">22</dt>
             <dd className="text-slate-600 leading-relaxed">
               powiaty Małopolski na{' '}
-              <Link to="/baza-wiedzy?tab=mapa" className="text-blue-700 underline underline-offset-4">
+              <Link to="/mapa" className="text-blue-700 underline underline-offset-4">
                 Mapie Wyzwań Społecznych
               </Link>{' '}
               (dane demonstracyjne).
