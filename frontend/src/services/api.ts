@@ -87,9 +87,15 @@ client.interceptors.request.use((config) => {
 /** Czytelny komunikat błędu z odpowiedzi API (walidacja, konflikty, brak połączenia). */
 export const apiErrorMessage = (err: unknown, fallback = 'Wystąpił błąd. Spróbuj ponownie.'): string => {
   if (axios.isAxiosError(err)) {
+    if (err.code === 'ECONNABORTED') return 'Serwer odpowiada zbyt długo. Spróbuj ponownie za chwilę.';
     if (!err.response) return 'Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.';
+    const status = err.response.status;
     const detail = (err.response.data as { detail?: unknown })?.detail;
+    if (status === 429) return 'Za dużo prób w krótkim czasie. Odczekaj chwilę i spróbuj ponownie.';
+    if (status === 413) return 'Plik lub tekst jest za duży. Skróć go i spróbuj ponownie.';
+    // Komunikaty serwera są po polsku; przy błędzie 5xx bez opisu (np. proxy) – ogólny komunikat zamiast technicznego
     if (typeof detail === 'string' && detail) return detail;
+    if (status >= 500) return 'Serwer chwilowo nie działa. Spróbuj ponownie za kilka minut.';
   }
   return fallback;
 };

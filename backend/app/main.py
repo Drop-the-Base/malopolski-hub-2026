@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from app.core.config import settings
+from app.core.validation_messages import polish_message
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.seed.seed_runner import run_seed
 import app.models  # noqa: F401 – rejestracja wszystkich modeli w metadanych
@@ -141,13 +142,13 @@ app.middleware("http")(open_data_cors)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Czytelne komunikaty walidacji (pole + powód) bez zrzucania całych danych wejściowych."""
+    """Czytelne komunikaty walidacji po polsku (pole + co poprawić) bez zrzucania danych wejściowych."""
     errors = []
     for err in exc.errors():
         field = ".".join(str(p) for p in err.get("loc", []) if p not in ("body", "query", "path"))
-        message = str(err.get("msg", "Nieprawidłowa wartość")).removeprefix("Value error, ")
-        errors.append({"field": field, "message": message})
-    summary = "; ".join(f"{e['field']}: {e['message']}" if e["field"] else e["message"] for e in errors)
+        errors.append({"field": field, "message": polish_message(err)})
+    # Jedno zdanie na błąd, bez powtórzeń (np. kilka pól listy z tym samym problemem)
+    summary = " ".join(dict.fromkeys(e["message"] for e in errors))
     return JSONResponse(status_code=422, content={"detail": summary, "errors": errors})
 
 
