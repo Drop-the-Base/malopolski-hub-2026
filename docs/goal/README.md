@@ -39,6 +39,7 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 ## Dziennik decyzji
 
 - **2026-10-04** – Gałąź `dev` utworzona z `main@25cf670` w worktree `.claude/worktrees/dev`. Niezacommitowane zmiany na `main` (PDF wniosku, usunięta prezentacja) zostają nietknięte – to praca autora, nie mieszamy jej z `dev`.
+- **2026-10-04** – Prosty język (ETR) zawsze włączony, bez przełącznika (decyzja autora): mniej elementów w pasku, nikt nie trafi przypadkiem na trudniejszy tekst.
 - **2026-10-04** – Priorytet wg wag kryteriów: najpierw to, co widać w demo i co jest nazwane w wyzwaniu wprost (Mapa Wyzwań, ścieżka komunikacji, trafność), potem integracje i audyt.
 
 ## Postęp
@@ -70,3 +71,4 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
   (`fiszka.created`, `problem_report.created`) w tle, bez PII, z podpisem HMAC (`WEBHOOK_SECRET`), błędy tylko w logach.
   Sekcja „4. Integracje” w `docs/api_specification.md`, strona `/otwarte-dane` i link w stopce. Sprawdzone: `pytest`
   (6 nowych testów), `npm run build`.
+- **Prosty język zawsze włączony** – na prośbę autora usunięty przełącznik „Prosty język (ETR)” z paska dostępności; tryb ETR na stałe (`useAccessibilityStore.ts`, `AccessibilityBar.tsx`), stare ustawienie `mhis_etr` usuwane z `localStorage`.

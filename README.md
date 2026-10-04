@@ -37,7 +37,7 @@ Prototyp obejmuje wszystkie 7 modułów z opisu wyzwania oraz Rejestr Wyzwań JS
 | **VI. Panel ROPS** | Logowanie, kolejka fiszek z decyzją i komentarzem do autora, przydział mentora, powiadomienia i skrzynka e-mail, radar trendów z danych platformy, edycja katalogu innowacji. |
 | **VII. Middleman dla JST** | Projekt pakietu wdrożeniowego dla gminy: kroki, kosztorys (uruchomienie, miesięcznie, rocznie, na odbiorcę), kadry, ryzyka, projekt uchwały do weryfikacji prawnej + czat z doradcą AI. |
 | **Rejestr wyzwań JST** | Zgłoszenia urzędników z automatycznym dopasowaniem innowacji, przypisanie innowacji, raport diagnostyczny powiatu. |
-| **Dostępność** | Dwa tryby wysokiego kontrastu, tekst 125%/150%, tryb ETR (domyślnie włączony), odczyt strony, etykiety pól, dostępne okna dialogowe, tytuły stron, deklaracja dostępności. Szczegóły: [`docs/wcag_compliance.md`](docs/wcag_compliance.md). |
+| **Dostępność** | Dwa tryby wysokiego kontrastu, tekst 125%/150%, prosty język (ETR) zawsze włączony – bez przełącznika, odczyt strony, etykiety pól, dostępne okna dialogowe, tytuły stron, deklaracja dostępności. Szczegóły: [`docs/wcag_compliance.md`](docs/wcag_compliance.md). |
 
 Szacunkowy koszt utrzymania: ok. 170–200 zł/m-c za infrastrukturę i API LLM (+ utrzymanie techniczne) – rozbicie w [`docs/infrastructure.md`](docs/infrastructure.md).
 
