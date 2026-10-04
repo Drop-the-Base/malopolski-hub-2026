@@ -177,6 +177,13 @@ export interface CanvasAutofillResult {
   latency_ms: number;
 }
 
+/** Podpowiedzi na „Plakat pomysłu” (POST /canvas/poster-hints). */
+export interface PosterHints {
+  tagline: string;
+  twists: string[];
+  ai_powered: boolean;
+}
+
 export interface GrantCall {
   id: string;
   title: string;

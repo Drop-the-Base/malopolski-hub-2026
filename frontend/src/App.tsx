@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AccessibilityBar } from './components/accessibility/AccessibilityBar';
-import { Navbar } from './components/layout/Navbar';
+import { Navbar, Breadcrumbs } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { JuryFastTrackBar } from './components/common/JuryFastTrackBar';
 
@@ -76,6 +76,7 @@ export const App: React.FC = () => {
 
         {/* Zawartość główna z kotwicą skip-link */}
         <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 focus:outline-none print:p-0 print:m-0 print:max-w-none">
+          <Breadcrumbs />
           <Routes>
             <Route path="/" element={<HomeView />} />
             <Route path="/matchmaking" element={<MatchmakingView />} />

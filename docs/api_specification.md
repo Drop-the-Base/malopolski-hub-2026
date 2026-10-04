@@ -29,6 +29,7 @@
 | III. Kreator Pomysłów | `PATCH` 🔒 | `/ideas/{id}` | Decyzja koordynatora: status, komentarz do autora, mentor |
 | III. Kreator Pomysłów | `POST` | `/canvas/autofill` | Wypełnienie 9 pól Canwy z jednego zdania (Groq LLM, szablon zapasowy) |
 | III. Kreator Pomysłów | `POST` | `/canvas/evaluate` | Automatyczna checklista Canwy (reguły, wynik 0–100) |
+| III. Kreator Pomysłów | `POST` | `/canvas/poster-hints` | Hasło i 3 nietuzinkowe warianty pomysłu na „Plakat pomysłu” (Groq LLM, szablon zapasowy) |
 | III. Kreator Pomysłów | `GET` | `/grant-calls` | Nabory grantowe (demo) z datami i limitami kwot |
 | III. Kreator Pomysłów | `POST` | `/grant-applications/generate` | Szkic wniosku – tylko dla otwartego naboru, w limicie kwot |
 | IV. Tester | `GET` | `/testing/campaigns` | Kampanie testowe (status `open` lub `full`) |

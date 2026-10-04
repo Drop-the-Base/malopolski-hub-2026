@@ -13,13 +13,16 @@ import {
 export const JuryFastTrackBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Domyślnie rozwinięty dla sędziów; użytkownik może go zwinąć
+  // Domyślnie rozwinięty dla sędziów, ale zwinięty na niskich ekranach (laptop 1366×768, telefon),
+  // żeby pole „Twoja sprawa” na stronie głównej było widoczne bez przewijania. Wybór użytkownika ma pierwszeństwo.
   const [collapsed, setCollapsedState] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('mhis_jury_collapsed') === 'true';
+      const saved = localStorage.getItem('mhis_jury_collapsed');
+      if (saved !== null) return saved === 'true';
     } catch {
-      return false;
+      /* ignoruj */
     }
+    return typeof window !== 'undefined' && (window.innerHeight < 900 || window.innerWidth < 768);
   });
 
   const setCollapsed = (value: boolean) => {
@@ -68,34 +71,29 @@ export const JuryFastTrackBar: React.FC = () => {
 
   return (
     <aside aria-label="Szybka prezentacja dla Jury" className="bg-slate-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-        {/* Belka tytułowa z przełącznikiem zwijania */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5">
+        {/* Belka tytułowa = przełącznik zwijania (cały wiersz jest dużym celem dotyku) */}
+        <button
+          type="button"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-expanded={!collapsed}
+          aria-controls="jury-steps"
+          className="w-full flex items-center justify-between gap-2 py-0.5 rounded text-left"
+        >
+          <span className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-amber-400" aria-hidden="true" />
             <span className="text-sm font-bold">Ścieżka dla jury</span>
-            <span className="text-sm text-slate-300 hidden md:inline">
-              cztery kroki, około minuty
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1 rounded text-slate-300 hover:text-white"
-              title={collapsed ? 'Rozwiń pasek szybkiej ścieżki' : 'Zwiń pasek szybkiej ścieżki'}
-              aria-label={collapsed ? 'Rozwiń pasek szybkiej ścieżki' : 'Zwiń pasek szybkiej ścieżki'}
-              aria-expanded={!collapsed}
-            >
-              {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
+            <span className="text-sm text-slate-300 hidden md:inline">cztery kroki, około minuty</span>
+          </span>
+          <span className="flex items-center gap-1 text-sm text-slate-300 hover:text-white">
+            <span>{collapsed ? 'Pokaż' : 'Ukryj'}</span>
+            {collapsed ? <ChevronDown className="w-4 h-4" aria-hidden="true" /> : <ChevronUp className="w-4 h-4" aria-hidden="true" />}
+          </span>
+        </button>
 
         {/* Siatka 4 kluczowych kroków demonstracyjnych */}
         {!collapsed && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2 pt-2 border-t border-slate-700">
+          <div id="jury-steps" className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2 pt-2 border-t border-slate-700">
             {steps.map((s) => {
               const Icon = s.icon;
               const isActive = location.pathname === s.path.split('?')[0];

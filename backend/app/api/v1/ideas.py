@@ -24,11 +24,13 @@ from app.schemas.idea_schema import (
     GrantApplicationRequest,
     GrantApplicationResponse,
     CanvasAutofillRequest,
-    CanvasAutofillResponse
+    CanvasAutofillResponse,
+    IdeaPosterHintsRequest,
+    IdeaPosterHintsResponse
 )
 from app.services.ai_assistant import evaluate_canvas, generate_grant_application
 from app.services.grant_call_service import list_grant_calls, get_grant_call
-from app.services.groq_client import autofill_social_canvas
+from app.services.groq_client import autofill_social_canvas, suggest_poster_hints
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
 from app.services.case_service import build_fiszka_timeline, last_rops_message_at, REVIEW_STATUSES, DECISION_STATUSES
@@ -272,3 +274,19 @@ async def autofill_canvas(req: CanvasAutofillRequest):
         target_group=req.target_group
     )
     return CanvasAutofillResponse(**result)
+
+
+@router.post("/canvas/poster-hints", response_model=IdeaPosterHintsResponse, tags=["Moduł III: Kreator Pomysłów"])
+async def poster_hints(req: IdeaPosterHintsRequest):
+    """
+    Podpowiedzi na „Plakat pomysłu”: hasło w jednym zdaniu i 3 nietuzinkowe warianty pomysłu
+    (Groq LLM, z lokalnym szablonem rezerwowym). Dane osobowe są maskowane przed wysłaniem do modelu.
+    """
+    result = await suggest_poster_hints(
+        title=anonymize_text(req.title),
+        summary=anonymize_text(req.summary or ""),
+        problem=anonymize_text(req.problem or ""),
+        value_proposition=anonymize_text(req.value_proposition or ""),
+        target_group=anonymize_text(req.target_group or ""),
+    )
+    return IdeaPosterHintsResponse(**result)

@@ -8,6 +8,7 @@ import {
   CanvasData,
   CanvasAudit,
   CanvasAutofillResult,
+  PosterHints,
   ServiceBlueprint,
   TestingCampaignItem,
   EvaluationReport,
@@ -214,6 +215,11 @@ export const api = {
       powiat: powiat || 'Kraków',
       target_group: target_group || undefined
     });
+    return res.data;
+  },
+
+  getPosterHints: async (payload: { title: string; summary?: string; problem?: string; value_proposition?: string; target_group?: string }) => {
+    const res = await client.post<PosterHints>('/canvas/poster-hints', payload);
     return res.data;
   },
 
