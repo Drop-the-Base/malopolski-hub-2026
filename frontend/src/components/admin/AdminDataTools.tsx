@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BookOpen, Download, EyeOff, Eye, MapPinned, Pencil, Plus, Sparkles } from 'lucide-react';
+import { BookOpen, Download, EyeOff, Eye, MapPinned, Pencil, Plus, Bell } from 'lucide-react';
 import { api, apiErrorMessage } from '../../services/api';
 import {
   AdminExportKind,
@@ -35,7 +35,7 @@ export const NewSinceLoginSummary: React.FC<{ refreshKey?: number }> = ({ refres
   return (
     <section aria-labelledby="new-since-title" className="bg-white p-6 rounded-2xl border-2 border-blue-600 shadow-sm">
       <h2 id="new-since-title" className="text-lg font-bold text-slate-900 flex items-center gap-2">
-        <Sparkles className="w-5 h-5 text-blue-700" aria-hidden="true" />
+        <Bell className="w-5 h-5 text-blue-700" aria-hidden="true" />
         {data.total > 0 ? `Nowe od ostatniego logowania: ${data.total}` : 'Nic nowego od ostatniego logowania'}
       </h2>
       <p className="text-sm text-slate-700 mt-1">

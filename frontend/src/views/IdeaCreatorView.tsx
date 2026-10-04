@@ -4,7 +4,6 @@ import { api, apiErrorMessage } from '../services/api';
 import { CanvasData, CanvasAudit, GrantApplication, GrantCall, FiszkaPublicStatus } from '../types';
 import {
   Lightbulb,
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   Printer,
@@ -462,7 +461,7 @@ export const IdeaCreatorView: React.FC = () => {
                 <fieldset className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
                   <legend className="text-sm font-bold text-slate-900 mb-2">
                     7. Dane kontaktowe (widoczne tylko dla koordynatora ROPS)
-                    {DEMO_MODE && <span className="ml-2 text-xs font-semibold text-amber-900 bg-amber-100 px-2 py-0.5 rounded">wersja demo – wypełnione fikcyjnymi danymi</span>}
+                    {DEMO_MODE && <span className="ml-2 text-xs font-semibold text-amber-900">wersja demo – wypełnione fikcyjnymi danymi</span>}
                   </legend>
                   <div>
                     <label htmlFor="f-author" className="block text-sm font-semibold text-slate-800 mb-1">Imię i nazwisko / nazwa organizacji</label>
@@ -517,7 +516,7 @@ export const IdeaCreatorView: React.FC = () => {
           <div className="bg-slate-900 text-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-400" aria-hidden="true" /> Canwa Innowacji Społecznej (9 pól)
+                Canwa Innowacji Społecznej (9 pól)
               </h2>
               <p className="text-sm text-slate-200">Edytuj każde pole. „Sprawdź Canwę” uruchamia automatyczną checklistę (reguły, nie ocena eksperta).</p>
             </div>

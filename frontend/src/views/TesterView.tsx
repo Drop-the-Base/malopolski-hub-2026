@@ -10,7 +10,6 @@ import {
   Search,
   Filter,
   Lightbulb,
-  Sparkles,
   Award,
   Tag,
   Users
@@ -291,7 +290,7 @@ export const TesterView: React.FC = () => {
           {/* Lista zgłoszonych innowacji w głosowaniu */}
           {votingIdeas.length === 0 ? (
             <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 space-y-4">
-              <Sparkles className="w-8 h-8 text-blue-600 mx-auto" />
+              <FlaskConical className="w-8 h-8 text-blue-600 mx-auto" aria-hidden="true" />
               <h2 className="text-lg font-black text-slate-900">Brak zgłoszeń w module testowania</h2>
               <p className="text-sm text-slate-600 max-w-md mx-auto">
                 Bądź pierwszą osobą, która zgłosi innowację społeczną do testów i oceny mieszkańców!

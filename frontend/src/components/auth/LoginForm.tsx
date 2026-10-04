@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Zap } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { api, apiErrorMessage } from '../../services/api';
 
 interface LoginFormProps {
@@ -50,10 +50,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
       {/* Baner szybkiego dostępu dla Sędziego */}
       <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 mb-5 space-y-2">
-        <div className="flex items-center gap-2 text-xs font-black text-amber-900 ">
-          <Zap className="w-3.5 h-3.5 text-amber-600" />
-          <span>Tryb Jury / Sędziego (Dane Wstępnie Wypełnione)</span>
-        </div>
+        <p className="text-xs font-black text-amber-900">Dostęp dla jury</p>
         <p className="text-xs text-amber-950 leading-relaxed">
           Dla potrzeb sprawnej weryfikacji konkursowej login i hasło zostały uzupełnione automatycznie. Kliknij przycisk poniżej, aby od razu wejść do panelu:
         </p>
@@ -63,8 +60,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           disabled={busy}
           className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-black py-2 px-3 rounded-lg text-xs shadow transition-all flex items-center justify-center gap-1.5"
         >
-          <Zap className="w-3.5 h-3.5" />
-          {busy ? 'Logowanie…' : 'Zaloguj natychmiast jako Sędzia (1-klik)'}
+          {busy ? 'Logowanie…' : 'Zaloguj jako jury'}
         </button>
       </div>
 

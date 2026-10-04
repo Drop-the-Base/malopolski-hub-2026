@@ -458,6 +458,7 @@ export const ProblemsRegistryView: React.FC = () => {
                   </h3>
                   <button
                     onClick={() => setAssigningProblemId(null)}
+                    aria-label="Zamknij"
                     className="text-slate-400 hover:text-slate-600 font-bold"
                   >
                     ✕
