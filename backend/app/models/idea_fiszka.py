@@ -21,6 +21,11 @@ class IdeaFiszka(Base):
     cluster_group = Column(String, nullable=True)  # np. 'Pakiet Senioralny', 'Dostępność Cyfrowa', 'Młodzież i Edukacja'
     votes_count = Column(Integer, default=0, nullable=False)
     rodo_consent_at = Column(DateTime, nullable=True)
+    # Oś czasu sprawy widoczna dla autora (G4)
+    read_at = Column(DateTime, nullable=True)  # ROPS przyjął / przeczytał zgłoszenie
+    review_started_at = Column(DateTime, nullable=True)  # ocena / przydział mentora
+    decided_at = Column(DateTime, nullable=True)
+    admin_notes_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
