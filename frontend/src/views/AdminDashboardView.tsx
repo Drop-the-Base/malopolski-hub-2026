@@ -29,6 +29,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { LoginForm } from '../components/auth/LoginForm';
+import { AdminDataTools, NewSinceLoginSummary } from '../components/admin/AdminDataTools';
 import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDateTime, powiatLabel } from '../constants/domain';
 import { AdminInboxSummary } from '../types';
 import { CaseThreadAdmin, INBOX_CHANGED_EVENT, notifyInboxChanged } from '../components/admin/CaseThreadAdmin';
@@ -265,6 +266,8 @@ export const AdminDashboardView: React.FC = () => {
           )}
         </div>
       )}
+      {/* G8: nowe od ostatniego logowania */}
+      <NewSinceLoginSummary />
 
       {radar && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -965,6 +968,9 @@ export const AdminDashboardView: React.FC = () => {
           </section>
         </>
       )}
+
+      {/* G8: eksport CSV, wyzwania powiatów, materiały edukacyjne */}
+      <AdminDataTools onStatus={setStatus} />
 
       {/* Zarządzanie katalogiem */}
       <section aria-labelledby="catalog-title" className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">

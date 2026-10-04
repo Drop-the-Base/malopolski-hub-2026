@@ -9,6 +9,8 @@ from app.models.notification import Notification
 from app.models.case_message import CaseMessage
 from app.models.subscription import Subscription
 from app.models.grant_call import GrantCallRecord
+from app.models.app_state import AppState
+from app.models.educational_material import EducationalMaterialRecord
 
 __all__ = [
     "Base",
@@ -27,5 +29,7 @@ __all__ = [
     "Notification",
     "CaseMessage",
     "Subscription",
-    "GrantCallRecord"
+    "GrantCallRecord",
+    "AppState",
+    "EducationalMaterialRecord",
 ]

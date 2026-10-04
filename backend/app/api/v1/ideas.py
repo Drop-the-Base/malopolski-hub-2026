@@ -32,6 +32,7 @@ from app.services.groq_client import autofill_social_canvas
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
 from app.services.case_service import build_fiszka_timeline, last_rops_message_at, REVIEW_STATUSES, DECISION_STATUSES
+from app.services.webhook_service import fire_event
 
 router = APIRouter()
 
@@ -210,6 +211,12 @@ async def create_idea_fiszka(req: FiszkaCreate, db: AsyncSession = Depends(get_d
     )
     await db.commit()
     await db.refresh(fiszka)
+    # Integracja: zdarzenie bez danych osobowych autora (fail-safe, w tle)
+    fire_event("fiszka.created", {
+        "id": fiszka.id, "title": fiszka.title, "powiat": fiszka.powiat, "target_audience": fiszka.target_audience,
+        "implementation_stage": fiszka.implementation_stage, "author_type": fiszka.author_type,
+        "status": fiszka.status, "created_at": fiszka.created_at, "status_path": f"/status/{fiszka.id}",
+    })
     return await _public_status(db, fiszka, with_timeline=True)
 
 

@@ -24,6 +24,8 @@ services:
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-}
       - CORS_ORIGINS=["http://localhost", "http://localhost:3000", "http://localhost:80"]
     volumes:
       - mhis_data:/data

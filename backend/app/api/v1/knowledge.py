@@ -90,6 +90,6 @@ async def list_challenges(db: AsyncSession = Depends(get_db)):
     return await get_regional_challenges(db)
 
 @router.get("/knowledge/materials", response_model=List[EducationalMaterial], tags=["Moduł II: Zasobnik Wiedzy"])
-async def list_materials():
-    """Materiały edukacyjne i narzędzia metodyczne."""
-    return get_educational_materials()
+async def list_materials(db: AsyncSession = Depends(get_db)):
+    """Materiały edukacyjne i narzędzia metodyczne (opublikowane; edycja w Panelu ROPS)."""
+    return await get_educational_materials(db)

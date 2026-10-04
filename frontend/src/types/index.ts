@@ -49,6 +49,34 @@ export interface EducationalMaterial {
   is_external: boolean;
 }
 
+export interface EducationalMaterialAdmin extends EducationalMaterial {
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface EducationalMaterialUpsert {
+  title: string;
+  category: string;
+  description: string;
+  download_url: string;
+  format: string;
+  is_published: boolean;
+  sort_order: number;
+}
+
+export interface NewSinceLogin {
+  since: string;
+  first_login: boolean;
+  new_ideas: number;
+  new_problem_reports: number;
+  new_matchmaking_queries: number;
+  new_tester_feedback: number;
+  new_mentor_bookings: number;
+  total: number;
+}
+
+export type AdminExportKind = 'ideas' | 'problems' | 'needs';
+
 export interface MatchmakingMatch {
   innovation_id: string;
   title: string;
@@ -60,9 +88,28 @@ export interface MatchmakingMatch {
   category_label: string;
   target_groups: string[];
   matched_needs: string[];
+  /** Słowa z opisu użytkownika, które zdecydowały o dopasowaniu */
+  matched_keywords?: string[];
   etr_summary?: string | null;
   video_url?: string | null;
   handbook_url?: string | null;
+}
+
+export interface KeywordHighlight {
+  start: number;
+  end: number;
+  text: string;
+  reasons: string[];
+}
+
+export interface SimilarReportGroup {
+  powiat?: string | null;
+  powiat_label: string;
+  count: number;
+  registry_count: number;
+  last_reported_at?: string | null;
+  example_titles: string[];
+  is_user_powiat: boolean;
 }
 
 export interface MatchmakingResult {
@@ -73,6 +120,9 @@ export interface MatchmakingResult {
   no_match: boolean;
   similar_cases_count: number;
   trend_alert?: string | null;
+  highlights?: KeywordHighlight[];
+  similar_reports?: SimilarReportGroup[];
+  similar_reports_total?: number;
   ceneo_intro?: string;
   ceneo_bundle_rationale?: string;
   action_steps?: string[];

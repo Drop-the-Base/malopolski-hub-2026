@@ -20,6 +20,7 @@ import { AccessibilityStatementView } from './views/AccessibilityStatementView';
 import { NotFoundView } from './views/NotFoundView';
 import { MyCasesView } from './views/MyCasesView';
 import { SubscriptionsView, UnsubscribeView } from './views/SubscriptionsView';
+import { OpenDataView } from './views/OpenDataView';
 
 const SITE_NAME = 'Małopolski Hub Innowacji Społecznych';
 
@@ -37,7 +38,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/moje-sprawy': 'Moje sprawy',
   '/powiadomienia/wypisz': 'Wypisz się z powiadomień',
   '/powiadomienia': 'Powiadomienia e-mail',
-  '/deklaracja-dostepnosci': 'Deklaracja dostępności'
+  '/deklaracja-dostepnosci': 'Deklaracja dostępności',
+  '/otwarte-dane': 'Otwarte dane i integracje'
 };
 
 /** Tytuł karty przeglądarki per podstrona (WCAG 2.4.2) i przeniesienie fokusu na treść po nawigacji. */
@@ -101,6 +103,7 @@ export const App: React.FC = () => {
             <Route path="/powiadomienia" element={<SubscriptionsView />} />
             <Route path="/powiadomienia/wypisz/:token" element={<UnsubscribeView />} />
             <Route path="/deklaracja-dostepnosci" element={<AccessibilityStatementView />} />
+            <Route path="/otwarte-dane" element={<OpenDataView />} />
             <Route path="*" element={<NotFoundView />} />
           </Routes>
         </main>

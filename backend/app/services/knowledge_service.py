@@ -4,7 +4,10 @@ from sqlalchemy import select
 from app.core.constants import category_label, strip_diacritics
 from app.models.innovation import Innovation
 from app.models.regional_stat import RegionalStat
-from app.schemas.innovation_schema import InnovationDetail, RegionalChallengeSummary, EducationalMaterial
+from app.models.educational_material import EducationalMaterialRecord
+from app.schemas.innovation_schema import (
+    InnovationDetail, RegionalChallengeSummary, EducationalMaterial, EducationalMaterialAdmin
+)
 from app.services.vector_store import tokenize
 
 SAMPLE_MATERIALS = [
@@ -117,5 +120,26 @@ async def get_regional_challenges(db: AsyncSession) -> List[RegionalChallengeSum
     ]
 
 
-def get_educational_materials() -> List[EducationalMaterial]:
-    return SAMPLE_MATERIALS
+def material_to_admin(m: EducationalMaterialRecord) -> EducationalMaterialAdmin:
+    return EducationalMaterialAdmin(
+        id=m.id, title=m.title, category=m.category, description=m.description or "",
+        download_url=m.download_url, format=m.format, is_external=bool(m.is_external),
+        is_published=bool(m.is_published), sort_order=m.sort_order or 0,
+    )
+
+
+async def ensure_materials_seeded(db: AsyncSession) -> None:
+    """Materiały startowe trafiają do bazy przy pierwszym użyciu – dalej edytuje je koordynator ROPS."""
+    if (await db.execute(select(EducationalMaterialRecord.id).limit(1))).first():
+        return
+    for idx, m in enumerate(SAMPLE_MATERIALS):
+        db.add(EducationalMaterialRecord(**m.model_dump(), is_published=True, sort_order=idx))
+    await db.commit()
+
+
+async def get_educational_materials(db: AsyncSession, include_hidden: bool = False) -> List[EducationalMaterialAdmin]:
+    await ensure_materials_seeded(db)
+    q = select(EducationalMaterialRecord).order_by(EducationalMaterialRecord.sort_order, EducationalMaterialRecord.id)
+    if not include_hidden:
+        q = q.where(EducationalMaterialRecord.is_published == True)  # noqa: E712
+    return [material_to_admin(m) for m in (await db.execute(q)).scalars().all()]
