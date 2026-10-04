@@ -24,6 +24,7 @@ import {
 import { useAccessibility } from '../store/useAccessibilityStore';
 import { useDialog } from '../hooks/useDialog';
 import { CATEGORIES, categoryLabel, powiatLabel } from '../constants/domain';
+import { CompareFolderBar, CompareToggle } from '../components/compare/CompareControls';
 
 type Tab = 'katalog' | 'mapa' | 'edukacja';
 
@@ -217,6 +218,7 @@ export const KnowledgeView: React.FC = () => {
       {/* Widok 1: Katalog Innowacji */}
       {activeTab === 'katalog' && (
         <div id="panel-katalog" role="tabpanel" aria-labelledby="tab-katalog" className="space-y-6">
+          <CompareFolderBar />
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
             <div className="sm:col-span-2 lg:col-span-1">
               <label htmlFor="knowledge-search" className="block text-sm font-bold text-slate-700 mb-1">
@@ -367,7 +369,8 @@ export const KnowledgeView: React.FC = () => {
                   </ul>
                 </div>
 
-                <div className="border-t border-slate-100 pt-3 flex items-center justify-between gap-2">
+                <div className="border-t border-slate-100 pt-3 flex flex-wrap items-center justify-between gap-2">
+                  <CompareToggle id={inn.id} title={inn.title} />
                   <span className="text-sm text-slate-600">
                     {inn.video_url && (
                       <span className="inline-flex items-center gap-1">
@@ -576,6 +579,7 @@ export const KnowledgeView: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap justify-end gap-3 pt-3 border-t border-slate-100">
+              <CompareToggle id={selectedInnovation.id} title={selectedInnovation.title} />
               <Link
                 to={`/middleman?inn=${selectedInnovation.id}`}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold"
