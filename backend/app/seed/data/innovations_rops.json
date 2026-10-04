@@ -15,6 +15,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Bus przyjeżdża do Twojej wsi. W busie jest pomocny pan i pani. Pomagają załatwić sprawę u lekarza i w urzędzie. Nie musisz jechać daleko do miasta.",
+    "problem_statement": "Starsze osoby w odległych sołectwach nie mają jak dojechać do urzędu, lekarza czy apteki. Proste sprawy odkładają na później, a samotność narasta.",
+    "effect_description": "Pomoc przyjeżdża do mieszkańców zamiast mieszkańcy do pomocy. Sprawy urzędowe i zdrowotne są załatwiane na miejscu, a regularne postoje busa stają się okazją do spotkań sąsiadów.",
     "origin_poviat": "gorlicki",
     "is_published": true
   },
@@ -34,6 +36,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Czysta i ciepła łazienka. Można ją postawić przy Twoim domu w jeden dzień. Ma specjalne uchwyty i wózek do kąpieli.",
+    "problem_statement": "Po powrocie ze szpitala osoba niesamodzielna często nie może bezpiecznie się umyć, bo łazienka w domu ma progi i wannę. Przebudowa trwa miesiącami.",
+    "effect_description": "Rodzina dostaje dostępną łazienkę w ciągu doby, bez remontu domu. Opiekunowi łatwiej zapewnić higienę, a chory może zostać w domu zamiast w placówce.",
     "origin_poviat": "miechowski",
     "is_published": true
   },
@@ -53,6 +57,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Książeczka z obrazkami i komiksem. Pomaga, gdy czujesz smutek lub złość. Możesz rysować i czytać o problemach.",
+    "problem_statement": "Nastolatki z lękiem, samotnością lub obniżonym nastrojem rzadko mówią o tym wprost. Szkolna rozmowa z psychologiem bywa dla nich zbyt trudna na początek.",
+    "effect_description": "Uczniowie łatwiej nazywają emocje przez historie bohaterów komiksu. Pedagog zyskuje bezpieczny punkt wyjścia do rozmowy i wcześniej widzi, kto potrzebuje wsparcia.",
     "origin_poviat": "nowosądecki",
     "is_published": true
   },
@@ -72,6 +78,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Ekspert przychodzi do Twojego domu. Sprawdza, czy nie potkniesz się o dywan lub próg. Za darmo montuje poręcze i lampki.",
+    "problem_statement": "Seniorzy mieszkający samotnie potykają się o progi i śliskie schody. Upadek w domu często kończy się szpitalem i utratą samodzielności.",
+    "effect_description": "Mieszkanie staje się bezpieczniejsze po jednej wizycie: znikają progi, pojawiają się uchwyty i oświetlenie. Senior może dłużej mieszkać u siebie.",
     "origin_poviat": "m. Kraków",
     "is_published": true
   },
@@ -91,6 +99,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Cichy pokój pełen miękkich poduszek, światełek i zabawek. Dzieci mogą tam odpocząć od hałasu w szkole.",
+    "problem_statement": "Wiejskie szkoły i przedszkola nie mają gabinetu integracji sensorycznej. Dzieci w spektrum autyzmu lub z ADHD dojeżdżają na terapię daleko albo nie dostają jej wcale.",
+    "effect_description": "Sala wyciszenia powstaje w placówce, do której dziecko i tak chodzi. Nauczyciele mają gdzie pomóc dziecku się uspokoić, a skrzynie przewozi się do kolejnych szkół.",
     "origin_poviat": "tarnowski",
     "is_published": true
   },
@@ -109,6 +119,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Spotkania z innymi seniorami przy herbacie. Uczymy się obsługiwać telefon komórkowy i dzwonić do wnuków.",
+    "problem_statement": "Wielu seniorów nie korzysta z e-recepty, bankowości czy Internetowego Konta Pacjenta, bo boi się pomyłki lub oszustwa. Wnuki nie zawsze mają czas tłumaczyć.",
+    "effect_description": "Seniorzy uczą się od rówieśników we własnym tempie i bez wstydu. Pewniej korzystają ze smartfona i lepiej rozpoznają próby oszustwa.",
     "origin_poviat": "m. Kraków",
     "is_published": true
   },
@@ -127,6 +139,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Ktoś przychodzi zaopiekować się Twoją chorą mamą lub tatą na kilka godzin. Ty możesz w tym czasie odpocząć.",
+    "problem_statement": "Rodziny opiekujące się osobą zależną pracują bez przerwy. Główny opiekun nie ma czasu na odpoczynek, własne leczenie ani sprawy osobiste.",
+    "effect_description": "Opiekun dostaje regularny czas dla siebie, a podopieczny pozostaje pod fachową opieką w domu. Rodzina dłużej daje radę opiekować się bliskim.",
     "origin_poviat": "wadowicki",
     "is_published": true
   },
@@ -146,6 +160,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Szafka w centrum wsi. Możesz zostawić jabłka ze swojego ogrodu lub wziąć słoik dżemu, jeśli potrzebujesz.",
+    "problem_statement": "Nadwyżki warzyw i owoców z przydomowych ogrodów się marnują, a jednocześnie część rodzin i samotnych seniorów oszczędza na jedzeniu.",
+    "effect_description": "Żywność trafia do sąsiadów zamiast na kompost. Wspólne warsztaty łączą młodzież i seniorów i dają powód, by wyjść z domu.",
     "origin_poviat": "proszowicki",
     "is_published": true
   },
@@ -165,6 +181,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Aplikacja w telefonie dla młodych ludzi. Uczy jak znaleźć mieszkanie, pracę i jak nie wpaść w długi.",
+    "problem_statement": "Młodzież opuszczająca placówki opiekuńczo-wychowawcze nagle musi sama wynająć mieszkanie, zaplanować budżet i znaleźć pracę – często bez dorosłego, który pomoże.",
+    "effect_description": "Wychowankowie ćwiczą dorosłe zadania z mentorem, zanim muszą je wykonać naprawdę. Wchodzą w samodzielne życie z planem i osobą, do której mogą zadzwonić.",
     "origin_poviat": "oświęcimski",
     "is_published": true
   },
@@ -184,6 +202,8 @@
     "video_url": null,
     "handbook_url": null,
     "etr_summary": "Ciche miejsce w urzędzie gminy. Jeśli trudno Ci mówić, urzędnik pokaże Ci obrazki, aby szybko załatwić sprawę.",
+    "problem_statement": "Osoby w spektrum autyzmu, z afazją lub niedosłyszące mają trudność, by załatwić sprawę w głośnym urzędzie. Często rezygnują albo potrzebują kogoś do pomocy.",
+    "effect_description": "Mieszkaniec może załatwić sprawę w spokojnym miejscu, pokazując piktogramy lub korzystając z pętli indukcyjnej. Urzędnik ma narzędzia, by go zrozumieć.",
     "origin_poviat": "wielicki",
     "is_published": true
   }

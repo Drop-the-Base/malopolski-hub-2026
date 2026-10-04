@@ -12,7 +12,16 @@ export interface InnovationItem {
   handbook_url?: string | null;
   etr_summary?: string | null;
   origin_poviat?: string | null;
+  problem_statement?: string | null;
+  effect_description?: string | null;
   is_published?: boolean;
+}
+
+export interface InnovationRatingSummary {
+  innovation_id: string;
+  ratings_count: number;
+  average_rating: number | null;
+  proposals_count: number;
 }
 
 export interface InnovationUpsert {

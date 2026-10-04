@@ -234,3 +234,10 @@ body.etr-mode main p {
     page-break-after: avoid !important;
   }
 }
+
+/* Mapa Wyzwań: pole heksu rysuje własny pierścień fokusu (obrys CSS nie obejmuje kształtu heksu) */
+.map-hex:focus-visible,
+.map-hex:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

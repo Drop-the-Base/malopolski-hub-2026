@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {
   InnovationItem,
+  InnovationRatingSummary,
   InnovationUpsert,
   MatchmakingResult,
   RegionalChallenge,
@@ -290,6 +291,24 @@ export const api = {
     improvement_proposals: string;
   }) => {
     const res = await client.post<{ message: string; sus_score: number; sus_grade: string }>('/testing/feedback', feedback);
+    return res.data;
+  },
+
+  getRatingSummaries: async () => {
+    const res = await client.get<InnovationRatingSummary[]>('/testing/ratings');
+    return res.data;
+  },
+
+  getInnovationRating: async (innovationId: string) => {
+    const res = await client.get<InnovationRatingSummary>(`/testing/innovations/${innovationId}/rating`);
+    return res.data;
+  },
+
+  rateInnovation: async (innovationId: string, data: { rating: number; improvement_proposal: string; author_role: string }) => {
+    const res = await client.post<{ message: string; summary: InnovationRatingSummary }>(
+      `/testing/innovations/${innovationId}/rating`,
+      data
+    );
     return res.data;
   },
 

@@ -17,5 +17,8 @@ class Innovation(Base):
     handbook_url = Column(String, nullable=True)
     etr_summary = Column(Text, nullable=True)
     origin_poviat = Column(String, nullable=True)
+    # Historia na karcie: problem → rozwiązanie (full_description) → efekt
+    problem_statement = Column(Text, nullable=True)
+    effect_description = Column(Text, nullable=True)
     is_published = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -165,7 +165,13 @@ async def sync_reference_data():
     """
     async with AsyncSessionLocal() as session:
         fixed = 0
+        seed_story = {item["id"]: item for item in _load("innovations_rops.json")}
         for inn in (await session.execute(select(Innovation))).scalars().all():
+            # Uzupełnienie historii karty (problem → efekt) w bazach utworzonych przed dodaniem tych pól
+            for field in ("problem_statement", "effect_description"):
+                if not getattr(inn, field) and seed_story.get(inn.id, {}).get(field):
+                    setattr(inn, field, seed_story[inn.id][field])
+                    fixed += 1
             for field in ("video_url", "handbook_url"):
                 value = getattr(inn, field) or ""
                 if any(marker in value for marker in LEGACY_PLACEHOLDER_URLS):
