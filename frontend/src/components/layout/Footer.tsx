@@ -9,7 +9,9 @@ const modules = [
   { to: '/dialog', label: 'Dialog i mentorzy' },
   { to: '/admin', label: 'Panel ROPS' },
   { to: '/middleman', label: 'Middleman dla gmin' },
-  { to: '/problemy', label: 'Rejestr wyzwań gmin' }
+  { to: '/problemy', label: 'Rejestr wyzwań gmin' },
+  { to: '/moje-sprawy', label: 'Moje sprawy (status zgłoszeń)' },
+  { to: '/powiadomienia', label: 'Powiadomienia o naborach' }
 ];
 
 export const Footer: React.FC = () => {

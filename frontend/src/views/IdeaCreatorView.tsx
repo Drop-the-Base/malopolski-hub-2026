@@ -24,6 +24,7 @@ import { useAccessibility } from '../store/useAccessibilityStore';
 import { AUTHOR_TYPES, IMPLEMENTATION_STAGES, POWIATY, powiatLabel, formatPLN } from '../constants/domain';
 import { OfficialGrantApplicationDocument } from '../components/documents/OfficialGrantApplicationDocument';
 import { downloadPdfFromElement } from '../utils/pdfExport';
+import { rememberCase } from '../utils/recentCases';
 
 const EMPTY_CANVAS: CanvasData = {
   problem: '',
@@ -165,6 +166,7 @@ export const IdeaCreatorView: React.FC = () => {
         rodo_consent: step1Form.rodo_consent
       });
       setFiszkaResult(res);
+      rememberCase(res.id); // pojawi się w „Moich sprawach” na tym urządzeniu
       try {
         window.history.replaceState(null, '', window.location.pathname);
       } catch {
@@ -382,6 +384,13 @@ export const IdeaCreatorView: React.FC = () => {
                   className="bg-emerald-800 hover:bg-emerald-900 text-white font-semibold px-3.5 py-2.5 rounded-xl text-sm"
                 >
                   Śledź status
+                </Link>
+
+                <Link
+                  to="/moje-sprawy"
+                  className="border border-slate-400 hover:bg-slate-100 text-slate-900 font-semibold px-3.5 py-2.5 rounded-xl text-sm"
+                >
+                  Moje sprawy
                 </Link>
 
                 <button
@@ -611,6 +620,10 @@ export const IdeaCreatorView: React.FC = () => {
               <h2 className="text-lg font-black text-white">Szkic wniosku na wybrany nabór</h2>
               <p className="text-sm text-slate-200">
                 Generator działa tylko dla otwartych naborów i pilnuje ich limitów kwot. Szkic zbudowano z Twojej Canwy – braki są oznaczone „DO UZUPEŁNIENIA”.
+              </p>
+              <p className="text-sm text-slate-200 mt-1">
+                Nie ma teraz naboru dla Ciebie?{' '}
+                <Link to="/powiadomienia" className="font-bold text-amber-300 underline">Zapisz się na e-mail o nowych naborach</Link>.
               </p>
             </div>
             <div className="flex flex-wrap items-end gap-3">
