@@ -2,9 +2,13 @@ import uuid
 from typing import List
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from app.models.testing import TestingCampaign, TestingFeedback, TesterSignup
-from app.schemas.testing_schema import CampaignSummary, TesterRegistration, FeedbackSubmission, EvaluationReport
+from sqlalchemy import select, func, case
+from app.models.innovation import Innovation
+from app.models.testing import TestingCampaign, TestingFeedback, TesterSignup, InnovationRating
+from app.schemas.testing_schema import (
+    CampaignSummary, TesterRegistration, FeedbackSubmission, EvaluationReport,
+    InnovationRatingSubmission, InnovationRatingSummary, TESTER_ROLES,
+)
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 
 
@@ -140,3 +144,67 @@ async def get_campaign_report(db: AsyncSession, campaign_id: str) -> EvaluationR
         common_barriers=barriers[:3],
         readiness_for_scaling=avg_sus >= 68.0 and len(feedbacks) >= 5
     )
+
+
+async def _rating_summary(db: AsyncSession, innovation_id: str) -> InnovationRatingSummary:
+    row = (await db.execute(
+        select(func.count(InnovationRating.id), func.avg(InnovationRating.rating))
+        .where(InnovationRating.innovation_id == innovation_id)
+    )).one()
+    proposals = (await db.execute(
+        select(func.count(InnovationRating.id))
+        .where(InnovationRating.innovation_id == innovation_id, InnovationRating.improvement_proposal != "")
+    )).scalar() or 0
+    count, avg = row
+    return InnovationRatingSummary(
+        innovation_id=innovation_id,
+        ratings_count=count or 0,
+        average_rating=round(float(avg), 1) if avg is not None else None,
+        proposals_count=proposals,
+    )
+
+
+async def get_innovation_rating(db: AsyncSession, innovation_id: str) -> InnovationRatingSummary:
+    if not await db.get(Innovation, innovation_id):
+        raise HTTPException(status_code=404, detail="Nie znaleziono innowacji.")
+    return await _rating_summary(db, innovation_id)
+
+
+async def get_all_rating_summaries(db: AsyncSession) -> List[InnovationRatingSummary]:
+    """Średnie ocen wszystkich innowacji (dla listy w Bibliotece) – tylko innowacje, które mają oceny."""
+    rows = (await db.execute(
+        select(
+            InnovationRating.innovation_id,
+            func.count(InnovationRating.id),
+            func.avg(InnovationRating.rating),
+            func.sum(case((InnovationRating.improvement_proposal != "", 1), else_=0)),
+        ).group_by(InnovationRating.innovation_id)
+    )).all()
+    return [
+        InnovationRatingSummary(innovation_id=i, ratings_count=c, average_rating=round(float(a), 1), proposals_count=p or 0)
+        for i, c, a, p in rows
+    ]
+
+
+async def rate_innovation(db: AsyncSession, innovation_id: str, req: InnovationRatingSubmission) -> dict:
+    innovation = await db.get(Innovation, innovation_id)
+    if not innovation or not innovation.is_published:
+        raise HTTPException(status_code=404, detail="Nie znaleziono innowacji.")
+    rating_id = f"rate-{uuid.uuid4().hex[:8]}"
+    db.add(InnovationRating(
+        id=rating_id,
+        innovation_id=innovation_id,
+        rating=req.rating,
+        improvement_proposal=req.improvement_proposal,
+        author_role=req.author_role,
+    ))
+    if req.improvement_proposal:
+        await notify(db, ADMIN_RECIPIENT, subject=f"Propozycja usprawnienia: {innovation.title}",
+                     body=f"Ocena {req.rating}/5 ({TESTER_ROLES.get(req.author_role, req.author_role)}).\n\n{req.improvement_proposal}",
+                     related_type="innovation", related_id=innovation_id)
+    await db.commit()
+    summary = await _rating_summary(db, innovation_id)
+    message = "Dziękujemy za ocenę!"
+    if req.improvement_proposal:
+        message = "Dziękujemy! Ocena i propozycja usprawnienia trafiły do koordynatora ROPS."
+    return {"status": "success", "message": message, "rating_id": rating_id, "summary": summary.model_dump()}

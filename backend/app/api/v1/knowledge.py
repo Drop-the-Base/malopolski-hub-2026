@@ -52,7 +52,11 @@ async def update_innovation(inn_id: str, req: InnovationUpsert, db: AsyncSession
     item = await db.get(Innovation, inn_id)
     if not item:
         raise HTTPException(status_code=404, detail="Innowacja o podanym ID nie została odnaleziona.")
+    # Pola historii są opcjonalne – formularz, który ich nie wysyła, nie może ich wyczyścić
+    optional_story = {"problem_statement", "effect_description"}
     for key, value in req.model_dump().items():
+        if key in optional_story and key not in req.model_fields_set:
+            continue
         setattr(item, key, value)
     await db.commit()
     vector_store.clear()

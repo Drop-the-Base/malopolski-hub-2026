@@ -75,3 +75,29 @@ class EvaluationReport(BaseModel):
     satisfaction_rate: Optional[float] = None
     common_barriers: List[str]
     readiness_for_scaling: bool
+
+
+class InnovationRatingSubmission(BaseModel):
+    """Ocena innowacji z karty (1–5) i opcjonalna krótka propozycja usprawnienia."""
+    rating: int = Field(..., ge=1, le=5, description="Ocena od 1 (słabo) do 5 (bardzo dobrze)")
+    improvement_proposal: str = Field("", max_length=1000)
+    author_role: str = Field("mieszkaniec")
+
+    @field_validator("author_role")
+    @classmethod
+    def _role(cls, v):
+        if v not in TESTER_ROLES:
+            raise ValueError(f"Nieznana rola. Dozwolone: {', '.join(TESTER_ROLES)}")
+        return v
+
+    @field_validator("improvement_proposal")
+    @classmethod
+    def _strip(cls, v):
+        return v.strip()
+
+
+class InnovationRatingSummary(BaseModel):
+    innovation_id: str
+    ratings_count: int
+    average_rating: Optional[float] = None
+    proposals_count: int = 0

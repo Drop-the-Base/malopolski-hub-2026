@@ -41,3 +41,15 @@ class TesterSignup(Base):
     motivation = Column(Text, default="")
     guardian_consent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class InnovationRating(Base):
+    """Szybka ocena (1–5) i propozycja usprawnienia wystawiona z karty innowacji – bez kampanii i ankiety SUS."""
+    __tablename__ = "innovation_ratings"
+
+    id = Column(String, primary_key=True, index=True)
+    innovation_id = Column(String, ForeignKey("innovations.id"), nullable=False, index=True)
+    rating = Column(Integer, nullable=False)  # 1 - 5
+    improvement_proposal = Column(Text, default="")
+    author_role = Column(String, default="mieszkaniec")
+    created_at = Column(DateTime, default=datetime.utcnow)

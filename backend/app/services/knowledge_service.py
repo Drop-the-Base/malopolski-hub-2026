@@ -53,6 +53,8 @@ def _to_detail(item: Innovation) -> InnovationDetail:
         handbook_url=item.handbook_url,
         etr_summary=item.etr_summary,
         origin_poviat=item.origin_poviat,
+        problem_statement=item.problem_statement,
+        effect_description=item.effect_description,
         is_published=item.is_published,
         created_at=item.created_at
     )

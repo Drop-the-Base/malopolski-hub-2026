@@ -17,6 +17,8 @@ class InnovationDetail(BaseModel):
     handbook_url: Optional[str] = None
     etr_summary: Optional[str] = None
     origin_poviat: Optional[str] = None
+    problem_statement: Optional[str] = None
+    effect_description: Optional[str] = None
     is_published: bool
     created_at: datetime
 
@@ -33,6 +35,8 @@ class InnovationUpsert(BaseModel):
     handbook_url: Optional[str] = Field(None, max_length=500, pattern=r"^https://")
     etr_summary: Optional[str] = Field(None, max_length=2000)
     origin_poviat: Optional[str] = None
+    problem_statement: Optional[str] = Field(None, max_length=2000)
+    effect_description: Optional[str] = Field(None, max_length=2000)
     is_published: bool = True
 
     @field_validator("category")
@@ -47,7 +51,7 @@ class InnovationUpsert(BaseModel):
     def _powiat(cls, v):
         return normalize_powiat(v)
 
-    @field_validator("video_url", "handbook_url", "etr_summary", "origin_poviat", mode="before")
+    @field_validator("video_url", "handbook_url", "etr_summary", "origin_poviat", "problem_statement", "effect_description", mode="before")
     @classmethod
     def _empty_to_none(cls, v):
         return v or None
