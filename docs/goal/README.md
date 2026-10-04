@@ -35,6 +35,8 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 | G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | ⏳ |
 | G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ⏳ |
 | G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ⏳ |
+| G15 | Panel eksperta/mentora: kolejka przydzielonych fiszek i pytań JST, szybki feedback (szablony odpowiedzi), widoczny dla autora w „Moich sprawach” | V / eksperci | ⏳ |
+| G16 | Katalog dla JST: „Teczka wdrożeń” – porównanie 2–3 innowacji obok siebie (koszt, kadry, gotowość) i wydruk/PDF dla rady gminy | II+VII / JST | ⏳ |
 
 ## Dziennik decyzji
 
