@@ -33,6 +33,8 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 | G10 | Audyt dostępności (axe) wszystkich widoków + poprawki | WCAG | ⏳ |
 | G11 | Kreator: wizualizacja pomysłu (szkic/plakat SVG generowany z Canwy) | III / asystent | ⏳ |
 | G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | ⏳ |
+| G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ⏳ |
+| G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ⏳ |
 
 ## Dziennik decyzji
 
