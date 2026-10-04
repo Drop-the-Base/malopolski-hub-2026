@@ -31,7 +31,7 @@ from app.services.grant_call_service import list_grant_calls, get_grant_call
 from app.services.groq_client import autofill_social_canvas
 from app.services.notification_service import notify, ADMIN_RECIPIENT
 from app.services.pii_filter import anonymize_text
-from app.services.case_service import build_fiszka_timeline, last_rops_message_at, REVIEW_STATUSES, DECISION_STATUSES
+from app.services.case_service import build_fiszka_timeline, last_mentor_feedback_at, last_rops_message_at, REVIEW_STATUSES, DECISION_STATUSES
 from app.services.webhook_service import fire_event
 
 router = APIRouter()
@@ -57,7 +57,9 @@ async def _public_status(db: AsyncSession, fiszka: IdeaFiszka, with_timeline: bo
         votes_count=fiszka.votes_count or 0,
         created_at=fiszka.created_at,
         updated_at=fiszka.updated_at,
-        timeline=build_fiszka_timeline(fiszka, mentor_name, await last_rops_message_at(db, fiszka.id)) if with_timeline else [],
+        timeline=build_fiszka_timeline(
+            fiszka, mentor_name, await last_rops_message_at(db, fiszka.id), await last_mentor_feedback_at(db, fiszka.id)
+        ) if with_timeline else [],
     )
 
 

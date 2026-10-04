@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "zmien-mnie-w-produkcji-mhis-2026"
     ADMIN_PASSWORD: str = "rops-demo-2026"
     ADMIN_TOKEN_TTL_MINUTES: int = 480
+    # Demo-dostęp mentora / eksperta (panel /mentor): wybór osoby + wspólny kod dostępu. W produkcji: indywidualne konta.
+    MENTOR_PASSWORD: str = "mentor-demo-2026"
     ADMIN_NOTIFY_EMAIL: str = "innowacje@rops.example.org"
     # Opcjonalna wysyłka e-mail (bez SMTP_HOST powiadomienia trafiają tylko do skrzynki nadawczej w bazie)
     SMTP_HOST: str = ""

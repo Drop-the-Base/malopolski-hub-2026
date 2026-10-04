@@ -25,6 +25,7 @@ class ThreadMessage(Base):
     sender_name = Column(String, nullable=False)
     sender_role = Column(String, nullable=False)  # 'mieszkaniec', 'rops_ekspert', 'mentor', 'jst'
     content = Column(Text, nullable=False)
+    mentor_id = Column(String, nullable=True)  # odpowiedź z panelu mentora (zweryfikowany mentor)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     thread = relationship("CommunicationThread", back_populates="messages")

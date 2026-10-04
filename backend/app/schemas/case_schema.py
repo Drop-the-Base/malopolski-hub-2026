@@ -38,7 +38,9 @@ class CaseMessageItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    sender: str  # 'author' | 'rops'
+    sender: str  # 'author' | 'rops' | 'mentor'
+    sender_name: Optional[str] = None
+    sender_role: Optional[str] = None
     body: str
     read_by_rops: bool = False
     created_at: datetime
