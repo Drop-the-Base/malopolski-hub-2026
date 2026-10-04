@@ -101,3 +101,4 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
   opis metody pod tabelą; brak profilu = „brak danych”. API `GET /api/v1/knowledge/compare?ids=` (2–3 id, 422 przy >3).
   Pozycja „Porównaj innowacje” w grupie „Dla samorządu”.
   Sprawdzone: `pytest` – 48 passed (5 nowych testów), `npm run build` (tsc) – OK; bez podglądu w przeglądarce.
+- **Lektor do przerwania** – przycisk „Odsłuchaj” zmienia się w „Zatrzymaj” (aria-pressed), czytanie przerywa też Escape i przejście na inną stronę; tekst czytany w krótkich fragmentach (cała strona, nie tylko pierwsze 1000 znaków), komunikat zamiast `alert` gdy przeglądarka nie obsługuje mowy. Sprawdzone w podglądzie.

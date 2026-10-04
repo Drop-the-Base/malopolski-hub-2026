@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAccessibility } from '../../store/useAccessibilityStore';
-import { Eye, Type, Volume2 } from 'lucide-react';
+import { Eye, Type, Volume2, Square } from 'lucide-react';
+
+const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+/** Dzieli tekst na krótkie fragmenty – długie wypowiedzi bywają ucinane przez przeglądarki. */
+const toChunks = (text: string) =>
+  text
+    .replace(/\s+/g, ' ')
+    .split(/(?<=[.!?:])\s+/)
+    .reduce<string[]>((acc, sentence) => {
+      const last = acc[acc.length - 1];
+      if (last && last.length + sentence.length < 220) acc[acc.length - 1] = `${last} ${sentence}`;
+      else if (sentence.trim()) acc.push(sentence.trim());
+      return acc;
+    }, []);
 
 export const AccessibilityBar: React.FC = () => {
   const {
@@ -10,17 +25,59 @@ export const AccessibilityBar: React.FC = () => {
     setFontSize
   } = useAccessibility();
 
+  const location = useLocation();
+  const [speaking, setSpeaking] = useState(false);
+  const [notice, setNotice] = useState('');
+
+  const stopSpeaking = () => {
+    if (canSpeak()) window.speechSynthesis.cancel();
+    setSpeaking(false);
+  };
+
+  // Zmiana strony albo Escape przerywa czytanie
+  useEffect(() => {
+    if (canSpeak()) window.speechSynthesis.cancel();
+    setSpeaking(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!speaking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') stopSpeaking();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [speaking]);
+
+  useEffect(() => () => {
+    if (canSpeak()) window.speechSynthesis.cancel();
+  }, []);
+
   const handleSpeakPage = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const mainText = document.getElementById('main-content')?.innerText || document.body.innerText;
-      const utterance = new SpeechSynthesisUtterance(mainText.slice(0, 1000));
+    if (!canSpeak()) {
+      setNotice('Twoja przeglądarka nie potrafi czytać tekstu na głos.');
+      return;
+    }
+    if (speaking) {
+      stopSpeaking();
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const mainText = document.getElementById('main-content')?.innerText || document.body.innerText;
+    const chunks = toChunks(mainText);
+    if (!chunks.length) return;
+    chunks.forEach((chunk, i) => {
+      const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.lang = 'pl-PL';
       utterance.rate = 0.95;
+      if (i === chunks.length - 1) {
+        utterance.onend = () => setSpeaking(false);
+      }
+      utterance.onerror = () => setSpeaking(false);
       window.speechSynthesis.speak(utterance);
-    } else {
-      alert('Twoja przeglądarka nie wspiera syntezatora mowy.');
-    }
+    });
+    setNotice('');
+    setSpeaking(true);
   };
 
   return (
@@ -44,14 +101,27 @@ export const AccessibilityBar: React.FC = () => {
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-4">
           {/* Odsłuchaj stronę */}
           <button
+            type="button"
             onClick={handleSpeakPage}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-slate-200 hover:bg-slate-800 transition-colors"
-            title="Odsłuchaj treść strony na głos"
-            aria-label="Odsłuchaj stronę za pomocą syntezatora mowy"
+            aria-pressed={speaking}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors ${
+              speaking ? 'bg-amber-400 text-slate-900 font-bold' : 'text-slate-200 hover:bg-slate-800'
+            }`}
+            title={speaking ? 'Zatrzymaj czytanie (możesz też nacisnąć Escape)' : 'Odsłuchaj treść strony na głos'}
+            aria-label={speaking ? 'Zatrzymaj czytanie strony' : 'Odsłuchaj stronę'}
           >
-            <Volume2 className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="hidden md:inline">Odsłuchaj</span>
+            {speaking ? (
+              <Square className="w-3.5 h-3.5" aria-hidden="true" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+            <span className="hidden md:inline">{speaking ? 'Zatrzymaj' : 'Odsłuchaj'}</span>
           </button>
+          {notice && (
+            <span role="status" className="text-amber-300">
+              {notice}
+            </span>
+          )}
 
           {/* Wybór kontrastu */}
           <div className="flex items-center gap-1 p-0.5 rounded border border-slate-700" role="group" aria-label="Wybór kontrastu">
