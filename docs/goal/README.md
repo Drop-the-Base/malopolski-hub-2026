@@ -31,7 +31,7 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 | G8 | Panel ROPS: szybka edycja materiałów i wyzwań, eksport CSV zgłoszeń/potrzeb, licznik „nowe od ostatniego logowania” | VI | ✅ b0867a4 |
 | G9 | Integracje: udokumentowane otwarte API (eksport JSON/CSV innowacji, webhook dla nowych fiszek) | potencjał wdrożeniowy | ✅ 37fc477 |
 | G10 | Audyt dostępności (axe) wszystkich widoków + poprawki | WCAG | ⏳ przerwane limitem sesji – brak zmian; zrobiono tylko `no-cache` dla index.html |
-| G11 | Kreator: wizualizacja pomysłu (szkic/plakat SVG generowany z Canwy) | III / asystent | 🚧 tylko backend `POST /canvas/poster-hints` (10c1d5d); komponent plakatu niedokończony (limit sesji) |
+| G11 | Kreator: wizualizacja pomysłu (szkic/plakat SVG generowany z Canwy) | III / asystent | ✅ 10c1d5d, e1240fe |
 | G12 | Spójność i polerka: puste stany, komunikaty błędów, mobilny widok, teksty | jakość MVP | 🚧 częściowo: `no-cache` dla index.html, usunięte plakietki modułów |
 | G13 | Nawigacja: 9 pozycji w górnym menu → grupy (Szukaj pomocy / Działaj / Współpracuj) + wyróżnione „Zgłoś”, okruszki | intuicyjność | ✅ 824d173 |
 | G14 | Strona główna: pole „Twoja sprawa” widoczne bez przewijania (mniejszy nagłówek na laptopie 1366×768) | intuicyjność | ✅ 5854f0b |
@@ -80,3 +80,4 @@ Status: ⏳ do zrobienia · 🚧 w toku · ✅ zrobione (commit) · ❌ odrzucon
 - **Usunięcie „AI tells”** – plakietki „Moduł I–VIII” usunięte ze wszystkich 8 widoków (sprawdzone w podglądzie). Przegląd emotikonów i ikon Sparkles przerwany limitem sesji – do dokończenia.
 - **Cache** – nginx: `no-cache` dla index.html, długi cache dla `/assets/` (hash w nazwie). Po przebudowie przeglądarka zawsze dostaje nową wersję.
 - **Stan na koniec sesji 2026-10-04** – `dev` buduje się w Dockerze (tsc OK), backend 43 testy OK. Niedokończone: G10, G11 (UI), G12, G15, G16, dokończenie przeglądu emotikonów/Sparkles.
+- **G11 Plakat pomysłu** (`10c1d5d`, `e1240fe`, gałąź `dev-d`) – w kroku 2 Kreatora sekcja „Plakat pomysłu”: jednostronicowy plakat SVG (A4) generowany w przeglądarce z fiszki i Canwy – tytuł, piktogram dobrany po słowach kluczowych (12 tematów, ikony lucide), etap realizacji jako oś 4 kroków, problem / rozwiązanie, dla kogo, gdzie, partnerzy, „jak sprawdzimy”. Przycisk „Dodaj hasło i 3 nietypowe warianty” woła `POST /canvas/poster-hints` (model językowy, bez klucza – gotowe podpowiedzi wg tematu). Pobieranie PNG (2×) i SVG, druk w osobnym oknie A4; plakat wyświetlany jako obrazek (odporny na tryby kontrastu) z tekstem alternatywnym i widocznym opisem treści. Długie teksty skracane, aby zmieściły się na stronie. Sprawdzono: `npm run build` (tsc) – OK, `pytest` – 43 passed; bez podglądu w przeglądarce.
