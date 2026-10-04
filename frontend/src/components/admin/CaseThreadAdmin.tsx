@@ -3,6 +3,7 @@ import { CheckCheck, MessageSquare, Send } from 'lucide-react';
 import { api, apiErrorMessage } from '../../services/api';
 import { CaseMessage, FiszkaAdminItem } from '../../types';
 import { formatDateTime } from '../../constants/domain';
+import { caseSenderLabel } from '../../utils/caseSender';
 
 /** Zdarzenie odświeżające licznik „wymaga uwagi” w nawigacji po akcji koordynatora. */
 export const INBOX_CHANGED_EVENT = 'mhis:inbox-changed';
@@ -119,7 +120,7 @@ export const CaseThreadAdmin: React.FC<CaseThreadAdminProps> = ({ fiszka, isNew,
               {messages.map((m) => (
                 <li key={m.id} className={`p-2.5 rounded-lg border ${m.sender === 'rops' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-300'}`}>
                   <p className="text-xs text-slate-700">
-                    <strong>{m.sender === 'rops' ? 'Koordynator ROPS' : `Autor (${fiszka.author_name})`}</strong> ·{' '}
+                    <strong>{caseSenderLabel(m, `Autor (${fiszka.author_name})`)}</strong> ·{' '}
                     <time dateTime={m.created_at}>{formatDateTime(m.created_at)}</time>
                     {m.sender === 'author' && !m.read_by_rops && <strong className="ml-1 text-rose-800">· nowe</strong>}
                   </p>

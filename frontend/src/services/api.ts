@@ -40,7 +40,9 @@ import {
   EducationalMaterialAdmin,
   EducationalMaterialUpsert,
   NewSinceLogin,
-  AdminExportKind
+  AdminExportKind,
+  MentorActivitySummary,
+  ComparisonResponse
 } from '../types';
 
 const API_BASE = '/api/v1';
@@ -475,6 +477,17 @@ export const api = {
 
   updateGrantCall: async (id: string, data: GrantCallUpsert) => {
     const res = await client.put<GrantCallAdminResult>(`/admin/grant-calls/${encodeURIComponent(id)}`, data);
+    return res.data;
+  },
+
+  getMentorActivity: async () => {
+    const res = await client.get<MentorActivitySummary>('/admin/mentor-activity');
+    return res.data;
+  },
+
+  // Teczka wdrożeń (G16): porównanie 2–3 innowacji
+  compareInnovations: async (ids: string[]) => {
+    const res = await client.get<ComparisonResponse>('/knowledge/compare', { params: { ids: ids.join(',') } });
     return res.data;
   },
 

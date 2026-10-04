@@ -446,7 +446,10 @@ export interface TimelineStep {
 
 export interface CaseMessage {
   id: string;
-  sender: 'author' | 'rops' | string;
+  sender: 'author' | 'rops' | 'mentor' | string;
+  /** Podpis nadawcy (opinia mentora: imię i nazwisko oraz specjalizacja). */
+  sender_name?: string | null;
+  sender_role?: string | null;
   body: string;
   read_by_rops: boolean;
   created_at: string;
@@ -538,4 +541,110 @@ export interface GrantCallAdminResult {
   call: GrantCall;
   notified_count: number;
   message: string;
+}
+
+// --- G15: panel eksperta / mentora ---------------------------------------------------------------------
+
+export interface MentorFiszkaItem {
+  id: string;
+  title: string;
+  summary: string;
+  target_audience: string;
+  implementation_stage: string;
+  powiat: string;
+  status: string;
+  status_label: string;
+  author_name: string;
+  author_type?: string | null;
+  cluster_group?: string | null;
+  created_at: string;
+  messages: CaseMessage[];
+  my_feedback_count: number;
+  last_feedback_at?: string | null;
+}
+
+export interface MentorThreadItem {
+  id: string;
+  title: string;
+  category: string;
+  category_label: string;
+  powiat: string;
+  author_name: string;
+  author_role: string;
+  status: string;
+  created_at: string;
+  messages: { id: string; sender_name: string; sender_role: string; content: string; created_at: string }[];
+  matches_specialization: boolean;
+  answered_by_me: boolean;
+  needs_answer: boolean;
+}
+
+export interface MentorBookingItem {
+  id: string;
+  slot_start: string;
+  slot_end: string;
+  requester_name: string;
+  requester_email: string;
+  topic: string;
+  upcoming: boolean;
+}
+
+export interface MentorDashboard {
+  mentor: MentorItem;
+  stats: {
+    assigned_fiszki: number;
+    waiting_for_feedback: number;
+    feedback_sent: number;
+    thread_replies: number;
+    open_threads: number;
+    upcoming_bookings: number;
+  };
+  fiszki: MentorFiszkaItem[];
+  threads: MentorThreadItem[];
+  bookings: MentorBookingItem[];
+}
+
+export interface MentorActivityItem {
+  mentor_id: string;
+  full_name: string;
+  specialization: string;
+  assigned_fiszki: number;
+  feedback_sent: number;
+  thread_replies: number;
+  upcoming_bookings: number;
+  total_bookings: number;
+  last_activity_at?: string | null;
+}
+
+export interface MentorActivitySummary {
+  mentors: MentorActivityItem[];
+  total_feedback: number;
+  total_thread_replies: number;
+  fiszki_without_feedback: number;
+}
+
+// --- G16: Teczka wdrożeń (porównanie innowacji) ---------------------------------------------------------
+
+export interface ComparisonItem {
+  id: string;
+  title: string;
+  tagline: string;
+  category: string;
+  category_label: string;
+  problem_statement?: string | null;
+  target_groups: string[];
+  budget_bracket?: string | null;
+  setup_cost_pln?: number | null;
+  monthly_cost_pln?: number | null;
+  staff_needs?: string | null;
+  readiness_level?: string | null;
+  origin_poviat?: string | null;
+  average_rating?: number | null;
+  ratings_count: number;
+}
+
+export interface ComparisonResponse {
+  items: ComparisonItem[];
+  missing_ids: string[];
+  cost_basis: string;
 }

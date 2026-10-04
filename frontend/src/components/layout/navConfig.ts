@@ -10,6 +10,8 @@ import {
   BellRing,
   Database,
   Search,
+  UserCheck,
+  Columns3,
   Map as MapIcon
 } from 'lucide-react';
 
@@ -102,6 +104,14 @@ export const NAV_ENTRIES: NavEntry[] = [
     icon: Building2,
     items: [
       {
+        to: '/porownanie',
+        label: 'Porównaj innowacje',
+        labelEtr: 'Porównaj pomysły',
+        hint: 'Teczka wdrożeń: 2–3 rozwiązania obok siebie, wydruk dla rady gminy',
+        hintEtr: 'Zobacz koszt i potrzebne osoby obok siebie',
+        icon: Columns3
+      },
+      {
         to: '/middleman',
         label: 'Plan wdrożenia dla gminy',
         labelEtr: 'Plan dla gminy',
@@ -124,6 +134,14 @@ export const NAV_ENTRIES: NavEntry[] = [
         hint: 'Zgłoszenia, decyzje i trendy – wymaga logowania',
         hintEtr: 'Dla pracowników ROPS – trzeba się zalogować',
         icon: ShieldCheck
+      },
+      {
+        to: '/mentor',
+        label: 'Panel mentora',
+        labelEtr: 'Dla mentora',
+        hint: 'Dla ekspertów: pomysły do oceny, pytania, konsultacje',
+        hintEtr: 'Dla ekspertów – trzeba podać kod',
+        icon: UserCheck
       },
       {
         to: '/otwarte-dane',

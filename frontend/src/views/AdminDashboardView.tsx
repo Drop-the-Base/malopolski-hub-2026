@@ -33,6 +33,7 @@ import { CATEGORIES, FISZKA_STATUSES, IMPLEMENTATION_STAGES, POWIATY, formatDate
 import { AdminInboxSummary } from '../types';
 import { CaseThreadAdmin, INBOX_CHANGED_EVENT, notifyInboxChanged } from '../components/admin/CaseThreadAdmin';
 import { SubscriptionsAdmin } from '../components/admin/SubscriptionsAdmin';
+import { MentorActivityAdmin } from '../components/admin/MentorActivityAdmin';
 
 const STATUS_STYLES: Record<string, string> = {
   submitted: 'bg-amber-100 text-amber-950 border border-amber-300',
@@ -1059,6 +1060,9 @@ export const AdminDashboardView: React.FC = () => {
 
       {/* G5: subskrypcje powiadomień i nabory */}
       <SubscriptionsAdmin onStatus={(msg) => { setStatus(msg); loadAll(); }} />
+
+      {/* G15: aktywność mentorów */}
+      <MentorActivityAdmin />
     </div>
   );
 };

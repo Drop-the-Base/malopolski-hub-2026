@@ -6,6 +6,7 @@ import { CaseMessage, FiszkaPublicStatus, ProblemPublicStatus } from '../types';
 import { formatDateTime, IMPLEMENTATION_STAGES, powiatLabel } from '../constants/domain';
 import { CaseTimeline } from '../components/cases/CaseTimeline';
 import { caseKind, rememberCase } from '../utils/recentCases';
+import { caseSenderLabel } from '../utils/caseSender';
 
 const fieldCls = 'w-full text-base p-2.5 rounded-lg border border-slate-400 bg-white';
 
@@ -63,7 +64,7 @@ const CaseConversation: React.FC<{ fiszkaId: string; onStatus: (s: FiszkaPublicS
   return (
     <section aria-labelledby="conv-title" className="border-t border-slate-200 pt-5 space-y-4">
       <h3 id="conv-title" className="text-lg font-bold text-slate-900 flex items-center gap-2">
-        <MessageSquare className="w-5 h-5 text-blue-700" aria-hidden="true" /> Rozmowa z koordynatorem ROPS
+        <MessageSquare className="w-5 h-5 text-blue-700" aria-hidden="true" /> Rozmowa z koordynatorem ROPS i mentorem
       </h3>
 
       <p aria-live="polite" className={notice ? 'text-sm text-emerald-900 bg-emerald-50 border border-emerald-300 p-3 rounded-lg' : 'sr-only'}>
@@ -113,7 +114,7 @@ const CaseConversation: React.FC<{ fiszkaId: string; onStatus: (s: FiszkaPublicS
                     className={`p-3 rounded-xl border text-sm ${mine ? 'bg-white border-slate-300 ml-0 sm:ml-10' : 'bg-blue-50 border-blue-200 mr-0 sm:mr-10'}`}
                   >
                     <p className="font-bold text-slate-900">
-                      {mine ? 'Ty' : 'Koordynator ROPS'}{' '}
+                      {caseSenderLabel(m, 'Ty')}{' '}
                       <span className="font-normal text-slate-600">
                         · <time dateTime={m.created_at}>{formatDateTime(m.created_at)}</time>
                       </span>
