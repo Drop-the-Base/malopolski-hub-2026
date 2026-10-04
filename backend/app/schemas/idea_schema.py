@@ -215,3 +215,18 @@ class CanvasAutofillResponse(BaseModel):
     scalability: str
     ai_powered: bool
     latency_ms: int
+
+
+class IdeaPosterHintsRequest(BaseModel):
+    """Dane pomysłu do podpowiedzi na „Plakat pomysłu” (hasło + nietuzinkowe warianty)."""
+    title: str = Field(..., min_length=3, max_length=160)
+    summary: Optional[str] = Field(None, max_length=4000)
+    problem: Optional[str] = Field(None, max_length=2000)
+    value_proposition: Optional[str] = Field(None, max_length=2000)
+    target_group: Optional[str] = Field(None, max_length=500)
+
+
+class IdeaPosterHintsResponse(BaseModel):
+    tagline: str
+    twists: List[str]
+    ai_powered: bool

@@ -205,6 +205,80 @@ def _generate_fallback_canvas(prompt: str, powiat: str, target_group: Optional[s
         "latency_ms": latency_ms
     }
 
+def _fallback_poster_hints(title: str, text: str) -> Dict[str, Any]:
+    """Szablonowe hasło i 3 nietuzinkowe warianty pomysłu (gdy LLM jest niedostępny)."""
+    t = text.lower()
+    if any(k in t for k in ("senior", "starsz", "70+", "75+", "opiek")):
+        tagline = "Nikt w naszej gminie nie zostaje sam z codziennymi sprawami."
+        twists = [
+            "Wymiana umiejętności: senior uczy rzemiosła, a w zamian dostaje pomoc w zakupach lub dojeździe.",
+            "Mapa „życzliwych przystanków” – sklepy i apteki, w których senior może odpocząć i poprosić o pomoc.",
+            "Wspólne wyjazdy z OSP lub KGW połączone z badaniami profilaktycznymi w gminnym ośrodku zdrowia.",
+        ]
+    elif any(k in t for k in ("młodzie", "uczni", "szkoł", "nastolat", "psych")):
+        tagline = "Bezpieczne miejsce, w którym młodzi mogą po prostu porozmawiać."
+        twists = [
+            "Młodzież sama prowadzi radio lub podcast o emocjach, a psycholog jest gościem, nie wykładowcą.",
+            "„Zamiana ról”: nastolatki uczą seniorów obsługi telefonu, seniorzy uczą ich gotowania lub majsterkowania.",
+            "Gra terenowa po gminie, w której zadania prowadzą do miejsc wsparcia (biblioteka, poradnia, klub).",
+        ]
+    elif any(k in t for k in ("napraw", "kawiar", "ekolog", "odpad", "rower")):
+        tagline = "Naprawiamy rzeczy i relacje – przy jednym stole."
+        twists = [
+            "Biblioteka rzeczy: sprzęt, którego używa się rzadko, wypożyczany jak książki.",
+            "Paszport naprawy – pieczątka za każdą naprawioną rzecz i drobna nagroda od lokalnych sklepów.",
+            "Objazdowa kawiarenka naprawcza, która raz w miesiącu odwiedza inne sołectwo.",
+        ]
+    elif any(k in t for k in ("niepełnospr", "dostępn", "wózk", "niewidom", "głuch")):
+        tagline = "Gmina bez barier – sprawdzona przez tych, którzy je pokonują."
+        twists = [
+            "Audyt dostępności prowadzony przez samych mieszkańców z niepełnosprawnościami (płatne zlecenie, nie wolontariat).",
+            "Wypożyczalnia sprzętu wspomagającego prowadzona przez spółdzielnię socjalną.",
+            "Spacer „w cudzych butach” dla radnych: trasa po gminie na wózku lub z goglami symulującymi słabe widzenie.",
+        ]
+    else:
+        tagline = f"{title.rstrip('.')} – blisko ludzi, na miarę naszej gminy."
+        twists = [
+            "Zaproś do współtworzenia osoby, których problem dotyczy – niech prowadzą jedną część działań.",
+            "Połącz pomysł z miejscem, które już działa (biblioteka, świetlica, remiza), zamiast budować nowe.",
+            "Pokaż efekty co miesiąc w prosty sposób: tablica w sołectwie lub krótki film od uczestników.",
+        ]
+    return {"tagline": tagline, "twists": twists, "ai_powered": False}
+
+
+async def suggest_poster_hints(
+    title: str,
+    summary: str = "",
+    problem: str = "",
+    value_proposition: str = "",
+    target_group: str = "",
+) -> Dict[str, Any]:
+    """Hasło (1 zdanie) i 3 nietuzinkowe warianty pomysłu na „Plakat pomysłu” – LLM z szablonem rezerwowym."""
+    context = " ".join(x for x in (summary, problem, value_proposition, target_group) if x)
+    system_prompt = (
+        "Jesteś doradcą ds. innowacji społecznych ROPS Kraków. Na podstawie pomysłu mieszkańca zaproponuj: "
+        "(1) jedno krótkie, ciepłe hasło na plakat (maks. 12 słów, prosty język, bez cudzysłowów i emoji), "
+        "(2) trzy nietuzinkowe, ale realne warianty lub ulepszenia pomysłu (każdy maks. 25 słów, prosty język, "
+        "bez wymyślonych nazw własnych i liczb). Zwróć WYŁĄCZNIE JSON: "
+        '{"tagline": "…", "twists": ["…", "…", "…"]}'
+    )
+    user_prompt = f"Tytuł: {title}. Opis: {context[:1500]}"
+    raw = await groq_chat_completion(
+        messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        temperature=0.7,
+        max_tokens=700,
+        reasoning_effort="low",
+    )
+    if raw:
+        parsed = _extract_json_from_text(raw)
+        if parsed and isinstance(parsed.get("tagline"), str) and isinstance(parsed.get("twists"), list):
+            twists = [str(t).strip() for t in parsed["twists"] if str(t).strip()][:3]
+            tagline = parsed["tagline"].strip().strip("\"„”'")
+            if tagline and len(twists) == 3:
+                return {"tagline": tagline[:160], "twists": [t[:300] for t in twists], "ai_powered": True}
+    return _fallback_poster_hints(title, f"{title} {context}")
+
+
 async def generate_match_justifications(problem_text: str, innovations: List[Dict[str, Any]]) -> Dict[str, str]:
     """
     Generuje osobne, 2-zdaniowe uzasadnienie dla każdej dopasowanej innowacji (jedno wywołanie LLM).
